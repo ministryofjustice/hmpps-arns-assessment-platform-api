@@ -1,9 +1,24 @@
+hmpps-auth:
+  url: "http://localhost:8090/auth"
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${database.endpoint:localhost:5432}/${database.name:postgres}?currentSchema=${database.schema.name:assessment-platform}&user=${database.username:root}&password=${database.password:dev}&stringtype=unspecified
+  jpa:
+    show_sql: true
+    properties:
+      hibernate:
+        enable_lazy_load_no_trans: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  flyway:
+    schemas: assessment-platform
+    locations: classpath:/db/migration
+
 server:
   shutdown: immediate
 
 management.endpoint:
   health.cache.time-to-live: 0
   info.cache.time-to-live: 0
-
-hmpps-auth:
-  url: "http://localhost:8090/auth"
