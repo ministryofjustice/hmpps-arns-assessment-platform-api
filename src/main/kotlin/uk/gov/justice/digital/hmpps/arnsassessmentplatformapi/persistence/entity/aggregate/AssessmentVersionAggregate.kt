@@ -6,9 +6,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.FormVersionUpdated
 
-const val type = "ASSESSMENT_VERSION"
+const val TYPE = "ASSESSMENT_VERSION"
 
-@JsonTypeName(type)
+@JsonTypeName(TYPE)
 class AssessmentVersionAggregate : Aggregate {
   private lateinit var formVersion: String
   private val answers: MutableMap<String, List<String>> = mutableMapOf()
@@ -38,7 +38,7 @@ class AssessmentVersionAggregate : Aggregate {
   }
 
   companion object : AggregateType {
-    override val aggregateType = type
+    override val aggregateType = TYPE
     override val updatesOn = setOf(AnswersUpdated::class)
   }
 }
