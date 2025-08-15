@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.FormVersionUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.OasysEventAdded
 
-const val TYPE = "ASSESSMENT_VERSION"
+private const val TYPE = "ASSESSMENT_VERSION"
 
 @JsonTypeName(TYPE)
 class AssessmentVersionAggregate : Aggregate {

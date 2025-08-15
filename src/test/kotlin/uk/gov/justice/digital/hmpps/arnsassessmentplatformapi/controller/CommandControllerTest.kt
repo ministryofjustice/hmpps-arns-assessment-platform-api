@@ -74,7 +74,7 @@ class CommandControllerTest(
     assertThat(data.added).isEqualTo(mapOf("foo" to listOf("updated")))
     assertThat(data.removed).isEqualTo(listOf("bar"))
 
-    val assessmentVersion = aggregateRepository.findLatestByAssessmentAndType(
+    val assessmentVersion = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
       AssessmentVersionAggregate.aggregateType,
     )
@@ -115,7 +115,7 @@ class CommandControllerTest(
     val data = assertIs<OasysEventAdded>(eventsForAssessment[0].data)
     assertThat(data.tag).isEqualTo("MERGED")
 
-    val assessmentVersion = aggregateRepository.findLatestByAssessmentAndType(assessmentEntity.uuid, AssessmentVersionAggregate.aggregateType)
+    val assessmentVersion = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessmentEntity.uuid, AssessmentVersionAggregate.aggregateType)
     assertThat(assessmentVersion?.uuid).isNotEqualTo(aggregateEntity.uuid)
     assertThat(assessmentVersion?.updatedAt).isAfter(aggregateEntity.updatedAt)
   }
