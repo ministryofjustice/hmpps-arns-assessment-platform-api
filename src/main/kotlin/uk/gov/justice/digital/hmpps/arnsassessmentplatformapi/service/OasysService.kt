@@ -1,44 +1,28 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.AddOasysEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.Command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.OasysEventAdded
+import java.util.UUID
 
 @Service
 class OasysService(
-  val assessmentService: AssessmentService,
-  val eventRepository: EventRepository,
-  private val aggregateService: AggregateService,
+  private val commandExecutorHelper: CommandExecutorHelper,
 ) : CommandExecutor {
-
   override fun executeCommands(request: CommandRequest) {
-    val assessment = assessmentService.fetchAssessment(request.assessmentUuid)
+    val events = request.commands.mapNotNull { command -> createEvent(command, request.user, request.assessmentUuid) }
+    commandExecutorHelper.handleSave(events)
+  }
 
-    val events: List<EventEntity> = request.commands.mapNotNull { command ->
-      when (command) {
-        is AddOasysEvent -> {
-          EventEntity.from(
-            assessment,
-            request.user,
-            OasysEventAdded(
-              tag = command.tag,
-            ),
-          )
-        }
+  private fun createEvent(command: Command, user: User, assessmentUuid: UUID): EventEntity? {
+    val assessment = commandExecutorHelper.fetchAssessment(assessmentUuid)
 
-        else -> null
-      }
-    }
-
-    if (events.isNotEmpty()) {
-      eventRepository.saveAll(events)
-      events.forEach {
-        aggregateService.findAggregatesUpdatingOnEvent(it.data)
-          .forEach { aggregateType -> aggregateService.updateAggregate(assessment, aggregateType, events) }
-      }
-    }
+    return when (command) {
+      is AddOasysEvent -> command.toEvent()
+      else -> null
+    }?.let { domainEvent -> EventEntity.from(assessment, user, domainEvent) }
   }
 }

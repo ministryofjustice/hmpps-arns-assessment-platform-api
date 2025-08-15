@@ -48,14 +48,14 @@ class AggregateEntityTest {
 
     val originalData = assertIs<AssessmentVersionAggregate>(aggregate.data)
     assertThat(originalData.getAnswers()["foo"]).isEqualTo(listOf("Original answer for foo"))
-    assertThat(aggregate.from).isEqualTo(firstEvent.createdAt)
-    assertThat(aggregate.to).isEqualTo(firstEvent.createdAt)
+    assertThat(aggregate.eventsFrom).isEqualTo(firstEvent.createdAt)
+    assertThat(aggregate.eventsTo).isEqualTo(firstEvent.createdAt)
 
     aggregate.apply(secondEvent)
 
     val firstUpdate = assertIs<AssessmentVersionAggregate>(aggregate.data)
     assertThat(firstUpdate.getAnswers()["foo"]).isEqualTo(listOf("Updated value for foo"))
-    assertThat(aggregate.from).isEqualTo(firstEvent.createdAt)
-    assertThat(aggregate.to).isEqualTo(secondEvent.createdAt)
+    assertThat(aggregate.eventsFrom).isEqualTo(firstEvent.createdAt)
+    assertThat(aggregate.eventsTo).isEqualTo(secondEvent.createdAt)
   }
 }

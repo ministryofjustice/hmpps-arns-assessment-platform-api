@@ -30,10 +30,10 @@ class AggregateEntity(
   var updatedAt: LocalDateTime = LocalDateTime.now(),
 
   @Column(name = "events_from")
-  val from: LocalDateTime = LocalDateTime.now(),
+  val eventsFrom: LocalDateTime = LocalDateTime.now(),
 
   @Column(name = "events_to")
-  var to: LocalDateTime = LocalDateTime.now(),
+  var eventsTo: LocalDateTime = LocalDateTime.now(),
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "assessment_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
@@ -46,18 +46,25 @@ class AggregateEntity(
   fun apply(event: EventEntity) = applyAll(listOf(event))
 
   fun applyAll(events: List<EventEntity>): AggregateEntity {
-    to = events.lastOrNull()?.createdAt ?: LocalDateTime.now()
+    eventsTo = events.lastOrNull()?.createdAt ?: LocalDateTime.now()
     updatedAt = LocalDateTime.now()
-    data.apply(events)
+    data.applyAll(events)
 
     return this
   }
+
+  fun clone(): AggregateEntity = AggregateEntity(
+    eventsFrom = this.eventsFrom,
+    eventsTo = this.eventsTo,
+    assessment = this.assessment,
+    data = this.data,
+  )
 
   companion object {
     fun init(assessment: AssessmentEntity, data: Aggregate, events: List<EventEntity>): AggregateEntity = AggregateEntity(
       assessment = assessment,
       data = data,
-      from = events.firstOrNull()?.createdAt ?: LocalDateTime.now(),
+      eventsFrom = events.firstOrNull()?.createdAt ?: LocalDateTime.now(),
     )
       .also { aggregate -> aggregate.applyAll(events) }
   }

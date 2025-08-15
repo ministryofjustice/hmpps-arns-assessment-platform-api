@@ -116,7 +116,7 @@ class CommandControllerTest(
     assertThat(data.tag).isEqualTo("MERGED")
 
     val assessmentVersion = aggregateRepository.findLatestByAssessmentAndType(assessmentEntity.uuid, AssessmentVersionAggregate.aggregateType)
-    assertThat(assessmentVersion?.uuid).isEqualTo(aggregateEntity.uuid)
-    assertThat(assessmentVersion?.updatedAt).isEqualTo(aggregateEntity.updatedAt)
+    assertThat(assessmentVersion?.uuid).isNotEqualTo(aggregateEntity.uuid)
+    assertThat(assessmentVersion?.updatedAt).isAfter(aggregateEntity.updatedAt)
   }
 }

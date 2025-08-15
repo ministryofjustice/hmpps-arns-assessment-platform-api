@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.FormVersionUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.OasysEventAdded
 
 const val TYPE = "ASSESSMENT_VERSION"
 
@@ -16,6 +18,7 @@ class AssessmentVersionAggregate : Aggregate {
 
   fun handle(event: AnswersUpdated) {
     event.added.entries.map { answers.put(it.key, it.value) }
+    event.removed.map { answers[it] = emptyList() }
   }
 
   fun handle(event: FormVersionUpdated) {
@@ -24,7 +27,7 @@ class AssessmentVersionAggregate : Aggregate {
 
   fun getAnswers() = this.answers.toMap()
 
-  override fun apply(events: List<EventEntity>): AssessmentVersionAggregate {
+  override fun applyAll(events: List<EventEntity>): AssessmentVersionAggregate {
     events.sortedBy { it.createdAt }
       .forEach { event ->
         collaborators.add(event.user)
@@ -38,7 +41,9 @@ class AssessmentVersionAggregate : Aggregate {
   }
 
   companion object : AggregateType {
+    override val getInstance = { AssessmentVersionAggregate() }
     override val aggregateType = TYPE
-    override val updatesOn = setOf(AnswersUpdated::class)
+    override val createsOn = setOf(AssessmentCreated::class, OasysEventAdded::class)
+    override val updatesOn = setOf(AnswersUpdated::class, FormVersionUpdated::class)
   }
 }

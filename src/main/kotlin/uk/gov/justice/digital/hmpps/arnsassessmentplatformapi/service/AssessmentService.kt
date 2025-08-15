@@ -1,62 +1,37 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.Command
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.CreateAssessment
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.UpdateAnswers
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.UpdateFormVersion
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.FormVersionUpdated
 import java.util.UUID
 
 @Service
 class AssessmentService(
-  val assessmentRepository: AssessmentRepository,
-  val eventRepository: EventRepository,
-  private val aggregateService: AggregateService,
+  private val commandExecutorHelper: CommandExecutorHelper,
 ) : CommandExecutor {
-  fun fetchAssessment(assessmentUuid: UUID): AssessmentEntity = assessmentRepository.findByUuid(assessmentUuid)
-    ?: throw Error("AssessmentNotFound")
-
   override fun executeCommands(request: CommandRequest) {
-    val assessment = fetchAssessment(request.assessmentUuid)
+    val events = request.commands.mapNotNull { command -> createEvent(command, request.user, request.assessmentUuid) }
+    commandExecutorHelper.handleSave(events)
+  }
 
-    val events: List<EventEntity> = request.commands.mapNotNull { command ->
-      when (command) {
-        is UpdateAnswers -> {
-          EventEntity.from(
-            assessment,
-            request.user,
-            AnswersUpdated(
-              added = command.added,
-              removed = command.removed,
-            ),
-          )
-        }
-
-        is UpdateFormVersion -> {
-          EventEntity.from(
-            assessment,
-            request.user,
-            FormVersionUpdated(
-              version = command.version,
-            ),
-          )
-        }
-
-        else -> null
-      }
+  private fun createEvent(command: Command, user: User, assessmentUuid: UUID): EventEntity? {
+    val assessment = when (command) {
+      is CreateAssessment -> commandExecutorHelper.createAssessment()
+      else -> commandExecutorHelper.fetchAssessment(assessmentUuid)
     }
 
-    if (events.isNotEmpty()) {
-      eventRepository.saveAll(events)
-      events.forEach {
-        aggregateService.findAggregatesUpdatingOnEvent(it.data)
-          .forEach { aggregateType -> aggregateService.updateAggregate(assessment, aggregateType, events) }
-      }
-    }
+    return when (command) {
+      is CreateAssessment,
+      is UpdateAnswers,
+      is UpdateFormVersion,
+      -> command.toEvent()
+
+      else -> null
+    }?.let { domainEvent -> EventEntity.from(assessment, user, domainEvent) }
   }
 }
