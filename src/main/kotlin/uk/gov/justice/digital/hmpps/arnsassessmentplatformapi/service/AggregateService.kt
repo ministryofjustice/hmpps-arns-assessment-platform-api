@@ -32,13 +32,46 @@ class AggregateService(
   fun createAggregate(assessment: AssessmentEntity, aggregateType: String) {
     eventRepository.findAllByAssessmentUuid(assessment.uuid).let { events ->
       aggregateRegistry.find { it.aggregateType == aggregateType }?.run {
-        val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType)?.clone()
-          ?: AggregateEntity(assessment = assessment, data = getInstance())
+        val eventsTo = LocalDateTime.now()
+        val aggregate =
+          aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType, eventsTo)
+            ?.clone()
+            ?: AggregateEntity(
+              assessment = assessment,
+              data = getInstance(),
+              eventsFrom = events.minByOrNull { it.createdAt }?.createdAt ?: assessment.createdAt,
+              eventsTo = eventsTo,
+            )
 
         aggregate.apply { applyAll(events) }
           .also(aggregateRepository::save)
       }
     }
+  }
+
+  fun createAggregateForPointInTime(
+    assessment: AssessmentEntity,
+    aggregateType: String,
+    dateTime: LocalDateTime,
+    shouldPersist: Boolean = false,
+  ): AggregateEntity = eventRepository.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, dateTime).let { events ->
+    aggregateRegistry.find { it.aggregateType == aggregateType }?.run {
+      val aggregate =
+        aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType, dateTime)?.clone()
+          ?: AggregateEntity(
+            assessment = assessment,
+            data = getInstance(),
+            eventsFrom = events.minByOrNull { it.createdAt }?.createdAt ?: assessment.createdAt,
+            eventsTo = dateTime,
+          )
+
+      aggregate.apply { applyAll(events) }
+      if (shouldPersist) {
+        aggregate.run(aggregateRepository::save)
+      } else {
+        aggregate
+      }
+    } as AggregateEntity
   }
 
   fun updateAggregate(assessment: AssessmentEntity, aggregateType: String, events: List<EventEntity>) {
@@ -48,11 +81,11 @@ class AggregateService(
     aggregateRepository.save(latestAggregate)
   }
 
-  fun fetchLatestAggregateForType(assessment: AssessmentEntity, aggregateType: String): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType)
+  fun fetchLatestAggregateForType(assessment: AssessmentEntity, aggregateType: String): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType, LocalDateTime.now())
 
-  fun fetchAggregateForTypeAndDate(
+  fun fetchAggregateForTypeOnDate(
     assessment: AssessmentEntity,
     aggregateType: String,
     date: LocalDateTime,
-  ): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType)
+  ): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeOnExactDate(assessment.uuid, aggregateType, date)
 }

@@ -5,4 +5,5 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 @JsonTypeName("ANSWERS_ROLLED_BACK")
 data class AnswersRolledBack(
   val added: Map<String, List<String>>,
+  val removed: List<String>,
 ) : Event

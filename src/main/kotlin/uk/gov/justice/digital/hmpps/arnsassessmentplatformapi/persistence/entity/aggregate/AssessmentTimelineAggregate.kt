@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entit
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersRolledBack
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.OasysEventAdded
@@ -23,7 +24,16 @@ class AssessmentTimelineAggregate : Aggregate {
     timeline.add(
       TimelineItem(
         timestamp = timestamp,
-        details = "${event.added.size} questions added and ${event.removed.size} removed",
+        details = "${event.added.size} answers updated and ${event.removed.size} removed",
+      ),
+    )
+  }
+
+  fun handle(timestamp: LocalDateTime, event: AnswersRolledBack) {
+    timeline.add(
+      TimelineItem(
+        timestamp = timestamp,
+        details = "Rolled back ${event.added.size + event.removed.size} answers",
       ),
     )
   }
@@ -45,6 +55,7 @@ class AssessmentTimelineAggregate : Aggregate {
       .forEach { event ->
         when (event.data) {
           is AnswersUpdated -> handle(event.createdAt, event.data)
+          is AnswersRolledBack -> handle(event.createdAt, event.data)
           is OasysEventAdded -> handle(event.createdAt, event.data)
           else -> {}
         }
@@ -52,10 +63,16 @@ class AssessmentTimelineAggregate : Aggregate {
     return this
   }
 
+  override fun clone() = AssessmentTimelineAggregate()
+    .also {
+      it.timeline.plus(timeline)
+      it.previousStatus = previousStatus
+    }
+
   companion object : AggregateType {
     override val getInstance = { AssessmentTimelineAggregate() }
     override val aggregateType = TYPE
     override val createsOn = setOf(AssessmentCreated::class)
-    override val updatesOn = setOf(AnswersUpdated::class, OasysEventAdded::class)
+    override val updatesOn = setOf(AnswersUpdated::class, AnswersRolledBack::class, OasysEventAdded::class)
   }
 }

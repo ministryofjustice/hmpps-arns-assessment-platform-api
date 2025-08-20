@@ -1,12 +1,13 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands
 
-import com.fasterxml.jackson.annotation.JsonTypeName
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersRolledBack
-import java.util.UUID
+import java.time.LocalDateTime
 
-@JsonTypeName("UPDATE_ANSWERS")
-class RollbackAnswers(
-  val eventUuid: UUID,
+class RollbackAssessment(
+  val dateAndTime: LocalDateTime,
 ) : Command {
-  override fun toEvent() = AnswersRolledBack(emptyMap())
+  override fun toEvent() = AnswersRolledBack(
+    added = emptyMap(),
+    removed = emptyList(),
+  )
 }

@@ -46,7 +46,7 @@ class AggregateEntity(
   fun apply(event: EventEntity) = applyAll(listOf(event))
 
   fun applyAll(events: List<EventEntity>): AggregateEntity {
-    eventsTo = events.lastOrNull()?.createdAt ?: LocalDateTime.now()
+    eventsTo = events.maxByOrNull { it.createdAt }?.createdAt ?: LocalDateTime.now()
     updatedAt = LocalDateTime.now()
     data.applyAll(events)
 
@@ -57,14 +57,14 @@ class AggregateEntity(
     eventsFrom = this.eventsFrom,
     eventsTo = this.eventsTo,
     assessment = this.assessment,
-    data = this.data,
+    data = this.data.clone(),
   )
 
   companion object {
     fun init(assessment: AssessmentEntity, data: Aggregate, events: List<EventEntity>): AggregateEntity = AggregateEntity(
       assessment = assessment,
       data = data,
-      eventsFrom = events.firstOrNull()?.createdAt ?: LocalDateTime.now(),
+      eventsFrom = events.firstOrNull()?.createdAt ?: assessment.createdAt,
     )
       .also { aggregate -> aggregate.applyAll(events) }
   }
