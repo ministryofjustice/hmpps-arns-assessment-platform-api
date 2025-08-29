@@ -12,10 +12,7 @@ import java.util.UUID
 class OasysService(
   private val commandExecutorHelper: CommandExecutorHelper,
 ) : CommandExecutor {
-  override fun executeCommands(request: CommandRequest) {
-    val events = request.commands.mapNotNull { command -> createEvent(command, request.user, request.assessmentUuid) }
-    commandExecutorHelper.handleSave(events)
-  }
+  override fun execute(request: CommandRequest): List<EventEntity> = request.commands.mapNotNull { command -> createEvent(command, request.user, request.assessmentUuid) }
 
   private fun createEvent(command: Command, user: User, assessmentUuid: UUID): EventEntity? {
     val assessment = commandExecutorHelper.fetchAssessment(assessmentUuid)

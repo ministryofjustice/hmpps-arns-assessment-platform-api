@@ -12,13 +12,11 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.ErrorResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.OasysService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CommandService
 
 @RestController
 class CommandController(
-  val assessmentService: AssessmentService,
-  val oasysService: OasysService,
+  private val commandService: CommandService,
 ) {
 
   @RequestMapping(path = ["/command"], method = [RequestMethod.POST])
@@ -47,8 +45,5 @@ class CommandController(
   fun executeCommands(
     @RequestBody
     request: CommandRequest,
-  ) {
-    listOf(assessmentService, oasysService)
-      .forEach { commandExecutor -> commandExecutor.executeCommands(request) }
-  }
+  ) = commandService.process(request)
 }

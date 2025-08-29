@@ -5,9 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.Assess
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AssessmentVersionAggregate
 import java.util.UUID
-import kotlin.collections.forEach
 
 @Component
 class CommandExecutorHelper(
@@ -19,20 +17,14 @@ class CommandExecutorHelper(
     if (events.isEmpty()) return
 
     eventRepository.saveAll(events)
+      .forEach { event ->
+        aggregateService.findAggregatesUpdatingOnThisEvent(event.data)
+          .forEach { aggregateType -> aggregateService.updateAggregate(event.assessment, aggregateType, events) }
 
-    events.forEach { event ->
-      aggregateService.findAggregatesUpdatingOnThisEvent(event.data)
-        .forEach { aggregateType -> aggregateService.updateAggregate(event.assessment, aggregateType, events) }
-
-      aggregateService.findAggregatesCreatingOnThisEvent(event.data)
-        .forEach { aggregateType -> aggregateService.createAggregate(event.assessment, aggregateType) }
-    }
+        aggregateService.findAggregatesCreatingOnThisEvent(event.data)
+          .forEach { aggregateType -> aggregateService.createAggregate(event.assessment, aggregateType) }
+      }
   }
-
-  fun fetchLatestAssessmentVersion(assessment: AssessmentEntity): AssessmentVersionAggregate? = aggregateService.fetchLatestAggregateForType(
-    assessment,
-    AssessmentVersionAggregate.aggregateType,
-  )?.data as AssessmentVersionAggregate
 
   fun fetchAssessment(assessmentUuid: UUID): AssessmentEntity = assessmentRepository.findByUuid(assessmentUuid)
     ?: throw IllegalArgumentException("Assessment not found: $assessmentUuid")
