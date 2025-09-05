@@ -28,6 +28,7 @@ dependencies {
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.31") {
     exclude(group = "io.swagger.core.v3")
   }
+  testImplementation("com.ninja-squad:springmockk:4.0.2")
 }
 
 kotlin {

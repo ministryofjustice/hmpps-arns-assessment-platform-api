@@ -12,11 +12,16 @@ class CommandService(
   private val commandExecutorHelper: CommandExecutorHelper,
 ) {
   fun process(request: CommandRequest) {
-    listOf(assessmentService, oasysService)
-      .map { commandExecutor -> commandExecutor.execute(request) }
-      .flatten()
-      .apply(commandExecutorHelper::handleSave)
-      .also { logger.info("Executed ${it.size} commands for assessment ${request.assessmentUuid}") }
+    val services = listOf(assessmentService, oasysService)
+    val events = buildList {
+      for (service in services) addAll(service.execute(request))
+    }
+
+    if (events.isNotEmpty()) {
+      commandExecutorHelper.handleSave(request.assessmentUuid, events)
+    }
+
+    logger.info("Executed {} commands for assessment {}", events.size, request.assessmentUuid)
   }
 
   companion object {

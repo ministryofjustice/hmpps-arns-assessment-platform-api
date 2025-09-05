@@ -7,8 +7,8 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AggregateType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AssessmentTimelineAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AssessmentVersionAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.Event
 import java.time.LocalDateTime
 
 @Service
@@ -16,69 +16,70 @@ class AggregateService(
   val aggregateRepository: AggregateRepository,
   val eventRepository: EventRepository,
 ) {
-  private val aggregateRegistry: List<AggregateType> = listOf(
+  private val registry: Map<String, AggregateType> = listOf(
     AssessmentVersionAggregate,
+    AssessmentTimelineAggregate,
     // Add more as needed
-  )
+  ).associateBy { it.aggregateType }
 
-  fun findAggregatesCreatingOnThisEvent(event: Event): List<String> = aggregateRegistry
-    .filter { it.createsOn.contains(event::class) }
-    .map { it.aggregateType }
+  private fun typeFor(name: String): AggregateType = registry[name] ?: throw IllegalArgumentException("No aggregate is registered for type $name")
+  fun getAggregateTypes() = registry.values
 
-  fun findAggregatesUpdatingOnThisEvent(event: Event): List<String> = aggregateRegistry
-    .filter { it.updatesOn.contains(event::class) }
-    .map { it.aggregateType }
+  private fun findOrCreate(
+    assessment: AssessmentEntity,
+    aggregateType: AggregateType,
+    events: List<EventEntity>,
+  ): AggregateEntity {
+    val eventsFrom = events.minByOrNull { it.createdAt }?.createdAt ?: assessment.createdAt
+    val eventsTo = events.maxByOrNull { it.createdAt }?.createdAt ?: LocalDateTime.now()
+    val aggregate =
+      aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType.aggregateType, eventsTo)
+        ?.clone()
+        ?: AggregateEntity(
+          assessment = assessment,
+          data = aggregateType.getInstance(),
+          eventsFrom = eventsFrom,
+          eventsTo = eventsTo,
+        )
 
-  fun createAggregate(assessment: AssessmentEntity, aggregateType: String) {
-    eventRepository.findAllByAssessmentUuid(assessment.uuid).let { events ->
-      aggregateRegistry.find { it.aggregateType == aggregateType }?.run {
-        val eventsTo = LocalDateTime.now()
-        val aggregate =
-          aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType, eventsTo)
-            ?.clone()
-            ?: AggregateEntity(
-              assessment = assessment,
-              data = getInstance(),
-              eventsFrom = events.minByOrNull { it.createdAt }?.createdAt ?: assessment.createdAt,
-              eventsTo = eventsTo,
-            )
+    events.forEach { event -> aggregate.apply(event) }
+    return aggregate
+  }
 
-        aggregate.apply { applyAll(events) }
-          .also(aggregateRepository::save)
-      }
-    }
+  fun createAggregate(assessment: AssessmentEntity, aggregateName: String): AggregateEntity {
+    val events = eventRepository.findAllByAssessmentUuid(assessment.uuid)
+    val aggregate = findOrCreate(assessment, typeFor(aggregateName), events)
+    return aggregateRepository.save(aggregate)
   }
 
   fun createAggregateForPointInTime(
     assessment: AssessmentEntity,
-    aggregateType: String,
+    aggregateName: String,
     dateTime: LocalDateTime,
-    shouldPersist: Boolean = false,
-  ): AggregateEntity = eventRepository.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, dateTime).let { events ->
-    aggregateRegistry.find { it.aggregateType == aggregateType }?.run {
-      val aggregate =
-        aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType, dateTime)?.clone()
-          ?: AggregateEntity(
-            assessment = assessment,
-            data = getInstance(),
-            eventsFrom = events.minByOrNull { it.createdAt }?.createdAt ?: assessment.createdAt,
-            eventsTo = dateTime,
-          )
-
-      aggregate.apply { applyAll(events) }
-      if (shouldPersist) {
-        aggregate.run(aggregateRepository::save)
-      } else {
-        aggregate
-      }
-    } as AggregateEntity
+  ): AggregateEntity {
+    val events = eventRepository.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, dateTime)
+    return findOrCreate(assessment, typeFor(aggregateName), events)
   }
 
-  fun updateAggregate(assessment: AssessmentEntity, aggregateType: String, events: List<EventEntity>) {
-    val latestAggregate = fetchLatestAggregateForType(assessment, aggregateType)?.applyAll(events)
-      ?: throw Error("Failed to update aggregate, no aggregate exists for the given type and uuid")
+  fun processEvents(assessment: AssessmentEntity, aggregateType: String, events: List<EventEntity>): AggregateEntity {
+    return fetchLatestAggregateForType(assessment, aggregateType)?.let { latestAggregate ->
+      events.sortedBy { it.createdAt }
+        .fold(latestAggregate) { acc, event ->
+          val eventApplied = acc.apply(event)
 
-    aggregateRepository.save(latestAggregate)
+          if (eventApplied) {
+            acc.eventsTo = event.createdAt
+          }
+          acc.updatedAt = LocalDateTime.now()
+
+          if (acc.data.shouldCreate(event.data)) {
+            return acc.clone()
+              .also { cloned -> aggregateRepository.saveAll(listOf(acc, cloned)) }
+          }
+
+          return acc.also { aggregateRepository.save(acc) }
+        }
+    } ?: createAggregate(assessment, aggregateType)
   }
 
   fun fetchLatestAggregateForType(assessment: AssessmentEntity, aggregateType: String): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType, LocalDateTime.now())

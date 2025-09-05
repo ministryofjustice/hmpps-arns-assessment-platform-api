@@ -14,6 +14,7 @@ import org.hibernate.annotations.Type
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.Aggregate
 import java.time.LocalDateTime
 import java.util.UUID
+import kotlin.apply
 
 @Entity
 @Table(name = "aggregate")
@@ -43,14 +44,10 @@ class AggregateEntity(
   @Column(name = "data", nullable = false)
   val data: Aggregate,
 ) {
-  fun apply(event: EventEntity) = applyAll(listOf(event))
-
-  fun applyAll(events: List<EventEntity>): AggregateEntity {
-    eventsTo = events.maxByOrNull { it.createdAt }?.createdAt ?: LocalDateTime.now()
+  fun apply(event: EventEntity): Boolean {
+    eventsTo = event.createdAt
     updatedAt = LocalDateTime.now()
-    data.applyAll(events)
-
-    return this
+    return data.apply(event)
   }
 
   fun clone(): AggregateEntity = AggregateEntity(
@@ -61,11 +58,10 @@ class AggregateEntity(
   )
 
   companion object {
-    fun init(assessment: AssessmentEntity, data: Aggregate, events: List<EventEntity>): AggregateEntity = AggregateEntity(
+    fun init(assessment: AssessmentEntity, data: Aggregate, events: List<EventEntity> = emptyList()): AggregateEntity = AggregateEntity(
       assessment = assessment,
       data = data,
-      eventsFrom = events.firstOrNull()?.createdAt ?: assessment.createdAt,
-    )
-      .also { aggregate -> aggregate.applyAll(events) }
+      eventsFrom = events.minByOrNull { it.createdAt }?.createdAt ?: assessment.createdAt,
+    ).apply { events.forEach { data.apply(it) } }
   }
 }

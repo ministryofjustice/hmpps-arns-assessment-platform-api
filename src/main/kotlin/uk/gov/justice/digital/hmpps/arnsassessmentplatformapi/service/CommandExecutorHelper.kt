@@ -13,17 +13,17 @@ class CommandExecutorHelper(
   private val eventRepository: EventRepository,
   private val aggregateService: AggregateService,
 ) {
-  fun handleSave(events: List<EventEntity>) {
+  fun handleSave(assessmentUUID: UUID, events: List<EventEntity>) {
     if (events.isEmpty()) return
 
-    eventRepository.saveAll(events)
-      .forEach { event ->
-        aggregateService.findAggregatesUpdatingOnThisEvent(event.data)
-          .forEach { aggregateType -> aggregateService.updateAggregate(event.assessment, aggregateType, events) }
+    val assessment = fetchAssessment(assessmentUUID)
+    val savedEvents = eventRepository.saveAll(events)
+    val eventTypes = savedEvents.mapTo(mutableSetOf()) { it.data::class }
 
-        aggregateService.findAggregatesCreatingOnThisEvent(event.data)
-          .forEach { aggregateType -> aggregateService.createAggregate(event.assessment, aggregateType) }
-      }
+    aggregateService.getAggregateTypes()
+      .asSequence()
+      .filter { it.createsOn.any(eventTypes::contains) || it.updatesOn.any(eventTypes::contains) }
+      .forEach { aggregateService.processEvents(assessment, it.aggregateType, events) }
   }
 
   fun fetchAssessment(assessmentUuid: UUID): AssessmentEntity = assessmentRepository.findByUuid(assessmentUuid)

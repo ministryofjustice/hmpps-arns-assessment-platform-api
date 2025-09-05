@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersRolledBack
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.FormVersionUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.OasysEventAdded
 
@@ -18,7 +19,6 @@ class AssessmentVersionAggregate(
   private val collaborators: MutableSet<User> = mutableSetOf(),
   private var formVersion: String? = null,
 ) : Aggregate {
-
   fun applyAnswers(added: Map<String, List<String>>, removed: List<String>) {
     added.entries.map {
       answers.put(it.key, it.value)
@@ -35,29 +35,39 @@ class AssessmentVersionAggregate(
     }
   }
 
-  fun handle(event: AnswersUpdated) = applyAnswers(event.added, event.removed)
+  fun handle(event: AnswersUpdated) {
+    applyAnswers(event.added, event.removed)
+    numberOfEventsApplied += 1
+  }
 
-  fun handle(event: AnswersRolledBack) = applyAnswers(event.added, event.removed)
+  fun handle(event: AnswersRolledBack) {
+    applyAnswers(event.added, event.removed)
+    numberOfEventsApplied += 1
+  }
 
   fun handle(event: FormVersionUpdated) {
     formVersion = event.version
+    numberOfEventsApplied += 1
   }
 
   fun getAnswers() = this.answers.toMap()
 
-  override fun applyAll(events: List<EventEntity>): AssessmentVersionAggregate {
-    events.sortedBy { it.createdAt }
-      .forEach { event ->
-        collaborators.add(event.user)
-        when (event.data) {
-          is AnswersUpdated -> handle(event.data)
-          is AnswersRolledBack -> handle(event.data)
-          is FormVersionUpdated -> handle(event.data)
-          else -> {}
-        }
-      }
-    return this
+  override var numberOfEventsApplied: Long = 0
+
+  override fun apply(event: EventEntity): Boolean {
+    collaborators.add(event.user)
+    when (event.data) {
+      is AnswersUpdated -> handle(event.data)
+      is AnswersRolledBack -> handle(event.data)
+      is FormVersionUpdated -> handle(event.data)
+      else -> return false
+    }
+
+    return true
   }
+
+  override fun shouldCreate(event: Event) = createsOn.contains(event::class) || numberOfEventsApplied % 50L == 0L
+  override fun shouldUpdate(event: Event) = updatesOn.contains(event::class)
 
   override fun clone() = AssessmentVersionAggregate()
     .also {
