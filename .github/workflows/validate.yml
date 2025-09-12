@@ -10,4 +10,4 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Validate
-        run: make dev-up lint test-coverage
+        run: make dev-up lint test
