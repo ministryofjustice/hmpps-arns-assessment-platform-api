@@ -38,10 +38,7 @@ watch: ## Watches for file changes and live-reloads the API. To be used in conju
 	docker compose ${DEV_COMPOSE_FILES} exec hmpps-arns-assessment-platform-api gradle compileKotlin --continuous --parallel --build-cache --configuration-cache
 
 test: ## Runs all the test suites.
-	docker compose ${DEV_COMPOSE_FILES} exec hmpps-arns-assessment-platform-api gradle test --parallel
-
-test-coverage: ## Runs the test suite and outputs a code coverage report.
-	docker compose ${DEV_COMPOSE_FILES} exec hmpps-arns-assessment-platform-api gradle koverHtmlReport --parallel
+	docker compose ${DEV_COMPOSE_FILES} exec -e HMPPS_AUTH_URL=http://localhost:8090/auth hmpps-arns-assessment-platform-api gradle test --parallel
 
 test-unit: ## Runs the unit test suite.
 	docker compose ${DEV_COMPOSE_FILES} exec hmpps-arns-assessment-platform-api gradle unitTests --parallel
