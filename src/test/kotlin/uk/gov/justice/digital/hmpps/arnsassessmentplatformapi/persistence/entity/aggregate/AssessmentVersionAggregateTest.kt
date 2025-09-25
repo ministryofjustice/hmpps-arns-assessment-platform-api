@@ -101,11 +101,13 @@ class AssessmentVersionAggregateTest {
     fun `it handles an FormVersionUpdated event`() {
       val aggregate = AssessmentVersionAggregate(formVersion = "form_version")
 
-      aggregate.apply( EventEntity(
-        user = User("FOO_USER", "Foo User"),
-        assessment = AssessmentEntity(),
-        data = FormVersionUpdated("updated_form_version"),
-      ))
+      aggregate.apply(
+        EventEntity(
+          user = User("FOO_USER", "Foo User"),
+          assessment = AssessmentEntity(),
+          data = FormVersionUpdated("updated_form_version"),
+        ),
+      )
 
       val formVersion = aggregate.getFormVersion()
 
@@ -116,16 +118,18 @@ class AssessmentVersionAggregateTest {
     fun `it does not apply other events`() {
       val aggregate = AssessmentVersionAggregate(
         formVersion = "original_form_version",
-        answers = mutableMapOf("foo" to listOf("foo_value"))
+        answers = mutableMapOf("foo" to listOf("foo_value")),
       )
 
       val originalAggregate = aggregate.clone()
 
-      originalAggregate.apply(EventEntity(
-        user = User("FOO_USER", "Foo User"),
-        assessment = AssessmentEntity(),
-        data = AssessmentCreated(),
-      ))
+      originalAggregate.apply(
+        EventEntity(
+          user = User("FOO_USER", "Foo User"),
+          assessment = AssessmentEntity(),
+          data = AssessmentCreated(),
+        ),
+      )
     }
   }
 
@@ -138,7 +142,7 @@ class AssessmentVersionAggregateTest {
     fun `it clones the aggregate`() {
       val originalAggregate = AssessmentVersionAggregate(
         formVersion = "original_form_version",
-        answers = mutableMapOf("foo" to listOf("foo_value"))
+        answers = mutableMapOf("foo" to listOf("foo_value")),
       )
 
       val clonedAggregate = originalAggregate.clone()
