@@ -1,5 +1,5 @@
 services:
-  hmpps-arns-assessment-platform-api:
+  api:
     image: ghcr.io/ministryofjustice/hmpps-arns-assessment-platform-api:local
     build:
       target: development

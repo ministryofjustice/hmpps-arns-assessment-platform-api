@@ -3,10 +3,10 @@ services:
     ports:
       - "5432:5432"
 
-  hmpps-auth:
+  auth:
     ports:
       - "8090:8080"
 
-  hmpps-arns-assessment-platform-api:
+  api:
     ports:
       - "8080:8080"
