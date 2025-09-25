@@ -5,5 +5,5 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 
 @JsonTypeName("CREATE_ASSESSMENT")
 class CreateAssessment : Command {
-  override fun toEvent() = AssessmentCreated()
+  fun toEvent() = AssessmentCreated()
 }

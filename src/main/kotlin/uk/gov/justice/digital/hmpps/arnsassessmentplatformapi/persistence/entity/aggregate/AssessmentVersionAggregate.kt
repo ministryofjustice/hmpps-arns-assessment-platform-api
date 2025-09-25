@@ -19,7 +19,7 @@ class AssessmentVersionAggregate(
   private val collaborators: MutableSet<User> = mutableSetOf(),
   private var formVersion: String? = null,
 ) : Aggregate {
-  fun applyAnswers(added: Map<String, List<String>>, removed: List<String>) {
+  private fun applyAnswers(added: Map<String, List<String>>, removed: List<String>) {
     added.entries.map {
       answers.put(it.key, it.value)
       deletedAnswers.remove(it.key)
@@ -35,22 +35,23 @@ class AssessmentVersionAggregate(
     }
   }
 
-  fun handle(event: AnswersUpdated) {
+  private fun handle(event: AnswersUpdated) {
     applyAnswers(event.added, event.removed)
     numberOfEventsApplied += 1
   }
 
-  fun handle(event: AnswersRolledBack) {
+  private fun handle(event: AnswersRolledBack) {
     applyAnswers(event.added, event.removed)
     numberOfEventsApplied += 1
   }
 
-  fun handle(event: FormVersionUpdated) {
+  private fun handle(event: FormVersionUpdated) {
     formVersion = event.version
     numberOfEventsApplied += 1
   }
 
   fun getAnswers() = this.answers.toMap()
+  fun getFormVersion() = this.formVersion
 
   override var numberOfEventsApplied: Long = 0
 
@@ -69,12 +70,11 @@ class AssessmentVersionAggregate(
   override fun shouldCreate(event: Event) = createsOn.contains(event::class) || numberOfEventsApplied % 50L == 0L
   override fun shouldUpdate(event: Event) = updatesOn.contains(event::class)
 
-  override fun clone() = AssessmentVersionAggregate()
-    .also {
-      it.formVersion = formVersion
-      it.answers.plus(answers)
-      it.collaborators.addAll(collaborators)
-    }
+  override fun clone() = AssessmentVersionAggregate(
+    formVersion = formVersion,
+    answers = answers,
+    collaborators = collaborators,
+  )
 
   companion object : AggregateType {
     override val getInstance = { AssessmentVersionAggregate() }

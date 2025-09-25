@@ -11,14 +11,16 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CreateAssessmentRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.ErrorResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CommandExecutorRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CommandService
 
 @RestController
 class CommandController(
   private val commandService: CommandService,
 ) {
-
   @RequestMapping(path = ["/command"], method = [RequestMethod.POST])
   @Operation(description = "Execute commands on an assessment")
   @ApiResponses(
@@ -45,5 +47,28 @@ class CommandController(
   fun executeCommands(
     @RequestBody
     request: CommandRequest,
-  ) = commandService.process(request)
+  ): CommandResponse = commandService.process(CommandExecutorRequest.from(request)).run(CommandResponse::from)
+
+  @RequestMapping(path = ["/assessment/create"], method = [RequestMethod.POST])
+  @Operation(description = "Creates an assessment")
+  @ApiResponses(
+    value = [
+      ApiResponse(responseCode = "200", description = "Assessment created"),
+      ApiResponse(
+        responseCode = "400",
+        description = "Unable to create assessment",
+        content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
+      ),
+      ApiResponse(
+        responseCode = "500",
+        description = "Unexpected error",
+        content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
+      ),
+    ],
+  )
+  @PreAuthorize("hasAnyRole('ROLE_ARNS_ASSESSMENT_PLATFORM_WRITE')")
+  fun createAssessment(
+    @RequestBody
+    request: CreateAssessmentRequest,
+  ): CommandResponse = commandService.process(CommandExecutorRequest.from(request)).run(CommandResponse::from)
 }

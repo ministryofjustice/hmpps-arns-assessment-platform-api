@@ -14,12 +14,12 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: ${hmpps-auth.url}/.well-known/jwks.json
+          jwk-set-uri: ${app.services.hmpps-auth.url}/.well-known/jwks.json
 
       client:
         provider:
           hmpps-auth:
-            token-uri: ${hmpps-auth.url}/oauth/token
+            token-uri: ${app.services.hmpps-auth.url}/oauth/token
   http:
     codecs:
       max-in-memory-size: 10MB
@@ -56,5 +56,7 @@ management:
       cache:
         time-to-live: 2000ms
 
-hmpps-auth:
-  url: ${hmpps-auth.url:http://localhost:8090/auth}
+app:
+  services:
+    hmpps-auth:
+      url: ${hmpps-auth.url:http://localhost:8090/auth}

@@ -8,7 +8,7 @@ class UpdateAnswers(
   val added: Map<String, List<String>>,
   val removed: List<String>,
 ) : Command {
-  override fun toEvent() = AnswersUpdated(
+  fun toEvent() = AnswersUpdated(
     added = added,
     removed = removed,
   )

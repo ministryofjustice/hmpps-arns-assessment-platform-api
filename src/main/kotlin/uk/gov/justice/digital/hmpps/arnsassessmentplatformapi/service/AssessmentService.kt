@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.Command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.CreateAssessment
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.RollbackAssessment
@@ -22,20 +21,27 @@ class AssessmentService(
   private val commandExecutorHelper: CommandExecutorHelper,
   private val aggregateService: AggregateService,
 ) : CommandExecutor {
-  override fun execute(request: CommandRequest): List<EventEntity> = request.commands.mapNotNull { command -> createEvent(command, request.user, request.assessmentUuid) }
+  override fun execute(request: CommandExecutorRequest): CommandExecutorResult = request.commands.fold(CommandExecutorResult(assessmentUuid = request.assessmentUuid)) { result, command ->
+    val event = createEvent(command, request.user, result.getAssessmentUuid() ?: request.assessmentUuid)
+    CommandExecutorResult(
+      events = event?.let { result.events.plus(event) } ?: result.events,
+      assessmentUuid = event?.assessment?.uuid,
+    )
+  }
 
-  private fun createEvent(command: Command, user: User, assessmentUuid: UUID): EventEntity? {
+  private fun createEvent(command: Command, user: User, assessmentUuid: UUID?): EventEntity? {
     val assessment = when (command) {
       is CreateAssessment -> commandExecutorHelper.createAssessment()
-      else -> commandExecutorHelper.fetchAssessment(assessmentUuid)
+      else -> {
+        if (assessmentUuid == null) throw Exception("Missing assessment UUID")
+        commandExecutorHelper.fetchAssessment(assessmentUuid)
+      }
     }
 
     return when (command) {
-      is CreateAssessment,
-      is UpdateAnswers,
-      is UpdateFormVersion,
-      -> command.toEvent()
-
+      is CreateAssessment -> command.toEvent()
+      is UpdateAnswers -> command.toEvent()
+      is UpdateFormVersion -> command.toEvent()
       is RollbackAssessment -> command.toEvent(assessment)
 
       else -> null
@@ -52,13 +58,14 @@ class AssessmentService(
     val previousVersion: AggregateEntity = aggregateService.fetchAggregateForTypeOnDate(
       assessment,
       aggregateType,
-      dateAndTime,
-    ) ?: aggregateService.createAggregateForPointInTime(assessment, aggregateType, dateAndTime)
+      pointInTime,
+    ) ?: aggregateService.createAggregateForPointInTime(assessment, aggregateType, pointInTime)
 
     val currentAnswers = currentVersion.run { data as AssessmentVersionAggregate }.getAnswers()
     val previousAnswers = previousVersion.run { data as AssessmentVersionAggregate }.getAnswers()
 
     return AnswersRolledBack(
+      rolledBackTo = pointInTime,
       added = buildMap {
         for ((key, oldValue) in previousAnswers) {
           if (currentAnswers[key] != oldValue) {

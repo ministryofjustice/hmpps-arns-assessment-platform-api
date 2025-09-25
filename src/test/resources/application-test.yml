@@ -19,3 +19,8 @@ server:
 management.endpoint:
   health.cache.time-to-live: 0
   info.cache.time-to-live: 0
+
+app:
+  services:
+    hmpps-auth:
+      url: ${hmpps-auth.url:http://localhost:9090/auth}

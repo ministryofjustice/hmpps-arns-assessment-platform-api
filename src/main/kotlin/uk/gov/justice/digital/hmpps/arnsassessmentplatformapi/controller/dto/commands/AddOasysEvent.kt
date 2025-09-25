@@ -7,5 +7,5 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 class AddOasysEvent(
   val tag: String,
 ) : Command {
-  override fun toEvent() = OasysEventAdded(tag = tag)
+  fun toEvent() = OasysEventAdded(tag = tag)
 }

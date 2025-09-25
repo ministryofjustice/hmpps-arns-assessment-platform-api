@@ -7,5 +7,5 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 class UpdateFormVersion(
   val version: String,
 ) : Command {
-  override fun toEvent() = FormVersionUpdated(version = version)
+  fun toEvent() = FormVersionUpdated(version = version)
 }
