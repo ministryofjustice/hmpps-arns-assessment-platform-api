@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
-class RollbackCommandTest(
+class RollbackAssessmentCommandTest(
   @Autowired
   val assessmentRepository: AssessmentRepository,
   @Autowired
@@ -41,7 +41,7 @@ class RollbackCommandTest(
   }
 
   @Test
-  fun `executes commands for assessments`() {
+  fun `it executes commands for assessments`() {
     val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.of(2025, 1, 1, 12, 35, 0))
     assessmentRepository.save(assessmentEntity)
     val aggregateEntity = AggregateEntity(
@@ -104,7 +104,7 @@ class RollbackCommandTest(
       assessmentUuid = assessmentEntity.uuid,
       commands = listOf(
         RollbackAssessment(
-          dateAndTime = LocalDateTime.of(2025, 1, 1, 13, 0, 0),
+          pointInTime = LocalDateTime.of(2025, 1, 1, 13, 0, 0),
         ),
       ),
     )
@@ -124,7 +124,7 @@ class RollbackCommandTest(
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
       AssessmentVersionAggregate.aggregateType,
-      LocalDateTime.now(),
+      LocalDateTime.now().plus(1, java.time.temporal.ChronoUnit.DAYS),
     )
 
     assertThat(aggregate).isNotNull
@@ -137,7 +137,7 @@ class RollbackCommandTest(
       assessmentUuid = assessmentEntity.uuid,
       commands = listOf(
         RollbackAssessment(
-          dateAndTime = LocalDateTime.of(2025, 1, 2, 10, 0, 0),
+          pointInTime = LocalDateTime.of(2025, 1, 2, 10, 0, 0),
         ),
       ),
     )
