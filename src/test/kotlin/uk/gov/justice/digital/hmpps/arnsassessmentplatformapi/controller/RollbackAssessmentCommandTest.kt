@@ -41,8 +41,8 @@ class RollbackAssessmentCommandTest(
   }
 
   @Test
-  fun `it executes commands for assessments`() {
-    val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.of(2025, 1, 1, 12, 35, 0))
+  fun `it creates a rollback for a point in time`() {
+    val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.of(2025, 1, 1, 12, 0, 0))
     assessmentRepository.save(assessmentEntity)
     val aggregateEntity = AggregateEntity(
       assessment = assessmentEntity,
@@ -60,7 +60,7 @@ class RollbackAssessmentCommandTest(
         EventEntity(
           user = user,
           assessment = assessmentEntity,
-          createdAt = LocalDateTime.of(2025, 1, 1, 12, 30, 0),
+          createdAt = LocalDateTime.of(2025, 1, 1, 12, 0, 0),
           data = AssessmentCreated(),
         ),
         EventEntity(
@@ -124,7 +124,7 @@ class RollbackAssessmentCommandTest(
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
       AssessmentVersionAggregate.aggregateType,
-      LocalDateTime.now().plus(1, java.time.temporal.ChronoUnit.DAYS),
+      LocalDateTime.now(),
     )
 
     assertThat(aggregate).isNotNull

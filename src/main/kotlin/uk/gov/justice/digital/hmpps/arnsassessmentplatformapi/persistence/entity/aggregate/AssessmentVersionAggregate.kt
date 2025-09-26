@@ -70,10 +70,12 @@ class AssessmentVersionAggregate(
   override fun shouldCreate(event: Event) = createsOn.contains(event::class) || numberOfEventsApplied % 50L == 0L
   override fun shouldUpdate(event: Event) = updatesOn.contains(event::class)
 
+  // TODO: refactor? We clone maps/sets using the toMutableX() method to avoid a pass by ref
   override fun clone() = AssessmentVersionAggregate(
     formVersion = formVersion,
-    answers = answers,
-    collaborators = collaborators,
+    answers = answers.toMutableMap(),
+    deletedAnswers = deletedAnswers.toMutableMap(),
+    collaborators = collaborators.toMutableSet(),
   )
 
   companion object : AggregateType {

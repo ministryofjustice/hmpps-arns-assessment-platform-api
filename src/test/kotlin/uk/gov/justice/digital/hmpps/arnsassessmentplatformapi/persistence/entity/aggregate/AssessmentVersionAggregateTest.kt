@@ -10,7 +10,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.FormVersionUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.OasysEventAdded
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 class AssessmentVersionAggregateTest {
   @Nested
@@ -133,7 +135,32 @@ class AssessmentVersionAggregateTest {
     }
   }
 
-  inner class ShouldUpdate
+  @Nested
+  inner class ShouldUpdate {
+    @Test
+    fun `it returns true when it updates on an event`() {
+      listOf(
+        AnswersUpdated(
+          added = mapOf("foo" to listOf("foo_value")),
+          removed = emptyList(),
+        ),
+        AnswersRolledBack(
+          added = mapOf("foo" to listOf("previous_foo_value")),
+          removed = emptyList(),
+          rolledBackTo = LocalDateTime.now().minus(1, ChronoUnit.DAYS),
+        ),
+        FormVersionUpdated("updated_form_version"),
+      ).forEach { assertThat(AssessmentVersionAggregate().shouldUpdate(it)).isEqualTo(true) }
+    }
+
+    @Test
+    fun `it returns false when it does update on an event`() {
+      listOf(
+        AssessmentCreated(),
+        OasysEventAdded("foo_event"),
+      ).forEach { assertThat(AssessmentVersionAggregate().shouldUpdate(it)).isEqualTo(false) }
+    }
+  }
   inner class ShouldCreate
 
   @Nested

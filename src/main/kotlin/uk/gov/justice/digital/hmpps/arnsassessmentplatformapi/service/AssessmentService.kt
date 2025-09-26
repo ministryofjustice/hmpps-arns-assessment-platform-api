@@ -64,16 +64,19 @@ class AssessmentService(
     val currentAnswers = currentVersion.run { data as AssessmentVersionAggregate }.getAnswers()
     val previousAnswers = previousVersion.run { data as AssessmentVersionAggregate }.getAnswers()
 
+    val answersAdded = buildMap {
+      for ((key, oldValue) in previousAnswers) {
+        if (currentAnswers[key] != oldValue) {
+          put(key, oldValue)
+        }
+      }
+    }
+    val answersRemoved = currentAnswers.keys.filter { !previousAnswers.contains(it) }
+
     return AnswersRolledBack(
       rolledBackTo = pointInTime,
-      added = buildMap {
-        for ((key, oldValue) in previousAnswers) {
-          if (currentAnswers[key] != oldValue) {
-            put(key, oldValue)
-          }
-        }
-      },
-      removed = currentAnswers.keys.filter { !previousAnswers.contains(it) },
+      added = answersAdded,
+      removed = answersRemoved,
     )
   }
 }
