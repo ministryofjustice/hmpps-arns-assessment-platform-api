@@ -1,26 +1,20 @@
 spring:
   datasource:
     url: jdbc:postgresql://${database.endpoint:localhost:5432}/${database.name:postgres}?currentSchema=${database.schema.name:assessment-platform}&user=${database.username:root}&password=${database.password:dev}&stringtype=unspecified
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 15000
+      leakDetectionThreshold: 20000
+  flyway:
+    schemas: ${database.schema.name:assessment-platform}
+    locations: classpath:/db/migration
   jpa:
-    show_sql: true
     properties:
       hibernate:
-        enable_lazy_load_no_trans: true
         jdbc:
           lob:
             non_contextual_creation: true
-  flyway:
-    schemas: assessment-platform
-    locations: classpath:/db/migration
-
-server:
-  shutdown: immediate
-
-management.endpoint:
-  health.cache.time-to-live: 0
-  info.cache.time-to-live: 0
-
-app:
-  services:
-    hmpps-auth:
-      url: ${hmpps-auth.url:http://localhost:9090/auth}
+    show-sql: false
+  h2:
+    console:
+      enabled: false

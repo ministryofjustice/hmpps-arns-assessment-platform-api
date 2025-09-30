@@ -1,29 +1,44 @@
-version: "3"
 services:
-  hmpps-arns-assessment-platform-api:
+  api:
     build:
       context: .
     networks:
       - hmpps
-    container_name: hmpps-arns-assessment-platform-api
     ports:
       - "8080:8080"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health/ping"]
+      interval: 5s
+      retries: 100
     environment:
       - SERVER_PORT=8080
-      - HMPPS_AUTH_URL=http://hmpps-auth:8080/auth
-      - SPRING_PROFILES_ACTIVE=dev
+      - HMPPS_AUTH_URL=http://auth:8080/auth
+      - SPRING_PROFILES_ACTIVE=dev,postgres
+      - DATABASE_ENDPOINT=postgres:5432
+    depends_on:
+      - postgres
+      - auth
 
-  hmpps-auth:
+  postgres:
+    image: postgres:16
+    networks:
+      - hmpps
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: dev
+    tmpfs:
+      - /var/lib/postgresql
+
+  auth:
     image: quay.io/hmpps/hmpps-auth:latest
     networks:
       - hmpps
-    container_name: hmpps-auth
     ports:
       - "8090:8080"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/auth/health"]
+      interval: 5s
+      retries: 60
     environment:
       - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=dev
