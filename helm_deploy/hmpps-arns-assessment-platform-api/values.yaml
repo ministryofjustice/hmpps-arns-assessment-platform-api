@@ -29,8 +29,8 @@ generic-service:
     hmpps-arns-assessment-platform-api-application-insights:
       APPLICATIONINSIGHTS_CONNECTION_STRING: "APPLICATIONINSIGHTS_CONNECTION_STRING"
     hmpps-arns-assessment-platform-api-client-creds:
-      CLIENT_CREDS_CLIENT_ID: 'API_CLIENT_ID'
-      CLIENT_CREDS_CLIENT_SECRET: 'API_CLIENT_SECRET'
+      API_CLIENT_ID: 'API_CLIENT_ID'
+      API_CLIENT_SECRET: 'API_CLIENT_SECRET'
 
   allowlist:
     groups:
