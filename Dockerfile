@@ -21,7 +21,7 @@ RUN cp "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
 RUN addgroup --gid 2000 --system appgroup && \
     adduser --uid 2000 --system appuser --ingroup appgroup
 WORKDIR /app
-COPY --from=build --chown=appuser:appgroup /app/build/libs/hmpps-strengths-based-needs-assessments-api*.jar /app/app.jar
+COPY --from=build --chown=appuser:appgroup /app/build/libs/hmpps-arns-assessment-platform-api*.jar /app/app.jar
 COPY --from=build --chown=appuser:appgroup /app/build/libs/applicationinsights-agent*.jar /app/agent.jar
 COPY --from=build --chown=appuser:appgroup /app/applicationinsights.json /app
 COPY --from=build --chown=appuser:appgroup /app/applicationinsights.dev.json /app
