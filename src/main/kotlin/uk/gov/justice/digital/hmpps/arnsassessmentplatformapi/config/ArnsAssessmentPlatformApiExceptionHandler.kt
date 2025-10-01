@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidCommandException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.CommandExecutorResultException
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestControllerAdvice
@@ -68,17 +67,6 @@ class ArnsAssessmentPlatformApiExceptionHandler {
       ErrorResponse(
         status = e.statusCode.value(),
         userMessage = "Invalid commands",
-        developerMessage = e.message,
-      ),
-    ).also { logException(e) }
-
-  @ExceptionHandler(CommandExecutorResultException::class)
-  fun handleException(e: CommandExecutorResultException): ResponseEntity<ErrorResponse> = ResponseEntity
-    .status(e.statusCode)
-    .body(
-      ErrorResponse(
-        status = e.statusCode.value(),
-        userMessage = "Unexpected command executor result",
         developerMessage = e.message,
       ),
     ).also { logException(e) }

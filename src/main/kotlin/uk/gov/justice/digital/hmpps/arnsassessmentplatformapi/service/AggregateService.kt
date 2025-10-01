@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import jakarta.transaction.Transactional
+import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -13,27 +13,31 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import java.time.Clock
 import java.time.LocalDateTime
 
-@Service
-class AggregateService(
-  private val aggregateRepository: AggregateRepository,
-  private val eventRepository: EventRepository,
-  private val clock: Clock,
-  aggregateTypes: List<AggregateType> = listOf(
+@Component
+class AggregateTypeRegistry(
+  private val aggregateTypes: Set<AggregateType> = setOf(
     AssessmentVersionAggregate,
     AssessmentTimelineAggregate,
   ),
 ) {
-  private val registry: Map<String, AggregateType> =
-    aggregateTypes.associateBy { it.aggregateType }
+  fun getAggregates() = aggregateTypes.associateBy { it.aggregateType }
+  fun getAggregateByName(name: String) = getAggregates().run { get(name) }
+}
 
+@Service
+class AggregateService(
+  private val aggregateRepository: AggregateRepository,
+  private val eventService: EventService,
+  private val clock: Clock,
+  private val registry: AggregateTypeRegistry,
+) {
   private fun now(): LocalDateTime = LocalDateTime.now(clock)
 
-  private fun typeFor(name: String): AggregateType = registry[name] ?: throw IllegalArgumentException("No aggregate is registered for type $name")
+  private fun typeFor(name: String): AggregateType = registry.getAggregateByName(name) ?: throw IllegalArgumentException("No aggregate is registered for type $name")
 
-  fun getAggregateTypes(): Collection<AggregateType> = registry.values
+  fun getAggregateTypes(): Set<AggregateType> = registry.getAggregates().values.toSet()
 
-  @Transactional
-  fun findOrCreate(
+  private fun findOrCreate(
     assessment: AssessmentEntity,
     aggregateType: AggregateType,
     events: List<EventEntity>,
@@ -58,7 +62,7 @@ class AggregateService(
         assessment = assessment,
         data = aggregateType.getInstance(),
         eventsFrom = eventsFrom,
-        eventsTo = eventsFrom,
+        eventsTo = eventsTo,
         updatedAt = now(),
       )
 
@@ -73,7 +77,7 @@ class AggregateService(
 
   @Transactional
   fun createAggregate(assessment: AssessmentEntity, aggregateName: String): AggregateEntity {
-    val events = eventRepository.findAllByAssessmentUuid(assessment.uuid)
+    val events = eventService.findAllByAssessmentUuid(assessment.uuid)
     return findOrCreate(assessment, typeFor(aggregateName), events)
       .run(aggregateRepository::save)
   }
@@ -93,9 +97,10 @@ class AggregateService(
     events: List<EventEntity>,
   ): AggregateEntity {
     val latest = fetchLatestAggregateForType(assessment, aggregateType)
-      ?: return createAggregate(assessment, aggregateType)
+      ?: AggregateEntity.getDefault(assessment, typeFor(aggregateType).getInstance())
+        .apply { eventService.findAllByAssessmentUuid(assessment.uuid).forEach { event -> apply(event) } }
 
-    return events
+    events
       .sortedBy { it.createdAt }
       .fold(
         object {
@@ -130,6 +135,8 @@ class AggregateService(
         if (toPersist.isNotEmpty()) aggregateRepository.saveAll(toPersist)
         current
       }
+
+    return latest
   }
 
   fun createAggregateForPointInTime(
@@ -150,7 +157,7 @@ class AggregateService(
         updatedAt = now(),
       )
 
-    val events = eventRepository
+    val events = eventService
       .findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, dateTime)
       .sortedBy { it.createdAt }
 

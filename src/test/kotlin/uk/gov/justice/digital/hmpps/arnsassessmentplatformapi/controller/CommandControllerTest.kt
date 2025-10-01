@@ -52,10 +52,14 @@ class CommandControllerTest(
     aggregateRepository.save(aggregateEntity)
 
     val request = CommandRequest(
-      user = User("test-user", "Test User"),
-      assessmentUuid = assessmentEntity.uuid,
+
       commands = listOf(
-        UpdateAnswers(mapOf("foo" to listOf("updated")), listOf("bar")),
+        UpdateAnswers(
+          user = User("test-user", "Test User"),
+          assessmentUuid = assessmentEntity.uuid,
+          added = mapOf("foo" to listOf("updated")),
+          removed = listOf("bar"),
+        ),
       ),
     )
 
@@ -95,10 +99,13 @@ class CommandControllerTest(
     aggregateRepository.save(aggregateEntity)
 
     val request = CommandRequest(
-      user = User("test-user", "Test User"),
-      assessmentUuid = assessmentEntity.uuid,
+
       commands = listOf(
-        AddOasysEvent(tag = "MERGED"),
+        AddOasysEvent(
+          user = User("test-user", "Test User"),
+          assessmentUuid = assessmentEntity.uuid,
+          tag = "MERGED",
+        ),
       ),
     )
 
@@ -116,7 +123,11 @@ class CommandControllerTest(
     val data = assertIs<OasysEventAdded>(eventsForAssessment[0].data)
     assertThat(data.tag).isEqualTo("MERGED")
 
-    val assessmentVersion = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessmentEntity.uuid, AssessmentVersionAggregate.aggregateType, LocalDateTime.now())
+    val assessmentVersion = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+      assessmentEntity.uuid,
+      AssessmentVersionAggregate.aggregateType,
+      LocalDateTime.now(),
+    )
     assertThat(assessmentVersion?.uuid).isNotEqualTo(aggregateEntity.uuid)
     assertThat(assessmentVersion?.updatedAt).isAfter(aggregateEntity.updatedAt)
   }

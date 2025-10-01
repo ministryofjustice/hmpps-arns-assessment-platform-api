@@ -58,10 +58,18 @@ class AggregateEntity(
   )
 
   companion object {
-    fun init(assessment: AssessmentEntity, data: Aggregate, events: List<EventEntity> = emptyList()): AggregateEntity = AggregateEntity(
+    fun init(assessment: AssessmentEntity, data: Aggregate, events: List<EventEntity> = emptyList()) = AggregateEntity(
       assessment = assessment,
       data = data,
       eventsFrom = events.minByOrNull { it.createdAt }?.createdAt ?: assessment.createdAt,
     ).apply { events.forEach { data.apply(it) } }
+
+    fun getDefault(assessment: AssessmentEntity, data: Aggregate) = AggregateEntity(
+      assessment = assessment,
+      data = data,
+      eventsFrom = assessment.createdAt,
+      eventsTo = assessment.createdAt,
+      updatedAt = LocalDateTime.now(),
+    )
   }
 }

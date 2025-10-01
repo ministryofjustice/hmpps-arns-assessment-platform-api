@@ -11,15 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandRequest
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CreateAssessmentRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.ErrorResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CommandExecutorRequest
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CommandService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.CreateAssessment
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CommandBus
 
 @RestController
 class CommandController(
-  private val commandService: CommandService,
+  private val commandBus: CommandBus,
 ) {
   @RequestMapping(path = ["/command"], method = [RequestMethod.POST])
   @Operation(description = "Execute commands on an assessment")
@@ -47,7 +46,7 @@ class CommandController(
   fun executeCommands(
     @RequestBody
     request: CommandRequest,
-  ): CommandResponse = commandService.process(CommandExecutorRequest.from(request)).run(CommandResponse::from)
+  ) = commandBus.dispatch(request.commands)
 
   @RequestMapping(path = ["/assessment/create"], method = [RequestMethod.POST])
   @Operation(description = "Creates an assessment")
@@ -70,5 +69,5 @@ class CommandController(
   fun createAssessment(
     @RequestBody
     request: CreateAssessmentRequest,
-  ): CommandResponse = commandService.process(CommandExecutorRequest.from(request)).run(CommandResponse::from)
+  ) = commandBus.dispatch(listOf(CreateAssessment(request.user)))
 }

@@ -12,9 +12,14 @@ class CommandRequestTest {
   @Test
   fun `it constructs when passed valid commands`() {
     CommandRequest(
-      user = User("FOO_USER", "Foo User"),
-      commands = listOf(UpdateAnswers(added = mapOf("foo" to listOf("foo_value")), removed = emptyList())),
-      assessmentUuid = UUID.randomUUID(),
+      commands = listOf(
+        UpdateAnswers(
+          user = User("FOO_USER", "Foo User"),
+          assessmentUuid = UUID.randomUUID(),
+          added = mapOf("foo" to listOf("foo_value")),
+          removed = emptyList(),
+        ),
+      ),
     )
   }
 
@@ -22,9 +27,7 @@ class CommandRequestTest {
   fun `it throws when initialised with no commands`() {
     assertThrows<InvalidCommandException> {
       CommandRequest(
-        user = User("FOO_USER", "Foo User"),
         commands = emptyList(),
-        assessmentUuid = UUID.randomUUID(),
       )
     }
   }
@@ -33,9 +36,7 @@ class CommandRequestTest {
   fun `it throws when initialised with an unsupported command`() {
     assertThrows<InvalidCommandException> {
       CommandRequest(
-        user = User("FOO_USER", "Foo User"),
-        commands = listOf(CreateAssessment()),
-        assessmentUuid = UUID.randomUUID(),
+        commands = listOf(CreateAssessment(user = User("FOO_USER", "Foo User"))),
       )
     }
   }

@@ -74,10 +74,14 @@ class UpdateFormVersionCommandTest(
     )
 
     val request = CommandRequest(
-      user = User("test-user", "Test User"),
-      assessmentUuid = assessmentEntity.uuid,
+
       commands = listOf(
-        UpdateFormVersion("updated_form_version"),
+
+        UpdateFormVersion(
+          user = User("test-user", "Test User"),
+          assessmentUuid = assessmentEntity.uuid,
+          "updated_form_version",
+        ),
       ),
     )
 

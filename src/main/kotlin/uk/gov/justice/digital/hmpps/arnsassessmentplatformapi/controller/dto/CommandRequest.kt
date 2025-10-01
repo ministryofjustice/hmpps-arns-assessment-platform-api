@@ -1,18 +1,14 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.AddOasysEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.Command
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.RollbackAssessment
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.RollbackAnswers
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.UpdateAnswers
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.UpdateFormVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidCommandException
-import java.util.UUID
 
 data class CommandRequest(
-  val user: User,
   val commands: List<Command>,
-  val assessmentUuid: UUID? = null,
 ) {
   init {
     val unsupportedCommands =
@@ -24,6 +20,6 @@ data class CommandRequest(
 
   companion object {
     val supportedCommands =
-      listOf(UpdateAnswers::class, RollbackAssessment::class, UpdateFormVersion::class, AddOasysEvent::class)
+      listOf(UpdateAnswers::class, RollbackAnswers::class, UpdateFormVersion::class, AddOasysEvent::class)
   }
 }
