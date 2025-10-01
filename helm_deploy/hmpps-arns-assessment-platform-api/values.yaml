@@ -18,6 +18,7 @@ generic-service:
   env:
     JAVA_OPTS: "-Xmx512m"
     SERVER_PORT: "8080"
+    SPRING_PROFILES_ACTIVE: "postgres"
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
@@ -28,9 +29,16 @@ generic-service:
   namespace_secrets:
     hmpps-arns-assessment-platform-api-application-insights:
       APPLICATIONINSIGHTS_CONNECTION_STRING: "APPLICATIONINSIGHTS_CONNECTION_STRING"
+
     hmpps-arns-assessment-platform-api-client-creds:
       API_CLIENT_ID: 'API_CLIENT_ID'
       API_CLIENT_SECRET: 'API_CLIENT_SECRET'
+
+    rds-postgresql-instance-output:
+      DATABASE_USERNAME: "database_username"
+      DATABASE_PASSWORD: "database_password"
+      DATABASE_NAME: "database_name"
+      DATABASE_ENDPOINT: "rds_instance_endpoint"
 
   allowlist:
     groups:
