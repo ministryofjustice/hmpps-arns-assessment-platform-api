@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
-import jakarta.annotation.PreDestroy
 import org.springframework.stereotype.Component
 import org.springframework.web.context.annotation.RequestScope
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -16,7 +15,6 @@ class EventBus(
     queue.add(event)
   }
 
-  @PreDestroy
   fun commit() {
     val eventTypes = queue.map { it.data::class }
     queue.groupBy { it.assessment }

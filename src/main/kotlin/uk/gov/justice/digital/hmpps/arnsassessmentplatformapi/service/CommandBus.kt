@@ -18,8 +18,10 @@ class CommandHandlerRegistry(
 @Service
 class CommandBus(
   private val registry: CommandHandlerRegistry,
+  private val eventBus: EventBus,
 ) {
   fun dispatch(commands: List<Command>) {
     commands.forEach { command -> registry.getHandlerFor(command::class).execute(command) }
+    eventBus.commit()
   }
 }
