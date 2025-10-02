@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import java.util.UUID
 
-@JsonTypeName("OASYS_EVENT")
+@JsonTypeName("ADD_OASYS_EVENT")
 class AddOasysEvent(
   val user: User,
   val assessmentUuid: UUID,

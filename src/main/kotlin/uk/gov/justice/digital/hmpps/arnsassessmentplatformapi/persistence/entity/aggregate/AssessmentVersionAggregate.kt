@@ -52,6 +52,7 @@ class AssessmentVersionAggregate(
 
   fun getAnswers() = this.answers.toMap()
   fun getFormVersion() = this.formVersion
+  fun getCollaborators() = collaborators
 
   override var numberOfEventsApplied: Long = 0
 

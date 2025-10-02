@@ -164,7 +164,7 @@ class AggregateServiceTest {
         )
       } returns latestAggregate
 
-      val result = service.fetchLatestAggregateForType(assessment, AssessmentVersionAggregate.aggregateType)
+      val result = service.fetchLatestAggregateForType(assessment.uuid, AssessmentVersionAggregate.aggregateType)
       assertThat(result).isNotNull
       assertThat(result?.assessment).isEqualTo(assessment)
       assertThat(result?.uuid).isEqualTo(latestAggregate.uuid)
@@ -181,7 +181,7 @@ class AggregateServiceTest {
         )
       } returns null
 
-      val result = service.fetchLatestAggregateForType(assessment, AssessmentVersionAggregate.aggregateType)
+      val result = service.fetchLatestAggregateForType(assessment.uuid, AssessmentVersionAggregate.aggregateType)
       assertThat(result).isNull()
     }
   }

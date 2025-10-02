@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AssessmentVersionAggregate
 import java.time.Clock
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Component
 class AggregateTypeRegistry(
@@ -82,7 +83,7 @@ class AggregateService(
       .run(aggregateRepository::save)
   }
 
-  fun fetchLatestAggregateForType(assessment: AssessmentEntity, aggregateType: String): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType, now())
+  fun fetchLatestAggregateForType(assessmentUuid: UUID, aggregateType: String): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessmentUuid, aggregateType, now())
 
   fun fetchAggregateForTypeOnDate(
     assessment: AssessmentEntity,
@@ -90,13 +91,12 @@ class AggregateService(
     date: LocalDateTime,
   ): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeOnExactDate(assessment.uuid, aggregateType, date)
 
-  @Transactional
   fun processEvents(
     assessment: AssessmentEntity,
     aggregateType: String,
     events: List<EventEntity>,
   ): AggregateEntity {
-    val latest = fetchLatestAggregateForType(assessment, aggregateType)
+    val latest = fetchLatestAggregateForType(assessment.uuid, aggregateType)
       ?: AggregateEntity.getDefault(assessment, typeFor(aggregateType).getInstance())
         .apply { eventService.findAllByAssessmentUuid(assessment.uuid).forEach { event -> apply(event) } }
 

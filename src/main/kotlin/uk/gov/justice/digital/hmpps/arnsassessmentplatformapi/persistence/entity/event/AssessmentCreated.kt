@@ -2,5 +2,11 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entit
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 
-@JsonTypeName("ASSESSMENT_CREATED")
-class AssessmentCreated : Event
+private const val EVENT_TYPE = "ASSESSMENT_CREATED"
+
+@JsonTypeName(EVENT_TYPE)
+class AssessmentCreated : Event {
+  companion object : EventType {
+    override val eventType = EVENT_TYPE
+  }
+}

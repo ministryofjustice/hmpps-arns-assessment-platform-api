@@ -15,7 +15,7 @@ class CreateAssessmentCommandHandler(
 ) : CommandHandler<CreateAssessment> {
   override val type = CreateAssessment::class
   override fun handle(command: CreateAssessment) {
-    val assessment = assessmentRepository.save(AssessmentEntity())
+    val assessment = assessmentRepository.save(AssessmentEntity(uuid = command.assessmentUuid))
     eventBus.add(
       with(command) {
         EventEntity(

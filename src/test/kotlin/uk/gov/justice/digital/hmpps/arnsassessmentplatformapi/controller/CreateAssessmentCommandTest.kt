@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -7,9 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CreateAssessmentRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CreateAssessmentResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
+import kotlin.test.assertIs
 
 class CreateAssessmentCommandTest(
   @Autowired
@@ -38,18 +42,19 @@ class CreateAssessmentCommandTest(
       .bodyValue(request)
       .exchange()
       .expectStatus().isOk
+      .expectBody(CreateAssessmentResponse::class.java)
+      .returnResult()
+      .responseBody
 
-    // TODO: Fix the stuff below
-    // val assessmentUuid =
-    //   requireNotNull(response?.assessmentUuid) { "An assessmentUuid should be present on the response" }
-    //
-    // val assessment = assessmentRepository.findByUuid(assessmentUuid)
-    //
-    // assertThat(assessment).isNotNull
-    //
-    // val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentUuid)
-    //
-    // assertThat(eventsForAssessment.size).isEqualTo(1)
-    // assertIs<AssessmentCreated>(eventsForAssessment.last().data)
+    val assessmentUuid = requireNotNull(response?.assessmentUuid) { "An assessmentUuid should be present on the response" }
+
+    val assessment = assessmentRepository.findByUuid(assessmentUuid)
+
+    assertThat(assessment).isNotNull
+
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentUuid)
+
+    assertThat(eventsForAssessment.size).isEqualTo(1)
+    assertIs<AssessmentCreated>(eventsForAssessment.last().data)
   }
 }
