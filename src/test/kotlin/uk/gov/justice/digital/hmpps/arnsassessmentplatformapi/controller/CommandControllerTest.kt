@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandRequest
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.AddOasysEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.UpdateAnswers
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
@@ -18,7 +17,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AssessmentVersionAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.OasysEventAdded
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.assertIs
@@ -85,50 +83,5 @@ class CommandControllerTest(
     )
     assertThat(assessmentVersion?.uuid).isEqualTo(aggregateEntity.uuid)
     assertThat(assessmentVersion?.updatedAt?.toLocalDate()).isEqualTo(LocalDate.now())
-  }
-
-  @Test
-  fun `it executes commands for OASys events`() {
-    val assessmentEntity = AssessmentEntity()
-    assessmentRepository.save(assessmentEntity)
-    val aggregateEntity = AggregateEntity(
-      assessment = assessmentEntity,
-      data = AssessmentVersionAggregate(),
-      updatedAt = LocalDateTime.of(2025, 1, 1, 0, 1, 0),
-    )
-    aggregateRepository.save(aggregateEntity)
-
-    val request = CommandRequest(
-
-      commands = listOf(
-        AddOasysEvent(
-          user = User("test-user", "Test User"),
-          assessmentUuid = assessmentEntity.uuid,
-          tag = "MERGED",
-        ),
-      ),
-    )
-
-    webTestClient.post().uri("/command")
-      .header(HttpHeaders.CONTENT_TYPE, "application/json")
-      .headers(setAuthorisation(roles = listOf("ROLE_ARNS_ASSESSMENT_PLATFORM_WRITE")))
-      .bodyValue(request)
-      .exchange()
-      .expectStatus().isOk
-
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
-
-    assertThat(eventsForAssessment.size).isEqualTo(1)
-
-    val data = assertIs<OasysEventAdded>(eventsForAssessment[0].data)
-    assertThat(data.tag).isEqualTo("MERGED")
-
-    val assessmentVersion = aggregateRepository.findByAssessmentAndTypeBeforeDate(
-      assessmentEntity.uuid,
-      AssessmentVersionAggregate.aggregateType,
-      LocalDateTime.now(),
-    )
-    assertThat(assessmentVersion?.uuid).isNotEqualTo(aggregateEntity.uuid)
-    assertThat(assessmentVersion?.updatedAt).isAfter(aggregateEntity.updatedAt)
   }
 }

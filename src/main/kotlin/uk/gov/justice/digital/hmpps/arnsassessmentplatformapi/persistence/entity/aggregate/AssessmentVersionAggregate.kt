@@ -6,9 +6,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersRolledBack
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentStatusUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.FormVersionUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.OasysEventAdded
 
 private const val TYPE = "ASSESSMENT_VERSION"
 
@@ -82,7 +82,7 @@ class AssessmentVersionAggregate(
   companion object : AggregateType {
     override val getInstance = { AssessmentVersionAggregate() }
     override val aggregateType = TYPE
-    override val createsOn = setOf(AssessmentCreated::class, OasysEventAdded::class)
+    override val createsOn = setOf(AssessmentCreated::class, AssessmentStatusUpdated::class)
     override val updatesOn = setOf(AnswersUpdated::class, AnswersRolledBack::class, FormVersionUpdated::class)
   }
 }
