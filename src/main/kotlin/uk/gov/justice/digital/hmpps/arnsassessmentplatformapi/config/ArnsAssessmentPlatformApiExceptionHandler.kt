@@ -60,15 +60,7 @@ class ArnsAssessmentPlatformApiExceptionHandler {
   }
 
   @ExceptionHandler(AssessmentPlatformException::class)
-  fun handleException(e: AssessmentPlatformException): ResponseEntity<ErrorResponse> = ResponseEntity
-    .status(e.statusCode)
-    .body(
-      ErrorResponse(
-        status = e.statusCode.value(),
-        userMessage = e.message,
-        developerMessage = e.developerMessage,
-      ),
-    ).also { logException(e) }
+  fun handleException(e: AssessmentPlatformException) = e.intoResponse().also { logException(e) }
 
   @ExceptionHandler(Exception::class)
   fun handleException(e: Exception): ResponseEntity<ErrorResponse> = ResponseEntity

@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CreateAssessmentRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CreateAssessmentResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.ErrorResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.aggregates.AggregateResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.aggregates.AggregateResponseMapperRegistry
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.CreateAssessment
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CommandBus
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDateTime
 import java.util.UUID
 
