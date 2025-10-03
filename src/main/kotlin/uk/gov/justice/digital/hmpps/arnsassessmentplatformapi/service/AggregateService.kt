@@ -38,8 +38,8 @@ class AggregateNotRegisteredException(developerMessage: String) :
 class AggregateService(
   private val aggregateRepository: AggregateRepository,
   private val eventService: EventService,
-  private val clock: Clock,
   private val registry: AggregateTypeRegistry,
+  private val clock: Clock,
 ) {
   private fun now(): LocalDateTime = LocalDateTime.now(clock)
 
