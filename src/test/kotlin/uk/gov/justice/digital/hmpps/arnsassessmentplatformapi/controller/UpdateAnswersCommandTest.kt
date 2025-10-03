@@ -78,10 +78,11 @@ class UpdateAnswersCommandTest(
     )
 
     val request = CommandRequest(
-      user = User("test-user", "Test User"),
-      assessmentUuid = assessmentEntity.uuid,
+
       commands = listOf(
         UpdateAnswers(
+          user = User("test-user", "Test User"),
+          assessmentUuid = assessmentEntity.uuid,
           added = mapOf("foo" to listOf("updated_foo_value"), "baz" to listOf("baz_value")),
           removed = listOf("bar"),
         ),

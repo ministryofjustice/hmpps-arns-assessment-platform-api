@@ -9,8 +9,8 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersRolledBack
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentStatusUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.FormVersionUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.OasysEventAdded
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -157,7 +157,7 @@ class AssessmentVersionAggregateTest {
     fun `it returns false when it does update on an event`() {
       listOf(
         AssessmentCreated(),
-        OasysEventAdded("foo_event"),
+        AssessmentStatusUpdated("foo_event"),
       ).forEach { assertThat(AssessmentVersionAggregate().shouldUpdate(it)).isEqualTo(false) }
     }
   }

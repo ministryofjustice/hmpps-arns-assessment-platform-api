@@ -2,11 +2,12 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.co
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import java.time.LocalDateTime
 import java.util.UUID
 
-@JsonTypeName("UPDATE_FORM_VERSION")
-class UpdateFormVersion(
+@JsonTypeName("ROLLBACK_ANSWERS")
+class RollbackAnswers(
   val user: User,
   val assessmentUuid: UUID,
-  val version: String,
+  val pointInTime: LocalDateTime,
 ) : Command

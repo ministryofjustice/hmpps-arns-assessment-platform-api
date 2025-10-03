@@ -42,8 +42,4 @@ class EventEntity(
   @Type(JsonType::class)
   @Column(name = "data", nullable = false)
   val data: Event,
-) {
-  companion object {
-    fun from(assessment: AssessmentEntity, user: User, data: Event) = EventEntity(assessment = assessment, user = user, data = data)
-  }
-}
+)

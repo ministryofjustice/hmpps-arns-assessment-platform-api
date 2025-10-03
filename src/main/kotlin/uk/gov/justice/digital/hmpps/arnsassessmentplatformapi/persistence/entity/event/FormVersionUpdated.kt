@@ -2,7 +2,13 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entit
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 
-@JsonTypeName("FORM_VERSION_UPDATED")
+private const val EVENT_TYPE = "FORM_VERSION_UPDATED"
+
+@JsonTypeName(EVENT_TYPE)
 data class FormVersionUpdated(
   val version: String,
-) : Event
+) : Event {
+  companion object : EventType {
+    override val eventType = EVENT_TYPE
+  }
+}
