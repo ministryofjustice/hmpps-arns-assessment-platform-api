@@ -11,9 +11,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.servlet.resource.NoResourceFoundException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidCommandException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestControllerAdvice
@@ -60,14 +59,14 @@ class ArnsAssessmentPlatformApiExceptionHandler {
       ).also { logException(e, statusCode) }
   }
 
-  @ExceptionHandler(InvalidCommandException::class)
-  fun handleException(e: InvalidCommandException): ResponseEntity<ErrorResponse> = ResponseEntity
+  @ExceptionHandler(AssessmentPlatformException::class)
+  fun handleException(e: AssessmentPlatformException): ResponseEntity<ErrorResponse> = ResponseEntity
     .status(e.statusCode)
     .body(
       ErrorResponse(
         status = e.statusCode.value(),
-        userMessage = "Invalid commands",
-        developerMessage = e.message,
+        userMessage = e.message,
+        developerMessage = e.developerMessage,
       ),
     ).also { logException(e) }
 
@@ -87,7 +86,7 @@ class ArnsAssessmentPlatformApiExceptionHandler {
 
     private fun logException(e: Exception, statusCode: HttpStatusCode? = INTERNAL_SERVER_ERROR) {
       when (e) {
-        is HttpClientErrorException -> log.debug("Status (${e.statusCode.value()}) returned: {}", e.message)
+        is AssessmentPlatformException -> log.debug("Status (${e.statusCode.value()}) returned: {}", e.developerMessage)
         else -> log.debug("Status ({}) returned: {}", statusCode, e.message)
       }
     }

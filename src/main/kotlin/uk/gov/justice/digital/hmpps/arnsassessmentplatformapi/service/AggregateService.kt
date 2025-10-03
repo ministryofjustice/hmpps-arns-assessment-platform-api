@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import jakarta.transaction.Transactional
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
@@ -25,6 +27,13 @@ class AggregateTypeRegistry(
   fun getAggregateByName(name: String) = getAggregates().run { get(name) }
 }
 
+class AggregateNotRegisteredException(developerMessage: String) :
+  AssessmentPlatformException(
+    message = "Aggregate not registered",
+    developerMessage = developerMessage,
+    statusCode = HttpStatus.BAD_REQUEST,
+  )
+
 @Service
 class AggregateService(
   private val aggregateRepository: AggregateRepository,
@@ -34,7 +43,8 @@ class AggregateService(
 ) {
   private fun now(): LocalDateTime = LocalDateTime.now(clock)
 
-  private fun typeFor(name: String): AggregateType = registry.getAggregateByName(name) ?: throw IllegalArgumentException("No aggregate is registered for type $name")
+  private fun typeFor(name: String): AggregateType = registry.getAggregateByName(name)
+    ?: throw AggregateNotRegisteredException("No aggregate is registered for type: $name, registered types: ${getAggregateTypes().joinToString { it.aggregateType }}")
 
   fun getAggregateTypes(): Set<AggregateType> = registry.getAggregates().values.toSet()
 
@@ -56,10 +66,10 @@ class AggregateService(
     pointInTime: LocalDateTime?,
   ): AggregateEntity = if (pointInTime != null) {
     fetchAggregateForExactPointInTime(assessment, aggregateName, pointInTime)
-      ?: createAggregateForPointInTime(assessment, aggregateName, pointInTime)
+      ?: createAggregateForPointInTime(assessment, aggregateName, pointInTime).run(aggregateRepository::save)
   } else {
     fetchLatestAggregate(assessment.uuid, aggregateName)
-      ?: createAggregateForPointInTime(assessment, aggregateName, now())
+      ?: createAggregateForPointInTime(assessment, aggregateName, now()).run(aggregateRepository::save)
   }
 
   fun fetchAggregateForExactPointInTime(
