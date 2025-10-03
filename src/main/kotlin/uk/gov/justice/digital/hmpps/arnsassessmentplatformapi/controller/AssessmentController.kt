@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CreateAssessmentRequest
@@ -19,14 +20,14 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.Err
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.aggregates.AggregateResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.aggregates.AggregateResponseMapperRegistry
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.CreateAssessment
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.AggregateNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CommandBus
+import java.time.LocalDateTime
 import java.util.UUID
 
 @RestController
-class CommandController(
+class AssessmentController(
   private val commandBus: CommandBus,
   private val aggregateService: AggregateService,
   private val assessmentService: AssessmentService,
@@ -113,10 +114,10 @@ class CommandController(
   fun getAggregate(
     @PathVariable type: String,
     @PathVariable assessmentUuid: UUID,
+    @RequestParam timestamp: LocalDateTime?,
   ): AggregateResponse {
     val aggregate = assessmentService.findByUuid(assessmentUuid)
-      .let { assessment -> aggregateService.fetchLatestAggregateForType(assessment.uuid, type) }
-      ?: throw AggregateNotFoundException("No aggregate found for type $type for assessment $assessmentUuid")
+      .let { assessment -> aggregateService.fetchOrCreateAggregate(assessment, type, timestamp) }
 
     return aggregateResponseMapperRegistry.intoResponse(type, aggregate.data)
   }

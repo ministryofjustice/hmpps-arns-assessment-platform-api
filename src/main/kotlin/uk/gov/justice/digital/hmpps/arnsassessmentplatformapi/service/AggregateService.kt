@@ -38,65 +38,42 @@ class AggregateService(
 
   fun getAggregateTypes(): Set<AggregateType> = registry.getAggregates().values.toSet()
 
-  private fun findOrCreate(
-    assessment: AssessmentEntity,
-    aggregateType: AggregateType,
-    events: List<EventEntity>,
-  ): AggregateEntity {
-    if (events.isEmpty()) {
-      return AggregateEntity(
-        assessment = assessment,
-        data = aggregateType.getInstance(),
-        eventsFrom = assessment.createdAt,
-        eventsTo = assessment.createdAt,
-        updatedAt = now(),
-      )
-    }
-
-    val eventsFrom = events.minBy { it.createdAt }.createdAt
-    val eventsTo = events.maxBy { it.createdAt }.createdAt
-
-    val base = aggregateRepository
-      .findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType.aggregateType, eventsTo)
-      ?.clone()
-      ?: AggregateEntity(
-        assessment = assessment,
-        data = aggregateType.getInstance(),
-        eventsFrom = eventsFrom,
-        eventsTo = eventsTo,
-        updatedAt = now(),
-      )
-
-    events.sortedBy { it.createdAt }
-      .forEach {
-        val applied = base.apply(it)
-        if (applied) base.eventsTo = it.createdAt
-        base.updatedAt = now()
-      }
-    return base
-  }
-
   @Transactional
-  fun createAggregate(assessment: AssessmentEntity, aggregateName: String): AggregateEntity {
-    val events = eventService.findAllByAssessmentUuid(assessment.uuid)
-    return findOrCreate(assessment, typeFor(aggregateName), events)
-      .run(aggregateRepository::save)
+  fun createAggregate(assessment: AssessmentEntity, aggregateName: String): AggregateEntity = createAggregateForPointInTime(assessment, aggregateName, now())
+    .run(aggregateRepository::save)
+
+  fun fetchLatestAggregateBeforePointInTime(
+    assessmentUuid: UUID,
+    aggregateName: String,
+    pointInTime: LocalDateTime,
+  ): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessmentUuid, aggregateName, pointInTime)
+
+  fun fetchLatestAggregate(assessmentUuid: UUID, aggregateName: String): AggregateEntity? = fetchLatestAggregateBeforePointInTime(assessmentUuid, aggregateName, now())
+
+  fun fetchOrCreateAggregate(
+    assessment: AssessmentEntity,
+    aggregateName: String,
+    pointInTime: LocalDateTime?,
+  ): AggregateEntity = if (pointInTime != null) {
+    fetchAggregateForExactPointInTime(assessment, aggregateName, pointInTime)
+      ?: createAggregateForPointInTime(assessment, aggregateName, pointInTime)
+  } else {
+    fetchLatestAggregate(assessment.uuid, aggregateName)
+      ?: createAggregateForPointInTime(assessment, aggregateName, now())
   }
 
-  fun fetchLatestAggregateForType(assessmentUuid: UUID, aggregateType: String): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessmentUuid, aggregateType, now())
-
-  fun fetchAggregateForTypeOnDate(
+  fun fetchAggregateForExactPointInTime(
     assessment: AssessmentEntity,
-    aggregateType: String,
+    aggregateName: String,
     date: LocalDateTime,
-  ): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeOnExactDate(assessment.uuid, aggregateType, date)
+  ): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeOnExactDate(assessment.uuid, aggregateName, date)
 
   fun processEvents(
     assessment: AssessmentEntity,
     aggregateType: String,
     events: List<EventEntity>,
   ): AggregateEntity {
-    val latest = fetchLatestAggregateForType(assessment.uuid, aggregateType)
+    val latest = fetchLatestAggregate(assessment.uuid, aggregateType)
       ?: AggregateEntity.getDefault(assessment, typeFor(aggregateType).getInstance())
         .apply { eventService.findAllByAssessmentUuid(assessment.uuid).forEach { event -> apply(event) } }
 
@@ -142,24 +119,24 @@ class AggregateService(
   fun createAggregateForPointInTime(
     assessment: AssessmentEntity,
     aggregateName: String,
-    dateTime: LocalDateTime,
+    pointInTime: LocalDateTime,
   ): AggregateEntity {
-    val aggType = typeFor(aggregateName)
-
-    val base = aggregateRepository
-      .findByAssessmentAndTypeBeforeDate(assessment.uuid, aggType.aggregateType, dateTime)
-      ?.clone()
-      ?: AggregateEntity(
-        assessment = assessment,
-        data = aggType.getInstance(),
-        eventsFrom = assessment.createdAt,
-        eventsTo = assessment.createdAt,
-        updatedAt = now(),
-      )
+    val aggregateType = typeFor(aggregateName)
 
     val events = eventService
-      .findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, dateTime)
+      .findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, pointInTime)
       .sortedBy { it.createdAt }
+
+    val base = events.maxByOrNull { it.createdAt }?.let { latestEvent ->
+      fetchLatestAggregateBeforePointInTime(assessment.uuid, aggregateName, latestEvent.createdAt)
+        ?.clone()
+    } ?: AggregateEntity(
+      assessment = assessment,
+      data = aggregateType.getInstance(),
+      eventsFrom = assessment.createdAt,
+      eventsTo = assessment.createdAt,
+      updatedAt = now(),
+    )
 
     var lastAppliedAt: LocalDateTime? = null
     for (event in events) {

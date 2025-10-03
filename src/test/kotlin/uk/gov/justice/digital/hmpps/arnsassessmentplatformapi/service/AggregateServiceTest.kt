@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import kotlin.test.Test
 import kotlin.test.assertIs
 
@@ -44,6 +45,7 @@ class AggregateServiceTest {
   @BeforeEach
   fun setUp() {
     every { clock.instant() } returns Instant.parse("2025-01-01T12:00:00Z")
+    every { clock.zone } returns ZoneOffset.UTC
     every { registry.getAggregates() } returns aggregates.associateBy { it.aggregateType }
     every { registry.getAggregateByName(any()) } answers {
       val name = firstArg<String>()
@@ -99,7 +101,7 @@ class AggregateServiceTest {
 
     @Test
     fun `it returns an empty aggregate when passed no events`() {
-      every { eventService.findAllByAssessmentUuid(assessment.uuid) } returns emptyList()
+      every { eventService.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns emptyList()
       val result = service.createAggregate(assessment, AssessmentVersionAggregate.aggregateType)
 
       assertThat(result.data.numberOfEventsApplied).isEqualTo(0)
@@ -109,7 +111,7 @@ class AggregateServiceTest {
 
     @Test
     fun `it finds an aggregate`() {
-      every { eventService.findAllByAssessmentUuid(assessment.uuid) } returns events
+      every { eventService.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns events
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
@@ -135,7 +137,7 @@ class AggregateServiceTest {
 
     @Test
     fun `it creates an aggregate`() {
-      every { eventService.findAllByAssessmentUuid(assessment.uuid) } returns events
+      every { eventService.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns events
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
@@ -164,7 +166,7 @@ class AggregateServiceTest {
         )
       } returns latestAggregate
 
-      val result = service.fetchLatestAggregateForType(assessment.uuid, AssessmentVersionAggregate.aggregateType)
+      val result = service.fetchLatestAggregate(assessment.uuid, AssessmentVersionAggregate.aggregateType)
       assertThat(result).isNotNull
       assertThat(result?.assessment).isEqualTo(assessment)
       assertThat(result?.uuid).isEqualTo(latestAggregate.uuid)
@@ -181,7 +183,7 @@ class AggregateServiceTest {
         )
       } returns null
 
-      val result = service.fetchLatestAggregateForType(assessment.uuid, AssessmentVersionAggregate.aggregateType)
+      val result = service.fetchLatestAggregate(assessment.uuid, AssessmentVersionAggregate.aggregateType)
       assertThat(result).isNull()
     }
   }
@@ -200,7 +202,7 @@ class AggregateServiceTest {
         )
       } returns latestAggregate
 
-      val result = service.fetchAggregateForTypeOnDate(assessment, AssessmentVersionAggregate.aggregateType, date)
+      val result = service.fetchAggregateForExactPointInTime(assessment, AssessmentVersionAggregate.aggregateType, date)
       assertThat(result).isNotNull
       assertThat(result?.assessment).isEqualTo(assessment)
       assertThat(result?.uuid).isEqualTo(latestAggregate.uuid)
@@ -218,7 +220,7 @@ class AggregateServiceTest {
         )
       } returns null
 
-      val result = service.fetchAggregateForTypeOnDate(assessment, AssessmentVersionAggregate.aggregateType, date)
+      val result = service.fetchAggregateForExactPointInTime(assessment, AssessmentVersionAggregate.aggregateType, date)
       assertThat(result).isNull()
     }
   }

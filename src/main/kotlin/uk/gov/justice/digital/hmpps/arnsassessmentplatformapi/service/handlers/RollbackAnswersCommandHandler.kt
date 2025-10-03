@@ -24,12 +24,12 @@ class RollbackAnswersCommandHandler(
   override fun handle(command: RollbackAnswers) {
     val assessment = assessmentService.findByUuid(command.assessmentUuid)
     val aggregateType = AssessmentVersionAggregate.aggregateType
-    val currentVersion: AggregateEntity = aggregateService.fetchAggregateForTypeOnDate(
+    val currentVersion: AggregateEntity = aggregateService.fetchAggregateForExactPointInTime(
       assessment,
       aggregateType,
       LocalDateTime.now(),
     ) ?: aggregateService.createAggregateForPointInTime(assessment, aggregateType, LocalDateTime.now())
-    val previousVersion: AggregateEntity = aggregateService.fetchAggregateForTypeOnDate(
+    val previousVersion: AggregateEntity = aggregateService.fetchAggregateForExactPointInTime(
       assessment,
       aggregateType,
       command.pointInTime,
