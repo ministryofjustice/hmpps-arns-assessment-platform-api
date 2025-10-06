@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentStatusUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.FormVersionUpdated
+import kotlin.reflect.KClass
 
 private const val TYPE = "ASSESSMENT_VERSION"
 
@@ -68,8 +69,8 @@ class AssessmentVersionAggregate(
     return true
   }
 
-  override fun shouldCreate(event: Event) = createsOn.contains(event::class) || numberOfEventsApplied % 50L == 0L
-  override fun shouldUpdate(event: Event) = updatesOn.contains(event::class)
+  override fun shouldCreate(event: KClass<out Event>) = createsOn.contains(event) || numberOfEventsApplied % 50L == 0L
+  override fun shouldUpdate(event: KClass<out Event>) = updatesOn.contains(event)
 
   // TODO: refactor? We clone maps/sets using the toMutableX() method to avoid a pass by ref
   override fun clone() = AssessmentVersionAggregate(

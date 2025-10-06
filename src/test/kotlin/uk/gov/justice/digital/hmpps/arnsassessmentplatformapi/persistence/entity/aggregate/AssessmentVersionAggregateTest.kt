@@ -150,7 +150,7 @@ class AssessmentVersionAggregateTest {
           rolledBackTo = LocalDateTime.now().minus(1, ChronoUnit.DAYS),
         ),
         FormVersionUpdated("updated_form_version"),
-      ).forEach { assertThat(AssessmentVersionAggregate().shouldUpdate(it)).isEqualTo(true) }
+      ).forEach { assertThat(AssessmentVersionAggregate().shouldUpdate(it::class)).isEqualTo(true) }
     }
 
     @Test
@@ -158,7 +158,7 @@ class AssessmentVersionAggregateTest {
       listOf(
         AssessmentCreated(),
         AssessmentStatusUpdated("foo_event"),
-      ).forEach { assertThat(AssessmentVersionAggregate().shouldUpdate(it)).isEqualTo(false) }
+      ).forEach { assertThat(AssessmentVersionAggregate().shouldUpdate(it::class)).isEqualTo(false) }
     }
   }
   inner class ShouldCreate

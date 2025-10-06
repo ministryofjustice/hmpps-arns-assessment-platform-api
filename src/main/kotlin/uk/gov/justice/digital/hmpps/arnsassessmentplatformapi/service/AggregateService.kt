@@ -105,7 +105,7 @@ class AggregateService(
         }
         state.current.updatedAt = now()
 
-        if (state.current.data.shouldCreate(event.data)) {
+        if (state.current.data.shouldCreate(event.data::class)) {
           if (state.isDirty) state.toPersist += state.current
 
           val cloned = state.current.clone().also { it.updatedAt = now() }
