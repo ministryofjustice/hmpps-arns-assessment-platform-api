@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandRequest
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.RollbackAssessment
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.RollbackAnswers
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
@@ -100,10 +100,11 @@ class RollbackAssessmentCommandTest(
     )
 
     val request = CommandRequest(
-      user = User("test-user", "Test User"),
-      assessmentUuid = assessmentEntity.uuid,
+
       commands = listOf(
-        RollbackAssessment(
+        RollbackAnswers(
+          user = User("test-user", "Test User"),
+          assessmentUuid = assessmentEntity.uuid,
           pointInTime = LocalDateTime.of(2025, 1, 1, 13, 0, 0),
         ),
       ),
@@ -133,10 +134,11 @@ class RollbackAssessmentCommandTest(
     assertThat(data.getAnswers()["bar"]).isNull()
 
     val secondRequest = CommandRequest(
-      user = User("test-user", "Test User"),
-      assessmentUuid = assessmentEntity.uuid,
+
       commands = listOf(
-        RollbackAssessment(
+        RollbackAnswers(
+          user = User("test-user", "Test User"),
+          assessmentUuid = assessmentEntity.uuid,
           pointInTime = LocalDateTime.of(2025, 1, 2, 10, 0, 0),
         ),
       ),

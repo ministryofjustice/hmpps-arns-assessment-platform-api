@@ -5,8 +5,8 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersRolledBack
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentStatusUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.Event
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.OasysEventAdded
 import java.time.LocalDateTime
 
 private const val TYPE = "ASSESSMENT_TIMELINE"
@@ -41,15 +41,15 @@ class AssessmentTimelineAggregate : Aggregate {
     numberOfEventsApplied += 1
   }
 
-  fun handle(timestamp: LocalDateTime, event: OasysEventAdded) {
+  fun handle(timestamp: LocalDateTime, event: AssessmentStatusUpdated) {
     timeline.add(
       TimelineItem(
         timestamp = timestamp,
-        details = "OASys status changed from \"$previousStatus\" to \"${event.tag}\"",
+        details = "Assessment status changed from \"$previousStatus\" to \"${event.status}\"",
       ),
     )
     numberOfEventsApplied += 1
-    previousStatus = event.tag
+    previousStatus = event.status
   }
 
   fun getTimeline() = this.timeline.toList()
@@ -60,7 +60,7 @@ class AssessmentTimelineAggregate : Aggregate {
     when (event.data) {
       is AnswersUpdated -> handle(event.createdAt, event.data)
       is AnswersRolledBack -> handle(event.createdAt, event.data)
-      is OasysEventAdded -> handle(event.createdAt, event.data)
+      is AssessmentStatusUpdated -> handle(event.createdAt, event.data)
       else -> return false
     }
 
@@ -81,6 +81,6 @@ class AssessmentTimelineAggregate : Aggregate {
     override val getInstance = { AssessmentTimelineAggregate() }
     override val aggregateType = TYPE
     override val createsOn = setOf(AssessmentCreated::class)
-    override val updatesOn = setOf(AnswersUpdated::class, AnswersRolledBack::class, OasysEventAdded::class)
+    override val updatesOn = setOf(AnswersUpdated::class, AnswersRolledBack::class, AssessmentStatusUpdated::class)
   }
 }

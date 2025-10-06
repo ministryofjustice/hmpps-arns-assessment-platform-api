@@ -1,9 +1,11 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import jakarta.transaction.Transactional
+import org.springframework.http.HttpStatus
+import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -12,90 +14,80 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AssessmentVersionAggregate
 import java.time.Clock
 import java.time.LocalDateTime
+import java.util.UUID
 
-@Service
-class AggregateService(
-  private val aggregateRepository: AggregateRepository,
-  private val eventRepository: EventRepository,
-  private val clock: Clock,
-  aggregateTypes: List<AggregateType> = listOf(
+@Component
+class AggregateTypeRegistry(
+  private val aggregateTypes: Set<AggregateType> = setOf(
     AssessmentVersionAggregate,
     AssessmentTimelineAggregate,
   ),
 ) {
-  private val registry: Map<String, AggregateType> =
-    aggregateTypes.associateBy { it.aggregateType }
+  fun getAggregates() = aggregateTypes.associateBy { it.aggregateType }
+  fun getAggregateByName(name: String) = getAggregates().run { get(name) }
+}
 
+class AggregateNotRegisteredException(developerMessage: String) :
+  AssessmentPlatformException(
+    message = "Aggregate not registered",
+    developerMessage = developerMessage,
+    statusCode = HttpStatus.BAD_REQUEST,
+  )
+
+@Service
+class AggregateService(
+  private val aggregateRepository: AggregateRepository,
+  private val eventService: EventService,
+  private val registry: AggregateTypeRegistry,
+  private val clock: Clock,
+) {
   private fun now(): LocalDateTime = LocalDateTime.now(clock)
 
-  private fun typeFor(name: String): AggregateType = registry[name] ?: throw IllegalArgumentException("No aggregate is registered for type $name")
+  private fun typeFor(name: String): AggregateType = registry.getAggregateByName(name)
+    ?: throw AggregateNotRegisteredException("No aggregate is registered for type: $name, registered types: ${getAggregateTypes().joinToString { it.aggregateType }}")
 
-  fun getAggregateTypes(): Collection<AggregateType> = registry.values
-
-  @Transactional
-  fun findOrCreate(
-    assessment: AssessmentEntity,
-    aggregateType: AggregateType,
-    events: List<EventEntity>,
-  ): AggregateEntity {
-    if (events.isEmpty()) {
-      return AggregateEntity(
-        assessment = assessment,
-        data = aggregateType.getInstance(),
-        eventsFrom = assessment.createdAt,
-        eventsTo = assessment.createdAt,
-        updatedAt = now(),
-      )
-    }
-
-    val eventsFrom = events.minBy { it.createdAt }.createdAt
-    val eventsTo = events.maxBy { it.createdAt }.createdAt
-
-    val base = aggregateRepository
-      .findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType.aggregateType, eventsTo)
-      ?.clone()
-      ?: AggregateEntity(
-        assessment = assessment,
-        data = aggregateType.getInstance(),
-        eventsFrom = eventsFrom,
-        eventsTo = eventsFrom,
-        updatedAt = now(),
-      )
-
-    events.sortedBy { it.createdAt }
-      .forEach {
-        val applied = base.apply(it)
-        if (applied) base.eventsTo = it.createdAt
-        base.updatedAt = now()
-      }
-    return base
-  }
+  fun getAggregateTypes(): Set<AggregateType> = registry.getAggregates().values.toSet()
 
   @Transactional
-  fun createAggregate(assessment: AssessmentEntity, aggregateName: String): AggregateEntity {
-    val events = eventRepository.findAllByAssessmentUuid(assessment.uuid)
-    return findOrCreate(assessment, typeFor(aggregateName), events)
-      .run(aggregateRepository::save)
+  fun createAggregate(assessment: AssessmentEntity, aggregateName: String): AggregateEntity = createAggregateForPointInTime(assessment, aggregateName, now())
+    .run(aggregateRepository::save)
+
+  fun fetchLatestAggregateBeforePointInTime(
+    assessmentUuid: UUID,
+    aggregateName: String,
+    pointInTime: LocalDateTime,
+  ): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessmentUuid, aggregateName, pointInTime)
+
+  fun fetchLatestAggregate(assessmentUuid: UUID, aggregateName: String): AggregateEntity? = fetchLatestAggregateBeforePointInTime(assessmentUuid, aggregateName, now())
+
+  fun fetchOrCreateAggregate(
+    assessment: AssessmentEntity,
+    aggregateName: String,
+    pointInTime: LocalDateTime?,
+  ): AggregateEntity = if (pointInTime != null) {
+    fetchAggregateForExactPointInTime(assessment, aggregateName, pointInTime)
+      ?: createAggregateForPointInTime(assessment, aggregateName, pointInTime).run(aggregateRepository::save)
+  } else {
+    fetchLatestAggregate(assessment.uuid, aggregateName)
+      ?: createAggregateForPointInTime(assessment, aggregateName, now()).run(aggregateRepository::save)
   }
 
-  fun fetchLatestAggregateForType(assessment: AssessmentEntity, aggregateType: String): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, aggregateType, now())
-
-  fun fetchAggregateForTypeOnDate(
+  fun fetchAggregateForExactPointInTime(
     assessment: AssessmentEntity,
-    aggregateType: String,
+    aggregateName: String,
     date: LocalDateTime,
-  ): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeOnExactDate(assessment.uuid, aggregateType, date)
+  ): AggregateEntity? = aggregateRepository.findByAssessmentAndTypeOnExactDate(assessment.uuid, aggregateName, date)
 
-  @Transactional
   fun processEvents(
     assessment: AssessmentEntity,
     aggregateType: String,
     events: List<EventEntity>,
   ): AggregateEntity {
-    val latest = fetchLatestAggregateForType(assessment, aggregateType)
-      ?: return createAggregate(assessment, aggregateType)
+    val latest = fetchLatestAggregate(assessment.uuid, aggregateType)
+      ?: AggregateEntity.getDefault(assessment, typeFor(aggregateType).getInstance())
+        .apply { eventService.findAllByAssessmentUuid(assessment.uuid).forEach { event -> apply(event) } }
 
-    return events
+    events
       .sortedBy { it.createdAt }
       .fold(
         object {
@@ -130,29 +122,31 @@ class AggregateService(
         if (toPersist.isNotEmpty()) aggregateRepository.saveAll(toPersist)
         current
       }
+
+    return latest
   }
 
   fun createAggregateForPointInTime(
     assessment: AssessmentEntity,
     aggregateName: String,
-    dateTime: LocalDateTime,
+    pointInTime: LocalDateTime,
   ): AggregateEntity {
-    val aggType = typeFor(aggregateName)
+    val aggregateType = typeFor(aggregateName)
 
-    val base = aggregateRepository
-      .findByAssessmentAndTypeBeforeDate(assessment.uuid, aggType.aggregateType, dateTime)
-      ?.clone()
-      ?: AggregateEntity(
-        assessment = assessment,
-        data = aggType.getInstance(),
-        eventsFrom = assessment.createdAt,
-        eventsTo = assessment.createdAt,
-        updatedAt = now(),
-      )
-
-    val events = eventRepository
-      .findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, dateTime)
+    val events = eventService
+      .findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, pointInTime)
       .sortedBy { it.createdAt }
+
+    val base = events.maxByOrNull { it.createdAt }?.let { latestEvent ->
+      fetchLatestAggregateBeforePointInTime(assessment.uuid, aggregateName, latestEvent.createdAt)
+        ?.clone()
+    } ?: AggregateEntity(
+      assessment = assessment,
+      data = aggregateType.getInstance(),
+      eventsFrom = assessment.createdAt,
+      eventsTo = assessment.createdAt,
+      updatedAt = now(),
+    )
 
     var lastAppliedAt: LocalDateTime? = null
     for (event in events) {
