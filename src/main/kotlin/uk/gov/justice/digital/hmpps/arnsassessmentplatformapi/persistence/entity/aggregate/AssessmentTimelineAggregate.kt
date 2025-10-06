@@ -43,10 +43,11 @@ class AssessmentTimelineAggregate : Aggregate {
   }
 
   private fun handle(timestamp: LocalDateTime, event: AssessmentStatusUpdated) {
-    val details = if (!previousStatus.isNullOrBlank())
+    val details = if (!previousStatus.isNullOrBlank()) {
       "Assessment status changed from \"$previousStatus\" to \"${event.status}\""
-    else
+    } else {
       "Assessment status changed to \"${event.status}\""
+    }
 
     timeline.add(TimelineItem(timestamp = timestamp, details = details))
     numberOfEventsApplied += 1

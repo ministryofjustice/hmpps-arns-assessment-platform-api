@@ -103,19 +103,23 @@ class AssessmentTimelineAggregateTest {
     fun `it handles the AssessmentStatusUpdated event`() {
       val aggregate = AssessmentTimelineAggregate()
 
-      aggregate.apply(EventEntity(
-        createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-        assessment = assessment,
-        user = user,
-        data =  AssessmentStatusUpdated("INCOMPLETE")
-      ))
+      aggregate.apply(
+        EventEntity(
+          createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+          assessment = assessment,
+          user = user,
+          data = AssessmentStatusUpdated("INCOMPLETE"),
+        ),
+      )
 
-      aggregate.apply(EventEntity(
-        createdAt = LocalDateTime.parse("2025-01-01T13:00:00"),
-        assessment = assessment,
-        user = user,
-        data =  AssessmentStatusUpdated("COMPLETE")
-      ))
+      aggregate.apply(
+        EventEntity(
+          createdAt = LocalDateTime.parse("2025-01-01T13:00:00"),
+          assessment = assessment,
+          user = user,
+          data = AssessmentStatusUpdated("COMPLETE"),
+        ),
+      )
 
       val timeline = aggregate.getTimeline()
 
@@ -162,7 +166,8 @@ class AssessmentTimelineAggregateTest {
       (1..threshold).forEach {
         aggregate.apply(
           EventEntity(
-            user = user, assessment = assessment,
+            user = user,
+            assessment = assessment,
             data = AnswersUpdated(
               added = emptyMap(),
               removed = emptyList(),
