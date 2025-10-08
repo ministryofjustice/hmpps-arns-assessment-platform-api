@@ -17,6 +17,9 @@ class MapperNotImplementedException(developerMessage: String) :
 class AggregateResponseMapperRegistry(val mappers: List<AggregateResponseMapper>) {
   private val byType = mappers.associateBy { it.aggregateType }
 
-  fun intoResponse(type: String, aggregate: Aggregate): AggregateResponse = byType[type]?.intoResponse(aggregate)
-    ?: throw MapperNotImplementedException("No mapper has been implemented for type: $type, supported types: ${mappers.joinToString { it.aggregateType }}")
+  fun intoResponse(aggregate: Aggregate): AggregateResponse {
+    val mapper = byType[aggregate.type()]
+    return mapper?.intoResponse(aggregate)
+      ?: throw MapperNotImplementedException("No mapper has been implemented for type: ${aggregate.type()}, supported types: ${mappers.joinToString { it.aggregateType }}")
+  }
 }

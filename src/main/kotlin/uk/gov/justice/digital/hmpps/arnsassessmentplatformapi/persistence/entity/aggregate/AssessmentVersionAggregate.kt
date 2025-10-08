@@ -80,6 +80,8 @@ class AssessmentVersionAggregate(
     collaborators = collaborators.toMutableSet(),
   )
 
+  override fun type() = aggregateType
+
   companion object : AggregateType {
     override val getInstance = { AssessmentVersionAggregate() }
     override val aggregateType = TYPE

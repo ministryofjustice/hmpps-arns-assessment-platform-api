@@ -119,6 +119,6 @@ class AssessmentController(
     val aggregate = assessmentService.findByUuid(assessmentUuid)
       .let { assessment -> aggregateService.fetchOrCreateAggregate(assessment, type, timestamp) }
 
-    return aggregateResponseMapperRegistry.intoResponse(type, aggregate.data)
+    return aggregateResponseMapperRegistry.intoResponse(aggregate.data)
   }
 }

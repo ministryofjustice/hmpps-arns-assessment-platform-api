@@ -79,6 +79,8 @@ class AssessmentTimelineAggregate : Aggregate {
       it.previousStatus = previousStatus
     }
 
+  override fun type() = aggregateType
+
   companion object : AggregateType {
     override val getInstance = { AssessmentTimelineAggregate() }
     override val aggregateType = TYPE
