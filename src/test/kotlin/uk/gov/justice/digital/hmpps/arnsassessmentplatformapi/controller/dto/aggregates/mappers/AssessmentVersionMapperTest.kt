@@ -10,7 +10,7 @@ import kotlin.test.assertIs
 class AssessmentVersionMapperTest {
   @Test
   fun `it has an aggregate type`() {
-    assertThat(AssessmentVersionMapper().aggregateType).isEqualTo(AssessmentVersionAggregate.aggregateType)
+    assertThat(AssessmentVersionMapper().aggregateType).isEqualTo(AssessmentVersionAggregate::class)
   }
 
   @Test
@@ -27,7 +27,7 @@ class AssessmentVersionMapperTest {
       formVersion = "1",
     )
 
-    val response = assertIs<AssessmentVersionResponse>(AssessmentVersionMapper().intoResponse(aggregate))
+    val response = assertIs<AssessmentVersionResponse>(AssessmentVersionMapper().createResponseFrom(aggregate))
 
     assertThat(response.answers).isEqualTo(
       mapOf(
@@ -52,7 +52,7 @@ class AssessmentVersionMapperTest {
       formVersion = "1",
     )
 
-    val response = assertIs<AssessmentVersionResponse>(AssessmentVersionMapper().intoResponse(aggregate))
+    val response = assertIs<AssessmentVersionResponse>(AssessmentVersionMapper().createResponseFrom(aggregate))
 
     assertThat(response.answers.isEmpty()).isTrue
     assertThat(response.collaborators.isEmpty()).isTrue
