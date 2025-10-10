@@ -17,7 +17,7 @@ class HandlerNotImplementedException(developerMessage: String) :
 
 @Component
 class CommandHandlerRegistry(
-  val handlers: List<CommandHandler<out Command>>,
+  handlers: List<CommandHandler<out Command>>,
 ) {
   private val registry: Map<KClass<out Command>, CommandHandler<out Command>> = handlers.associateBy { it.type }
 

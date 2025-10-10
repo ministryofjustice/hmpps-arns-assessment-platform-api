@@ -41,13 +41,13 @@ class UpdateFormVersionCommandTest(
 
   @Test
   fun `it executes commands for assessments`() {
-    val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.of(2025, 1, 1, 12, 35, 0))
+    val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
     assessmentRepository.save(assessmentEntity)
     val aggregateEntity = AggregateEntity(
       assessment = assessmentEntity,
-      updatedAt = LocalDateTime.of(2025, 1, 1, 12, 0, 0),
-      eventsFrom = LocalDateTime.of(2025, 1, 1, 12, 0, 0),
-      eventsTo = LocalDateTime.of(2025, 1, 1, 12, 0, 0),
+      updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+      eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
+      eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
       data = AssessmentVersionAggregate(),
     )
     aggregateRepository.save(aggregateEntity)
@@ -59,13 +59,13 @@ class UpdateFormVersionCommandTest(
         EventEntity(
           user = user,
           assessment = assessmentEntity,
-          createdAt = LocalDateTime.of(2025, 1, 1, 12, 30, 0),
+          createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreated(),
         ),
         EventEntity(
           user = user,
           assessment = assessmentEntity,
-          createdAt = LocalDateTime.of(2025, 1, 1, 12, 30, 0),
+          createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = FormVersionUpdated(
             version = "old_form_version",
           ),
