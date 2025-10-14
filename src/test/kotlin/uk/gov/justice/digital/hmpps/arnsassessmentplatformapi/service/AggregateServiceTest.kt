@@ -4,7 +4,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
@@ -52,10 +51,6 @@ class AggregateServiceTest {
       aggregates.find { it.aggregateType == name }
     }
     every { aggregateRepository.save(any<AggregateEntity>()) } answers { firstArg<AggregateEntity>() }
-  }
-
-  @AfterEach
-  fun tearDown() {
   }
 
   @Nested

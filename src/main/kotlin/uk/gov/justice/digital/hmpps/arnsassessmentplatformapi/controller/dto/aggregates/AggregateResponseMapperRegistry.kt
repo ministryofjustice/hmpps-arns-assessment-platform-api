@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.aggregates.mappers.AggregateResponseMapper
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.Aggregate
+import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 class MapperNotImplementedException(developerMessage: String) :
   AssessmentPlatformException(
@@ -13,13 +15,41 @@ class MapperNotImplementedException(developerMessage: String) :
     statusCode = HttpStatus.BAD_REQUEST,
   )
 
-@Component
-class AggregateResponseMapperRegistry(val mappers: List<AggregateResponseMapper>) {
-  private val byType = mappers.associateBy { it.aggregateType }
+class DuplicateMapperImplementedException(duplicates: Set<KClass<*>>) :
+  AssessmentPlatformException(
+    message = "Duplicate mappers implemented",
+    developerMessage = "Multiple mappers are registered for: ${
+      duplicates.joinToString { it.qualifiedName ?: it.simpleName ?: "<anonymous>" }
+    }",
+    statusCode = HttpStatus.SERVICE_UNAVAILABLE,
+  )
 
-  fun intoResponse(aggregate: Aggregate): AggregateResponse {
-    val mapper = byType[aggregate.type()]
-    return mapper?.intoResponse(aggregate)
-      ?: throw MapperNotImplementedException("No mapper has been implemented for type: ${aggregate.type()}, supported types: ${mappers.joinToString { it.aggregateType }}")
+@Component
+class AggregateResponseMapperRegistry(
+  mappers: List<AggregateResponseMapper<*>>,
+) {
+  private val byType: Map<KClass<*>, AggregateResponseMapper<*>> =
+    mappers.groupBy { it.aggregateType }
+      .also { grouped ->
+        val duplicates = grouped.filterValues { it.size > 1 }.keys
+        if (duplicates.isNotEmpty()) {
+          throw DuplicateMapperImplementedException(duplicates)
+        }
+      }
+      .mapValues { (_, v) -> v.single() }
+
+  fun <T : Aggregate> createResponseFrom(aggregate: T): AggregateResponse = mapperFor(aggregate).createResponseFrom(aggregate)
+
+  fun <T : Aggregate> mapperFor(aggregate: T): AggregateResponseMapper<T> {
+    val k = aggregate::class
+    val mapper = byType[k]
+      ?: byType.entries.firstOrNull { (registered, _) -> k.isSubclassOf(registered) }?.value
+      ?: throw MapperNotImplementedException(
+        "No mapper implemented for ${k.qualifiedName}. Supported: ${supportedTypes()}",
+      )
+    @Suppress("UNCHECKED_CAST")
+    return mapper as AggregateResponseMapper<T>
   }
+
+  private fun supportedTypes(): String = byType.keys.joinToString { it.qualifiedName ?: it.simpleName ?: "<anonymous>" }
 }

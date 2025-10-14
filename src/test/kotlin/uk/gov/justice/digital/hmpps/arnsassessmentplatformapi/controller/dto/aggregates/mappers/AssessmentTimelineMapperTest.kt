@@ -15,7 +15,7 @@ import kotlin.test.assertIs
 class AssessmentTimelineMapperTest {
   @Test
   fun `it has an aggregate type`() {
-    assertThat(AssessmentTimelineMapper().aggregateType).isEqualTo(AssessmentTimelineAggregate.aggregateType)
+    assertThat(AssessmentTimelineMapper().aggregateType).isEqualTo(AssessmentTimelineAggregate::class)
   }
 
   @Test
@@ -54,7 +54,7 @@ class AssessmentTimelineMapperTest {
       )
     }
 
-    val response = assertIs<AssessmentTimelineResponse>(AssessmentTimelineMapper().intoResponse(aggregate))
+    val response = assertIs<AssessmentTimelineResponse>(AssessmentTimelineMapper().createResponseFrom(aggregate))
     assertThat(response.timeline.size).isEqualTo(2)
     assertThat(response.timeline).contains(
       TimelineItem(details = "2 answers updated and 0 removed", timestamp = LocalDateTime.parse("2025-01-01T12:00:00")),
@@ -66,7 +66,7 @@ class AssessmentTimelineMapperTest {
   fun `it handles an empty timeline`() {
     val aggregate = AssessmentTimelineAggregate()
 
-    val response = assertIs<AssessmentTimelineResponse>(AssessmentTimelineMapper().intoResponse(aggregate))
+    val response = assertIs<AssessmentTimelineResponse>(AssessmentTimelineMapper().createResponseFrom(aggregate))
 
     assertThat(response.timeline.size).isEqualTo(0)
   }
