@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.UpdateFormVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
@@ -73,7 +73,7 @@ class UpdateFormVersionCommandTest(
       ),
     )
 
-    val request = CommandRequest(
+    val request = CommandsRequest(
 
       commands = listOf(
 

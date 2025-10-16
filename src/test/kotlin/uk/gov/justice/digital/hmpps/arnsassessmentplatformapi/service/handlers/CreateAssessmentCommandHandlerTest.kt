@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventBus
-import java.util.UUID
 import kotlin.test.assertIs
 
 class CreateAssessmentCommandHandlerTest {
@@ -36,7 +35,6 @@ class CreateAssessmentCommandHandlerTest {
   fun `it handles the CreateAssessment command`() {
     val command = CreateAssessment(
       user = User("FOO_USER", "Foo User"),
-      assessmentUuid = UUID.randomUUID(),
     )
 
     val assessment = slot<AssessmentEntity>()

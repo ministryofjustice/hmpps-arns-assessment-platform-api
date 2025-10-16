@@ -6,8 +6,8 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @JsonTypeName("ROLLBACK_ANSWERS")
-class RollbackAnswers(
-  val user: User,
-  val assessmentUuid: UUID,
+data class RollbackAnswers(
+  override val user: User,
+  override val assessmentUuid: UUID,
   val pointInTime: LocalDateTime,
-) : Command
+) : RequestableCommand

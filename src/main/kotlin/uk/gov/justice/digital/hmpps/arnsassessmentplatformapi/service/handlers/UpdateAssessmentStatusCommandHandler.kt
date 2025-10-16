@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentStatusUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.handlers.result.CommandSuccessResult
 
 @Component
 class UpdateAssessmentStatusCommandHandler(
@@ -13,7 +14,7 @@ class UpdateAssessmentStatusCommandHandler(
   private val eventBus: EventBus,
 ) : CommandHandler<UpdateAssessmentStatus> {
   override val type = UpdateAssessmentStatus::class
-  override fun handle(command: UpdateAssessmentStatus) {
+  override fun handle(command: UpdateAssessmentStatus): CommandSuccessResult {
     val assessment = assessmentService.findByUuid(command.assessmentUuid)
     eventBus.add(
       with(command) {
@@ -24,5 +25,6 @@ class UpdateAssessmentStatusCommandHandler(
         )
       },
     )
+    return CommandSuccessResult()
   }
 }

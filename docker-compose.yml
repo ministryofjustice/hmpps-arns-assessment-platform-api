@@ -4,8 +4,6 @@ services:
       context: .
     networks:
       - hmpps
-    ports:
-      - "8080:8080"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health/ping"]
       interval: 5s
@@ -15,9 +13,13 @@ services:
       - HMPPS_AUTH_URL=http://auth:8080/auth
       - SPRING_PROFILES_ACTIVE=dev,postgres
       - DATABASE_ENDPOINT=postgres:5432
+      - HMPPS_SQS_PROVIDER=localstack
+      - HMPPS_SQS_LOCALSTACK_URL=http://localstack:4566
+      - HMPPS_SQS_QUEUES_AUDIT_QUEUE_NAME=audit-queue
     depends_on:
       - postgres
       - auth
+      - localstack
 
   postgres:
     image: postgres:16
@@ -33,8 +35,6 @@ services:
     image: quay.io/hmpps/hmpps-auth:latest
     networks:
       - hmpps
-    ports:
-      - "8090:8080"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/auth/health"]
       interval: 5s
@@ -43,6 +43,27 @@ services:
       - SERVER_PORT=8080
       - SPRING_PROFILES_ACTIVE=dev
       - APPLICATION_AUTHENTICATION_UI_ALLOWLIST=0.0.0.0/0
+
+  localstack:
+    image: localstack/localstack:3
+    networks:
+      - hmpps
+    environment:
+      - SERVICES=sqs
+      - LOCALSTACK_HOST=localstack:4566
+      - DEBUG=1
+      - DEFAULT_REGION=eu-west-2
+      - AWS_DEFAULT_REGION=eu-west-2
+      - USE_SSL=false
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "./docker/scripts/localstack/init:/etc/localstack/init/ready.d"
+      - "./docker/scripts/localstack/wait:/scripts/wait"
+    healthcheck:
+      test: [ "CMD", "bash", "/scripts/wait/healthcheck.sh" ]
+      interval: 5s
+      timeout: 10s
+      retries: 50
 
 networks:
   hmpps:

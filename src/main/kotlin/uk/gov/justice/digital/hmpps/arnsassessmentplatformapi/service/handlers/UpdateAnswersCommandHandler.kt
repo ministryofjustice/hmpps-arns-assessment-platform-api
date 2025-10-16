@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.handlers.result.CommandSuccessResult
 
 @Component
 class UpdateAnswersCommandHandler(
@@ -13,7 +14,7 @@ class UpdateAnswersCommandHandler(
   private val eventBus: EventBus,
 ) : CommandHandler<UpdateAnswers> {
   override val type = UpdateAnswers::class
-  override fun handle(command: UpdateAnswers) {
+  override fun handle(command: UpdateAnswers): CommandSuccessResult {
     eventBus.add(
       with(command) {
         EventEntity(
@@ -26,5 +27,6 @@ class UpdateAnswersCommandHandler(
         )
       },
     )
+    return CommandSuccessResult()
   }
 }
