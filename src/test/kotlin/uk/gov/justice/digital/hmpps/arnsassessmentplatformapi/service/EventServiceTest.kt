@@ -10,8 +10,8 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreated
 import java.time.LocalDateTime
 
 class EventServiceTest {

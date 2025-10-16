@@ -3,12 +3,12 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.ag
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.aggregates.AssessmentTimelineResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.AssessmentTimelineResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AssessmentTimelineAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.TimelineItem
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentTimelineAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.TimelineItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdated
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 

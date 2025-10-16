@@ -8,13 +8,14 @@ import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.CreateAssessmentCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.CreateAssessment
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.request.CreateAssessment
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import kotlin.test.assertIs
 
 class CreateAssessmentCommandHandlerTest {

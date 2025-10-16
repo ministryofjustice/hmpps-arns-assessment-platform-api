@@ -9,10 +9,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.CommandHandlerRegistry
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.HandlerNotImplementedException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.CreateAssessment
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.handlers.CreateAssessmentCommandHandler
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.handlers.result.CreateAssessmentResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessment
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.CreateAssessmentCommandHandler
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentResult
 import kotlin.test.assertIs
 
 class CommandBusTest {

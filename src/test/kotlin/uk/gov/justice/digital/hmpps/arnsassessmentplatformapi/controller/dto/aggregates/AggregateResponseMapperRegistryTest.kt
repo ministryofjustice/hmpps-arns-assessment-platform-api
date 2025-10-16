@@ -4,8 +4,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.aggregates.mappers.AggregateResponseMapper
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.aggregates.mappers.AssessmentVersionMapper
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AssessmentVersionAggregate
-import java.awt.List
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.AggregateResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.AssessmentVersionResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
 import kotlin.test.assertIs
 
 class AggregateResponseMapperRegistryTest {

@@ -1,17 +1,18 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate
 
-import com.github.tomakehurst.wiremock.matching.MatchResult.aggregate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentTimelineAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersRolledBack
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentStatusUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.FormVersionUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBack
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdated
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 

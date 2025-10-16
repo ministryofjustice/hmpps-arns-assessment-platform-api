@@ -8,13 +8,14 @@ import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.UpdateFormVersionCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.UpdateFormVersion
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFormVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.FormVersionUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import java.util.UUID
 import kotlin.test.assertIs
 
@@ -23,8 +24,8 @@ class UpdateFormVersionCommandHandlerTest {
   val eventBus: EventBus = mockk()
 
   val handler = UpdateFormVersionCommandHandler(
-    assessmentService = assessmentService,
-    eventBus = eventBus,
+      assessmentService = assessmentService,
+      eventBus = eventBus,
   )
 
   @Test

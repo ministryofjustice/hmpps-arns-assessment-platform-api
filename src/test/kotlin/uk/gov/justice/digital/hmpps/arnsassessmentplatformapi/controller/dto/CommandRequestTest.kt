@@ -3,7 +3,9 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.UpdateAnswers
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAnswers
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidCommandException
 import java.util.UUID
 import kotlin.test.Test
 

@@ -1,38 +1,18 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import jakarta.transaction.Transactional
-import org.springframework.http.HttpStatus
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AggregateType
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AssessmentTimelineAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AssessmentVersionAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateTypeRegistry
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AggregateNotRegisteredException
 import java.time.Clock
 import java.time.LocalDateTime
 import java.util.UUID
-
-@Component
-class AggregateTypeRegistry(
-  private val aggregateTypes: Set<AggregateType> = setOf(
-    AssessmentVersionAggregate,
-    AssessmentTimelineAggregate,
-  ),
-) {
-  fun getAggregates() = aggregateTypes.associateBy { it.aggregateType }
-  fun getAggregateByName(name: String) = getAggregates().run { get(name) }
-}
-
-class AggregateNotRegisteredException(developerMessage: String) :
-  AssessmentPlatformException(
-    message = "Aggregate not registered",
-    developerMessage = developerMessage,
-    statusCode = HttpStatus.BAD_REQUEST,
-  )
 
 @Service
 class AggregateService(

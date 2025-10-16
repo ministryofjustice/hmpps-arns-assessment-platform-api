@@ -9,16 +9,17 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.RollbackAnswersCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.RollbackAnswers
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollbackAnswers
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.aggregate.AssessmentVersionAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AnswersRolledBack
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBack
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDateTime
@@ -32,10 +33,10 @@ class RollbackAnswersCommandHandlerTest {
   val clock: Clock = mockk(relaxed = true)
 
   val handler = RollbackAnswersCommandHandler(
-    assessmentService = assessmentService,
-    aggregateService = aggregateService,
-    eventBus = eventBus,
-    clock = clock,
+      assessmentService = assessmentService,
+      aggregateService = aggregateService,
+      eventBus = eventBus,
+      clock = clock,
   )
 
   @BeforeEach
