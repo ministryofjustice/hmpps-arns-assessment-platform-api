@@ -7,8 +7,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidCommandException
 import java.util.UUID
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
-class CommandRequestTest {
+class CommandsRequestTest {
   @Test
   fun `it creates`() {
     val updateAnswers = UpdateAnswers(
@@ -27,10 +28,12 @@ class CommandRequestTest {
 
   @Test
   fun `it throws when passed no commands`() {
-    assertThrows<InvalidCommandException> {
+    val exception = assertThrows<InvalidCommandException> {
       CommandsRequest(
         commands = emptyList(),
       )
     }
+    assertEquals("No commands received", exception.developerMessage)
+    assertEquals("Unable to process commands", exception.message)
   }
 }

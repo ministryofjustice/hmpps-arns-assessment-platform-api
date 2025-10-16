@@ -17,11 +17,14 @@ import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentStatus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
+import java.time.LocalDateTime
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
@@ -122,18 +125,12 @@ class AuditServiceTest {
 
   companion object {
     private val assessmentUuid = UUID.randomUUID()
+    private val user = User("TEST_USER")
 
     @JvmStatic
-    fun provideAuditable(): Stream<Any> {
-      val command = mockk<RequestableCommand>()
-      every { command.user } returns User("TEST_USER")
-      every { command.assessmentUuid } returns assessmentUuid
-
-      val query = mockk<RequestableQuery>()
-      every { query.user } returns User("TEST_USER")
-      every { query.assessmentUuid } returns assessmentUuid
-
-      return Stream.of(command, query)
-    }
+    fun provideAuditable(): Stream<Any> = Stream.of(
+      UpdateAssessmentStatus(user, assessmentUuid, "TEST_STATUS"), // RequestableCommand
+      AssessmentTimeline(user, assessmentUuid, LocalDateTime.now()), // RequestableQuery
+    )
   }
 }
