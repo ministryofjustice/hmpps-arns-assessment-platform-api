@@ -1,12 +1,12 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
 import com.fasterxml.jackson.annotation.JsonTypeName
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBack
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
 

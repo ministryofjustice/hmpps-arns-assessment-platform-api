@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component
 @Component
 class AggregateTypeRegistry(
   private val aggregateTypes: Set<AggregateType> = setOf(
-      AssessmentVersionAggregate.Companion,
-      AssessmentTimelineAggregate.Companion,
+    AssessmentVersionAggregate.Companion,
+    AssessmentTimelineAggregate.Companion,
   ),
 ) {
   fun getAggregates() = aggregateTypes.associateBy { it.aggregateType }

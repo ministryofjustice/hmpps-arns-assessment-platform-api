@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.bus
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler.QueryHandlerRegistry
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AuditService
 
 @Service

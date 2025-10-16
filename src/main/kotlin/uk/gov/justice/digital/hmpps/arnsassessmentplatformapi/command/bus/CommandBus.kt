@@ -1,9 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.CommandHandlerRegistry
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.request.Command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AuditService
 
 @Service

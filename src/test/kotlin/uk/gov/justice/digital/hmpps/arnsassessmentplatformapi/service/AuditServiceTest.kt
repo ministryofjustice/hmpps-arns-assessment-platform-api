@@ -5,21 +5,27 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessment
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
+import java.util.stream.Stream
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -46,10 +52,9 @@ class AuditServiceTest {
     )
   }
 
-  @Test
-  fun `should send audit event for a command`() {
-    val command = CreateAssessment(User("TEST_USER"))
-
+  @ParameterizedTest
+  @MethodSource("provideAuditable")
+  fun `it should send an audit event`(auditable: Any) {
     val capturedEvent = slot<AuditableEvent>()
     every {
       mockObjectMapper.writeValueAsString(capture(capturedEvent))
@@ -71,7 +76,11 @@ class AuditServiceTest {
       GetQueueUrlResponse.builder().queueUrl(queueUrl).build(),
     )
 
-    service.audit(command)
+    when (auditable) {
+      is RequestableCommand -> service.audit(auditable)
+      is RequestableQuery -> service.audit(auditable)
+      else -> fail("Unexpected auditable type $auditable")
+    }
 
     val builder = SendMessageRequest.builder()
     capturedConsumer.captured.accept(builder)
@@ -87,13 +96,19 @@ class AuditServiceTest {
       mockObjectMapper.writeValueAsString(capture(capturedEvent))
     }
 
+    val user = when (auditable) {
+      is RequestableCommand -> auditable.user
+      is RequestableQuery -> auditable.user
+      else -> fail("Unexpected auditable type $auditable")
+    }
+
     assertEquals(queueUrl, request.queueUrl())
     assertTrue(request.messageBody().contains("serialized event"))
-    assertEquals(mapOf("assessmentUuid" to command.assessmentUuid), capturedEventDetails.captured)
+    assertEquals(mapOf("assessmentUuid" to assessmentUuid), capturedEventDetails.captured)
     assertEquals("serialized event details", capturedEvent.captured.details)
     assertEquals(serviceName, capturedEvent.captured.service)
-    assertEquals(command.user.id, capturedEvent.captured.who)
-    assertEquals(command::class.simpleName, capturedEvent.captured.what)
+    assertEquals(user.id, capturedEvent.captured.who)
+    assertEquals(auditable::class.simpleName, capturedEvent.captured.what)
   }
 
   @Test
@@ -101,7 +116,24 @@ class AuditServiceTest {
     every { mockQueueService.findByQueueId("audit") } returns null
 
     assertThrows<RuntimeException> {
-      AuditService(mockQueueService, mockObjectMapper, serviceName).audit(mockk())
+      AuditService(mockQueueService, mockObjectMapper, serviceName).audit(mockk<RequestableCommand>())
+    }
+  }
+
+  companion object {
+    private val assessmentUuid = UUID.randomUUID()
+
+    @JvmStatic
+    fun provideAuditable(): Stream<Any> {
+      val command = mockk<RequestableCommand>()
+      every { command.user } returns User("TEST_USER")
+      every { command.assessmentUuid } returns assessmentUuid
+
+      val query = mockk<RequestableQuery>()
+      every { query.user } returns User("TEST_USER")
+      every { query.assessmentUuid } returns assessmentUuid
+
+      return Stream.of(command, query)
     }
   }
 }

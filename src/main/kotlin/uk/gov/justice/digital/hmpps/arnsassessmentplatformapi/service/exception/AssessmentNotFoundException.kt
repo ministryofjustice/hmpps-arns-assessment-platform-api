@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentP
 import java.util.UUID
 
 class AssessmentNotFoundException(
-    assessmentUuid: UUID,
+  assessmentUuid: UUID,
 ) : AssessmentPlatformException(
   message = "Assessment not found",
   developerMessage = "No assessment found with UUID: $assessmentUuid",

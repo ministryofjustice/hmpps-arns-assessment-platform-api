@@ -9,9 +9,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventServi
 @Component
 @RequestScope
 class EventBus(
-    private val queue: MutableList<EventEntity>,
-    private val aggregateService: AggregateService,
-    private val eventService: EventService,
+  private val queue: MutableList<EventEntity>,
+  private val aggregateService: AggregateService,
+  private val eventService: EventService,
 ) {
   fun add(event: EventEntity) {
     queue.add(event)
