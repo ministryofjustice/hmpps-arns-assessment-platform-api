@@ -5,7 +5,8 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import java.util.UUID
 
 @JsonTypeName("CREATE_ASSESSMENT")
-class CreateAssessment(
-  val user: User,
-  val assessmentUuid: UUID = UUID.randomUUID(),
-) : Command
+data class CreateAssessment(
+  override val user: User,
+) : RequestableCommand {
+  override val assessmentUuid: UUID = UUID.randomUUID()
+}

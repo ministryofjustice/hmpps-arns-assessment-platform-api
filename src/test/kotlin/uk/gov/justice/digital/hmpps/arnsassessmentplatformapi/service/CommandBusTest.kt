@@ -5,23 +5,23 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.CreateAssessment
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.handlers.CreateAssessmentCommandHandler
-import java.util.UUID
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.handlers.result.CreateAssessmentResult
 
 class CommandBusTest {
-  val eventBus: EventBus = mockk()
+  val auditService: AuditService = mockk()
   val createAssessmentCommandHandler: CreateAssessmentCommandHandler = mockk()
 
   @BeforeEach
   fun setUp() {
-    every { eventBus.add(any()) } just runs
-    every { eventBus.commit() } just runs
-    every { createAssessmentCommandHandler.execute(any()) } just runs
+    every { auditService.audit(any()) } just runs
+    every { createAssessmentCommandHandler.execute(any()) } answers { CreateAssessmentResult(firstArg<CreateAssessment>().assessmentUuid) }
     every { createAssessmentCommandHandler.type } returns CreateAssessment::class
   }
 
@@ -31,16 +31,15 @@ class CommandBusTest {
       registry = CommandHandlerRegistry(
         handlers = emptyList(),
       ),
-      eventBus = eventBus,
+      auditService = auditService,
     )
 
     val command = CreateAssessment(
       user = User("FOO_USER", "Foo User"),
-      assessmentUuid = UUID.randomUUID(),
     )
 
     assertThrows<HandlerNotImplementedException> {
-      commandBus.dispatch(listOf(command))
+      commandBus.dispatch(command)
     }
   }
 
@@ -50,16 +49,20 @@ class CommandBusTest {
       registry = CommandHandlerRegistry(
         handlers = listOf(createAssessmentCommandHandler),
       ),
-      eventBus = eventBus,
+      auditService = auditService,
     )
 
     val command = CreateAssessment(
       user = User("FOO_USER", "Foo User"),
-      assessmentUuid = UUID.randomUUID(),
     )
 
-    commandBus.dispatch(listOf(command))
+    val result = commandBus.dispatch(command)
 
     verify(exactly = 1) { createAssessmentCommandHandler.execute(command) }
+    verify(exactly = 1) { auditService.audit(command) }
+
+    assert(result is CreateAssessmentResult)
+
+    assertThat((result as CreateAssessmentResult).assessmentUuid).isEqualTo(command.assessmentUuid)
   }
 }

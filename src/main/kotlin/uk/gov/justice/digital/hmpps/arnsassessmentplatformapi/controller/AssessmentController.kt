@@ -13,15 +13,15 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandRequest
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CreateAssessmentRequest
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CreateAssessmentResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandsRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.aggregates.AggregateResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.aggregates.AggregateResponseMapperRegistry
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.CreateAssessment
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CommandBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventBus
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDateTime
 import java.util.UUID
@@ -29,6 +29,7 @@ import java.util.UUID
 @RestController
 class AssessmentController(
   private val commandBus: CommandBus,
+  private val eventBus: EventBus,
   private val aggregateService: AggregateService,
   private val assessmentService: AssessmentService,
   private val aggregateResponseMapperRegistry: AggregateResponseMapperRegistry,
@@ -59,34 +60,9 @@ class AssessmentController(
   @Transactional
   fun executeCommands(
     @RequestBody
-    request: CommandRequest,
-  ) = commandBus.dispatch(request.commands)
-
-  @RequestMapping(path = ["/assessment/create"], method = [RequestMethod.POST])
-  @Operation(description = "Creates an assessment")
-  @ApiResponses(
-    value = [
-      ApiResponse(responseCode = "200", description = "Assessment created"),
-      ApiResponse(
-        responseCode = "400",
-        description = "Unable to create assessment",
-        content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
-      ),
-      ApiResponse(
-        responseCode = "500",
-        description = "Unexpected error",
-        content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
-      ),
-    ],
-  )
-  @PreAuthorize("hasAnyRole('ROLE_ARNS_ASSESSMENT_PLATFORM_WRITE')")
-  @Transactional
-  fun createAssessment(
-    @RequestBody
-    request: CreateAssessmentRequest,
-  ) = CreateAssessment(request.user)
-    .also { command -> commandBus.dispatch(listOf(command)) }
-    .let { result -> CreateAssessmentResponse.from(result) }
+    request: CommandsRequest,
+  ) = CommandsResponse(request.commands.map { CommandResponse(it, commandBus.dispatch(it)) })
+    .also { eventBus.commit() }
 
   @RequestMapping(path = ["/aggregate/{type}/{assessmentUuid}"], method = [RequestMethod.GET])
   @Operation(description = "Fetches the latest aggregate for a given type")

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.Command
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.handlers.CommandHandler
 import kotlin.reflect.KClass
 
@@ -27,10 +28,8 @@ class CommandHandlerRegistry(
 @Service
 class CommandBus(
   private val registry: CommandHandlerRegistry,
-  private val eventBus: EventBus,
+  private val auditService: AuditService,
 ) {
-  fun dispatch(commands: List<Command>) {
-    commands.forEach { command -> registry.getHandlerFor(command::class).execute(command) }
-    eventBus.commit()
-  }
+  fun dispatch(command: Command) = registry.getHandlerFor(command::class).execute(command)
+    .also { if (command is RequestableCommand) auditService.audit(command) }
 }

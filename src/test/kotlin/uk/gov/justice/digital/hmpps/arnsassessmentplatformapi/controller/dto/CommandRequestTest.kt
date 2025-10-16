@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.CreateAssessment
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.UpdateAnswers
 import java.util.UUID
 import kotlin.test.Test
@@ -18,7 +17,7 @@ class CommandRequestTest {
       removed = emptyList(),
     )
 
-    val request = CommandRequest(
+    val request = CommandsRequest(
       commands = listOf(updateAnswers),
     )
 
@@ -28,23 +27,9 @@ class CommandRequestTest {
   @Test
   fun `it throws when passed no commands`() {
     assertThrows<InvalidCommandException> {
-      CommandRequest(
+      CommandsRequest(
         commands = emptyList(),
       )
     }
-  }
-
-  @Test
-  fun `it throws when it contains an unsupported command`() {
-    assertThrows<InvalidCommandException> {
-      CommandRequest(
-        commands = listOf(CreateAssessment(User("FOO_USER", "Foo User"), UUID.randomUUID())),
-      )
-    }
-  }
-
-  @Test
-  fun `it has supported commands`() {
-    assertThat(CommandRequest.supportedCommands).isNotEmpty
   }
 }

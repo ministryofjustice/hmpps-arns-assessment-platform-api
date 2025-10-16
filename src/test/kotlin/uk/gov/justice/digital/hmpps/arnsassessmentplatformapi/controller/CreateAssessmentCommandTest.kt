@@ -7,12 +7,14 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CreateAssessmentRequest
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CreateAssessmentResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandsRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.CommandsResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.CreateAssessment
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.handlers.result.CreateAssessmentResult
 import kotlin.test.assertIs
 
 class CreateAssessmentCommandTest(
@@ -34,19 +36,30 @@ class CreateAssessmentCommandTest(
 
   @Test
   fun `it creates an assessment`() {
-    val request = CreateAssessmentRequest(user)
+    val request = CommandsRequest(
+      commands = listOf(
+        CreateAssessment(
+          user = User("test-user", "Test User"),
+        ),
+      ),
+    )
 
-    val response = webTestClient.post().uri("/assessment/create")
+    val response = webTestClient.post().uri("/command")
       .header(HttpHeaders.CONTENT_TYPE, "application/json")
       .headers(setAuthorisation(roles = listOf("ROLE_ARNS_ASSESSMENT_PLATFORM_WRITE")))
       .bodyValue(request)
       .exchange()
       .expectStatus().isOk
-      .expectBody(CreateAssessmentResponse::class.java)
+      .expectBody(CommandsResponse::class.java)
       .returnResult()
       .responseBody
 
-    val assessmentUuid = requireNotNull(response?.assessmentUuid) { "An assessmentUuid should be present on the response" }
+    assertThat(response?.commands).hasSize(1)
+    assertThat(response?.commands[0]?.request).isEqualTo(request.commands[0])
+    assertThat(response?.commands[0]?.result).isInstanceOf(CreateAssessmentResult::class.java)
+
+    val result = response?.commands[0]?.result as CreateAssessmentResult
+    val assessmentUuid = requireNotNull(result.assessmentUuid) { "An assessmentUuid should be present on the response" }
 
     val assessment = assessmentRepository.findByUuid(assessmentUuid)
 

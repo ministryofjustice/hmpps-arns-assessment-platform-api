@@ -5,8 +5,8 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import java.util.UUID
 
 @JsonTypeName("UPDATE_FORM_VERSION")
-class UpdateFormVersion(
-  val user: User,
-  val assessmentUuid: UUID,
+data class UpdateFormVersion(
+  override val user: User,
+  override val assessmentUuid: UUID,
   val version: String,
-) : Command
+) : RequestableCommand
