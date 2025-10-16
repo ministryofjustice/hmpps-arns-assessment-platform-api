@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.CreateAssessment
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.handlers.CreateAssessmentCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.handlers.result.CreateAssessmentResult
+import kotlin.test.assertIs
 
 class CommandBusTest {
   val auditService: AuditService = mockk()
@@ -61,8 +62,7 @@ class CommandBusTest {
     verify(exactly = 1) { createAssessmentCommandHandler.execute(command) }
     verify(exactly = 1) { auditService.audit(command) }
 
-    assert(result is CreateAssessmentResult)
-
-    assertThat((result as CreateAssessmentResult).assessmentUuid).isEqualTo(command.assessmentUuid)
+    assertIs<CreateAssessmentResult>(result)
+      .let { assertThat(it.assessmentUuid).isEqualTo(command.assessmentUuid) }
   }
 }

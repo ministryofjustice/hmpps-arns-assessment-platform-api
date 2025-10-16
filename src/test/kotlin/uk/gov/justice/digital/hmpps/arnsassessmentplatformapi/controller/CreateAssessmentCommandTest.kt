@@ -56,9 +56,8 @@ class CreateAssessmentCommandTest(
 
     assertThat(response?.commands).hasSize(1)
     assertThat(response?.commands[0]?.request).isEqualTo(request.commands[0])
-    assertThat(response?.commands[0]?.result).isInstanceOf(CreateAssessmentResult::class.java)
+    val result = assertIs<CreateAssessmentResult>(response?.commands[0]?.result)
 
-    val result = response?.commands[0]?.result as CreateAssessmentResult
     val assessmentUuid = requireNotNull(result.assessmentUuid) { "An assessmentUuid should be present on the response" }
 
     val assessment = assessmentRepository.findByUuid(assessmentUuid)
