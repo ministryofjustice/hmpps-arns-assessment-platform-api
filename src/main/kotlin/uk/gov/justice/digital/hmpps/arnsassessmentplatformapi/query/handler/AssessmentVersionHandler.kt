@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimeline
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
@@ -11,9 +11,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.Assessment
 class AssessmentVersionHandler(
   private val assessmentService: AssessmentService,
   private val aggregateService: AggregateService,
-) : QueryHandler<AssessmentTimeline> {
-  override val type = AssessmentTimeline::class
-  override fun handle(query: AssessmentTimeline): AssessmentVersionResult {
+) : QueryHandler<AssessmentVersion> {
+  override val type = AssessmentVersion::class
+  override fun handle(query: AssessmentVersion): AssessmentVersionResult {
     val aggregate = assessmentService.findByUuid(query.assessmentUuid)
       .let { assessment -> aggregateService.fetchOrCreateAggregate(assessment, AssessmentVersionAggregate.aggregateType, query.timestamp) }
       .data as AssessmentVersionAggregate
