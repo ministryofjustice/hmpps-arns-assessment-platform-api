@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.event.AssessmentCreated
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.handlers.result.CreateAssessmentResult
 
 @Component
 class CreateAssessmentCommandHandler(
@@ -14,7 +15,7 @@ class CreateAssessmentCommandHandler(
   private val eventBus: EventBus,
 ) : CommandHandler<CreateAssessment> {
   override val type = CreateAssessment::class
-  override fun handle(command: CreateAssessment) {
+  override fun handle(command: CreateAssessment): CreateAssessmentResult {
     val assessment = assessmentRepository.save(AssessmentEntity(uuid = command.assessmentUuid))
     eventBus.add(
       with(command) {
@@ -25,5 +26,6 @@ class CreateAssessmentCommandHandler(
         )
       },
     )
+    return CreateAssessmentResult(assessment.uuid)
   }
 }

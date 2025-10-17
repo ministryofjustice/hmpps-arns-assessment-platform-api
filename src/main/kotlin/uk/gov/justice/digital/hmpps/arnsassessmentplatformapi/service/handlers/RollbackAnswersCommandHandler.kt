@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.handlers.result.CommandSuccessResult
 import java.time.Clock
 import java.time.LocalDateTime
 import kotlin.collections.component1
@@ -24,7 +25,7 @@ class RollbackAnswersCommandHandler(
 ) : CommandHandler<RollbackAnswers> {
   private fun now() = LocalDateTime.now(clock)
   override val type = RollbackAnswers::class
-  override fun handle(command: RollbackAnswers) {
+  override fun handle(command: RollbackAnswers): CommandSuccessResult {
     val assessment = assessmentService.findByUuid(command.assessmentUuid)
     val aggregateType = AssessmentVersionAggregate.aggregateType
     val currentVersion: AggregateEntity = aggregateService.fetchAggregateForExactPointInTime(
@@ -61,5 +62,7 @@ class RollbackAnswersCommandHandler(
         ),
       ),
     )
+
+    return CommandSuccessResult()
   }
 }
