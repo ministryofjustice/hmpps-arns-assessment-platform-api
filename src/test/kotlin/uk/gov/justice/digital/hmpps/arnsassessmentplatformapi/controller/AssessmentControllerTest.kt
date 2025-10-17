@@ -47,7 +47,7 @@ class AssessmentControllerTest(
       {
         "commands": [
           {
-            "type": "UNKNOWN_COMMAND",
+            "type": "UnknownCommand",
             "user": {
               "id": "test-user",
               "name": "Test User"
@@ -68,7 +68,7 @@ class AssessmentControllerTest(
         .returnResult()
         .responseBody
 
-      assertThat(response).contains("Invalid payload: JSON parse error: Could not resolve type id 'UNKNOWN_COMMAND'")
+      assertThat(response).contains("Invalid payload: JSON parse error: Could not resolve type id 'UnknownCommand'")
     }
 
     @Test
@@ -112,7 +112,7 @@ class AssessmentControllerTest(
         {
           "queries": [
             {
-              "type": "UNKNOWN_QUERY",
+              "type": "UnknownQuery",
               "user": {
                 "id": "test-user",
                 "name": "Test User"
@@ -133,7 +133,7 @@ class AssessmentControllerTest(
         .returnResult()
         .responseBody
 
-      assertThat(response).contains("Invalid payload: JSON parse error: Could not resolve type id 'UNKNOWN_QUERY'")
+      assertThat(response).contains("Invalid payload: JSON parse error: Could not resolve type id 'UnknownQuery'")
     }
 
     @Test

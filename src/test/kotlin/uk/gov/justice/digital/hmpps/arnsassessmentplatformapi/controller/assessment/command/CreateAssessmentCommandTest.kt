@@ -80,7 +80,7 @@ class CreateAssessmentCommandTest(
       {
         "commands": [
           {
-            "type": "CREATE_ASSESSMENT",
+            "type": "CreateAssessmentCommand",
             "user": {
               "id": "test-user",
               "name": "Test User"
