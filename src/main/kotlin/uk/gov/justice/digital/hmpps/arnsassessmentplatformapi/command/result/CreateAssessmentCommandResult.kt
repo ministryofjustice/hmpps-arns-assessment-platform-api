@@ -1,0 +1,12 @@
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result
+
+import com.fasterxml.jackson.annotation.JsonTypeName
+import java.util.UUID
+
+@JsonTypeName("CreateAssessmentResult")
+data class CreateAssessmentCommandResult(
+  val assessmentUuid: UUID,
+) : CommandResult {
+  override val message = "Assessment created successfully with UUID $assessmentUuid"
+  override val success = true
+}

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.HandlerNotImplementedException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.CommandHandlerNotImplementedException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.CommandHandler
 import kotlin.reflect.KClass
 
@@ -27,7 +27,7 @@ class CommandHandlerRegistryTest {
   fun `should throw when no handler is registered for the command`() {
     val registry = CommandHandlerRegistry(emptyList())
 
-    val exception = assertThrows(HandlerNotImplementedException::class.java) {
+    val exception = assertThrows(CommandHandlerNotImplementedException::class.java) {
       registry.getHandlerFor(Command::class)
     }
 

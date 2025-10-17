@@ -7,8 +7,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -26,12 +26,12 @@ class EventServiceTest {
     EventEntity(
       user = user,
       assessment = assessment,
-      data = AssessmentCreated(),
+      data = AssessmentCreatedEvent(),
     ),
     EventEntity(
       user = user,
       assessment = assessment,
-      data = AnswersUpdated(
+      data = AnswersUpdatedEvent(
         added = mapOf("foo" to listOf("foo_value")),
         removed = emptyList(),
       ),

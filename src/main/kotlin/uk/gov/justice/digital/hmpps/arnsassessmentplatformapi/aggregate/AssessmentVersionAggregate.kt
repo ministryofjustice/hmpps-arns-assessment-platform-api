@@ -2,12 +2,12 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBack
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import kotlin.reflect.KClass
 
@@ -36,17 +36,17 @@ class AssessmentVersionAggregate(
     }
   }
 
-  private fun handle(event: AnswersUpdated) {
+  private fun handle(event: AnswersUpdatedEvent) {
     applyAnswers(event.added, event.removed)
     numberOfEventsApplied += 1
   }
 
-  private fun handle(event: AnswersRolledBack) {
+  private fun handle(event: AnswersRolledBackEvent) {
     applyAnswers(event.added, event.removed)
     numberOfEventsApplied += 1
   }
 
-  private fun handle(event: FormVersionUpdated) {
+  private fun handle(event: FormVersionUpdatedEvent) {
     formVersion = event.version
     numberOfEventsApplied += 1
   }
@@ -60,9 +60,9 @@ class AssessmentVersionAggregate(
   override fun apply(event: EventEntity): Boolean {
     collaborators.add(event.user)
     when (event.data) {
-      is AnswersUpdated -> handle(event.data)
-      is AnswersRolledBack -> handle(event.data)
-      is FormVersionUpdated -> handle(event.data)
+      is AnswersUpdatedEvent -> handle(event.data)
+      is AnswersRolledBackEvent -> handle(event.data)
+      is FormVersionUpdatedEvent -> handle(event.data)
       else -> return false
     }
 
@@ -85,7 +85,7 @@ class AssessmentVersionAggregate(
   companion object : AggregateType {
     override val getInstance = { AssessmentVersionAggregate() }
     override val aggregateType = TYPE
-    override val createsOn = setOf(AssessmentCreated::class, AssessmentStatusUpdated::class)
-    override val updatesOn = setOf(AnswersUpdated::class, AnswersRolledBack::class, FormVersionUpdated::class)
+    override val createsOn = setOf(AssessmentCreatedEvent::class, AssessmentStatusUpdatedEvent::class)
+    override val updatesOn = setOf(AnswersUpdatedEvent::class, AnswersRolledBackEvent::class, FormVersionUpdatedEvent::class)
   }
 }

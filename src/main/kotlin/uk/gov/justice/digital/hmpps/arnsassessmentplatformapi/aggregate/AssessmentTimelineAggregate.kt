@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
 import com.fasterxml.jackson.annotation.JsonTypeName
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBack
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.LocalDateTime
@@ -22,7 +22,7 @@ class AssessmentTimelineAggregate : Aggregate {
   private val timeline = mutableListOf<TimelineItem>()
   private var previousStatus: String? = null
 
-  private fun handle(timestamp: LocalDateTime, event: AnswersUpdated) {
+  private fun handle(timestamp: LocalDateTime, event: AnswersUpdatedEvent) {
     timeline.add(
       TimelineItem(
         timestamp = timestamp,
@@ -32,7 +32,7 @@ class AssessmentTimelineAggregate : Aggregate {
     numberOfEventsApplied += 1
   }
 
-  private fun handle(timestamp: LocalDateTime, event: AnswersRolledBack) {
+  private fun handle(timestamp: LocalDateTime, event: AnswersRolledBackEvent) {
     timeline.add(
       TimelineItem(
         timestamp = timestamp,
@@ -42,7 +42,7 @@ class AssessmentTimelineAggregate : Aggregate {
     numberOfEventsApplied += 1
   }
 
-  private fun handle(timestamp: LocalDateTime, event: AssessmentStatusUpdated) {
+  private fun handle(timestamp: LocalDateTime, event: AssessmentStatusUpdatedEvent) {
     val details = if (!previousStatus.isNullOrBlank()) {
       "Assessment status changed from \"$previousStatus\" to \"${event.status}\""
     } else {
@@ -60,9 +60,9 @@ class AssessmentTimelineAggregate : Aggregate {
 
   override fun apply(event: EventEntity): Boolean {
     when (event.data) {
-      is AnswersUpdated -> handle(event.createdAt, event.data)
-      is AnswersRolledBack -> handle(event.createdAt, event.data)
-      is AssessmentStatusUpdated -> handle(event.createdAt, event.data)
+      is AnswersUpdatedEvent -> handle(event.createdAt, event.data)
+      is AnswersRolledBackEvent -> handle(event.createdAt, event.data)
+      is AssessmentStatusUpdatedEvent -> handle(event.createdAt, event.data)
       else -> return false
     }
 
@@ -84,7 +84,7 @@ class AssessmentTimelineAggregate : Aggregate {
   companion object : AggregateType {
     override val getInstance = { AssessmentTimelineAggregate() }
     override val aggregateType = TYPE
-    override val createsOn: Set<KClass<out Event>> = setOf(AssessmentCreated::class)
-    override val updatesOn: Set<KClass<out Event>> = setOf(AnswersUpdated::class, AnswersRolledBack::class, AssessmentStatusUpdated::class)
+    override val createsOn: Set<KClass<out Event>> = setOf(AssessmentCreatedEvent::class)
+    override val updatesOn: Set<KClass<out Event>> = setOf(AnswersUpdatedEvent::class, AnswersRolledBackEvent::class, AssessmentStatusUpdatedEvent::class)
   }
 }

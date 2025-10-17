@@ -10,8 +10,8 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregat
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentTimelineAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
@@ -73,13 +73,13 @@ class AggregateServiceTest {
         user = user,
         assessment = assessment,
         createdAt = firstEventTimestamp,
-        data = AssessmentCreated(),
+        data = AssessmentCreatedEvent(),
       ),
       EventEntity(
         user = user,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
-        data = AnswersUpdated(
+        data = AnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
         ),
@@ -88,7 +88,7 @@ class AggregateServiceTest {
         user = user,
         assessment = assessment,
         createdAt = lastEventTimestamp,
-        data = AnswersUpdated(
+        data = AnswersUpdatedEvent(
           added = mapOf("bar" to listOf("bar_value")),
           removed = emptyList(),
         ),
@@ -228,7 +228,7 @@ class AggregateServiceTest {
       EventEntity(
         user = user,
         assessment = assessment,
-        data = AnswersUpdated(
+        data = AnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
         ),
@@ -236,7 +236,7 @@ class AggregateServiceTest {
       EventEntity(
         user = user,
         assessment = assessment,
-        data = AnswersUpdated(
+        data = AnswersUpdatedEvent(
           added = mapOf("bar" to listOf("bar_value")),
           removed = listOf("foo"),
         ),
@@ -287,7 +287,7 @@ class AggregateServiceTest {
         EventEntity(
           user = user,
           assessment = assessment,
-          data = AssessmentCreated(),
+          data = AssessmentCreatedEvent(),
         ),
       )
 

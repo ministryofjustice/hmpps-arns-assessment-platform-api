@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.exception.HandlerNotImplementedException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.exception.QueryHandlerNotImplementedException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler.QueryHandler
 import kotlin.reflect.KClass
 
@@ -27,7 +27,7 @@ class QueryHandlerRegistryTest {
   fun `should throw when no handler is registered for the query`() {
     val registry = QueryHandlerRegistry(emptyList())
 
-    val exception = assertThrows(HandlerNotImplementedException::class.java) {
+    val exception = assertThrows(QueryHandlerNotImplementedException::class.java) {
       registry.getHandlerFor(Query::class)
     }
 

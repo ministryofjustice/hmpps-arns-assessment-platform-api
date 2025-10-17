@@ -9,9 +9,9 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessment
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
@@ -21,8 +21,8 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersion
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertIs
@@ -75,8 +75,8 @@ class AssessmentControllerTest(
     fun `it can process multiple commands`() {
       val request = CommandsRequest(
         commands = listOf(
-          CreateAssessment(User("test-user-1", "Test User")),
-          CreateAssessment(User("test-user-2", "Test User")),
+          CreateAssessmentCommand(User("test-user-1", "Test User")),
+          CreateAssessmentCommand(User("test-user-2", "Test User")),
         ),
       )
 
@@ -94,8 +94,8 @@ class AssessmentControllerTest(
       assertThat(response?.commands[0]?.request).isEqualTo(request.commands[0])
       assertThat(response?.commands[1]?.request).isEqualTo(request.commands[1])
 
-      val result1 = assertIs<CreateAssessmentResult>(response?.commands[0]?.result)
-      val result2 = assertIs<CreateAssessmentResult>(response?.commands[1]?.result)
+      val result1 = assertIs<CreateAssessmentCommandResult>(response?.commands[0]?.result)
+      val result2 = assertIs<CreateAssessmentCommandResult>(response?.commands[1]?.result)
 
       assertThat(result1.assessmentUuid).isNotEqualTo(result2.assessmentUuid)
 
@@ -138,8 +138,8 @@ class AssessmentControllerTest(
 
     @Test
     fun `it can process multiple queries`() {
-      val assessment1 = CreateAssessment(User("test-user-1", "Test User"))
-      val assessment2 = CreateAssessment(User("test-user-2", "Test User"))
+      val assessment1 = CreateAssessmentCommand(User("test-user-1", "Test User"))
+      val assessment2 = CreateAssessmentCommand(User("test-user-2", "Test User"))
 
       val httpRequest = MockHttpServletRequest()
       RequestContextHolder.setRequestAttributes(ServletRequestAttributes(httpRequest))
@@ -154,8 +154,8 @@ class AssessmentControllerTest(
 
       val request = QueriesRequest(
         queries = listOf(
-          AssessmentVersion(User("test-user-1", "Test User"), assessment1.assessmentUuid),
-          AssessmentVersion(User("test-user-2", "Test User"), assessment2.assessmentUuid),
+          AssessmentVersionQuery(User("test-user-1", "Test User"), assessment1.assessmentUuid),
+          AssessmentVersionQuery(User("test-user-2", "Test User"), assessment2.assessmentUuid),
         ),
       )
 
@@ -173,8 +173,8 @@ class AssessmentControllerTest(
       assertThat(response?.queries[0]?.request).isEqualTo(request.queries[0])
       assertThat(response?.queries[1]?.request).isEqualTo(request.queries[1])
 
-      assertIs<AssessmentVersionResult>(response?.queries[0]?.result)
-      assertIs<AssessmentVersionResult>(response?.queries[1]?.result)
+      assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
+      assertIs<AssessmentVersionQueryResult>(response?.queries[1]?.result)
 
       listOf(assessment1, assessment2).forEach { assessment ->
         aggregateRepository.findByAssessmentAndTypeBeforeDate(

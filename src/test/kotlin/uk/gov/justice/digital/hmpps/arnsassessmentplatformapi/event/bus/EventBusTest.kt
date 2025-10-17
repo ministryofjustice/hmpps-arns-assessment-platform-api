@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -32,7 +32,7 @@ class EventBusTest {
   val event = EventEntity(
     user = user,
     assessment = assessment,
-    data = AssessmentCreated(),
+    data = AssessmentCreatedEvent(),
   )
 
   @BeforeEach
@@ -66,7 +66,7 @@ class EventBusTest {
     val event = EventEntity(
       user = user,
       assessment = assessment,
-      data = AssessmentCreated(),
+      data = AssessmentCreatedEvent(),
     )
 
     eventBus.add(event)
@@ -105,7 +105,7 @@ class EventBusTest {
     )
 
     every { aggregateType.createsOn } returns emptySet()
-    every { aggregateType.updatesOn } returns setOf(AssessmentCreated::class)
+    every { aggregateType.updatesOn } returns setOf(AssessmentCreatedEvent::class)
 
     eventBus.add(event)
     eventBus.commit()
@@ -124,7 +124,7 @@ class EventBusTest {
       eventService = eventService,
     )
 
-    every { aggregateType.createsOn } returns setOf(AssessmentCreated::class)
+    every { aggregateType.createsOn } returns setOf(AssessmentCreatedEvent::class)
     every { aggregateType.updatesOn } returns emptySet()
 
     eventBus.add(event)

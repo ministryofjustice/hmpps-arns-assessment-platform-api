@@ -4,11 +4,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBack
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdated
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdated
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.LocalDateTime
@@ -55,7 +55,7 @@ class AssessmentVersionAggregateTest {
         EventEntity(
           user = User("FOO_USER", "Foo User"),
           assessment = AssessmentEntity(),
-          data = AnswersUpdated(
+          data = AnswersUpdatedEvent(
             added = mapOf("foo" to listOf("updated_foo_value")),
             removed = listOf("baz"),
           ),
@@ -84,7 +84,7 @@ class AssessmentVersionAggregateTest {
         EventEntity(
           user = User("FOO_USER", "Foo User"),
           assessment = AssessmentEntity(),
-          data = AnswersRolledBack(
+          data = AnswersRolledBackEvent(
             added = mapOf("foo" to listOf("previous_foo_value"), "bar" to listOf("bar_value")),
             removed = listOf("baz"),
             rolledBackTo = now,
@@ -107,7 +107,7 @@ class AssessmentVersionAggregateTest {
         EventEntity(
           user = User("FOO_USER", "Foo User"),
           assessment = AssessmentEntity(),
-          data = FormVersionUpdated("updated_form_version"),
+          data = FormVersionUpdatedEvent("updated_form_version"),
         ),
       )
 
@@ -129,7 +129,7 @@ class AssessmentVersionAggregateTest {
         EventEntity(
           user = User("FOO_USER", "Foo User"),
           assessment = AssessmentEntity(),
-          data = AssessmentCreated(),
+          data = AssessmentCreatedEvent(),
         ),
       )
     }
@@ -140,24 +140,24 @@ class AssessmentVersionAggregateTest {
     @Test
     fun `it returns true when it updates on an event`() {
       listOf(
-        AnswersUpdated(
+        AnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
         ),
-        AnswersRolledBack(
+        AnswersRolledBackEvent(
           added = mapOf("foo" to listOf("previous_foo_value")),
           removed = emptyList(),
           rolledBackTo = LocalDateTime.now().minus(1, ChronoUnit.DAYS),
         ),
-        FormVersionUpdated("updated_form_version"),
+        FormVersionUpdatedEvent("updated_form_version"),
       ).forEach { assertThat(AssessmentVersionAggregate().shouldUpdate(it::class)).isEqualTo(true) }
     }
 
     @Test
     fun `it returns false when it does update on an event`() {
       listOf(
-        AssessmentCreated(),
-        AssessmentStatusUpdated("foo_event"),
+        AssessmentCreatedEvent(),
+        AssessmentStatusUpdatedEvent("foo_event"),
       ).forEach { assertThat(AssessmentVersionAggregate().shouldUpdate(it::class)).isEqualTo(false) }
     }
   }

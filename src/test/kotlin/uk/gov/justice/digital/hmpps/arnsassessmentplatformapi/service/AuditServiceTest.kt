@@ -17,10 +17,10 @@ import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentStatus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentStatusCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimeline
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -129,8 +129,8 @@ class AuditServiceTest {
 
     @JvmStatic
     fun provideAuditable(): Stream<Any> = Stream.of(
-      UpdateAssessmentStatus(user, assessmentUuid, "TEST_STATUS"), // RequestableCommand
-      AssessmentTimeline(user, assessmentUuid, LocalDateTime.now()), // RequestableQuery
+      UpdateAssessmentStatusCommand(user, assessmentUuid, "TEST_STATUS"), // RequestableCommand
+      AssessmentTimelineQuery(user, assessmentUuid, LocalDateTime.now()), // RequestableQuery
     )
   }
 }
