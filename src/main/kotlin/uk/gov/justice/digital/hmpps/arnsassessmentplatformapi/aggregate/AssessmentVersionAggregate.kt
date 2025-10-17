@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
-import com.fasterxml.jackson.annotation.JsonTypeName
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
@@ -11,9 +10,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionU
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import kotlin.reflect.KClass
 
-private const val TYPE = "ASSESSMENT_VERSION"
-
-@JsonTypeName(TYPE)
 class AssessmentVersionAggregate(
   private val answers: MutableMap<String, List<String>> = mutableMapOf(),
   private val deletedAnswers: MutableMap<String, List<String>> = mutableMapOf(),
@@ -80,11 +76,7 @@ class AssessmentVersionAggregate(
     collaborators = collaborators.toMutableSet(),
   )
 
-  override fun type() = aggregateType
-
   companion object : AggregateType {
-    override val getInstance = { AssessmentVersionAggregate() }
-    override val aggregateType = TYPE
     override val createsOn = setOf(AssessmentCreatedEvent::class, AssessmentStatusUpdatedEvent::class)
     override val updatesOn = setOf(AnswersUpdatedEvent::class, AnswersRolledBackEvent::class, FormVersionUpdatedEvent::class)
   }

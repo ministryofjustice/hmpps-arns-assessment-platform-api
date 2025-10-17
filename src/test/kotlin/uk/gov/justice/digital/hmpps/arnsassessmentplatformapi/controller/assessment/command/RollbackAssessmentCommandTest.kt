@@ -133,7 +133,7 @@ class RollbackAssessmentCommandTest(
 
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
-      AssessmentVersionAggregate.aggregateType,
+      AssessmentVersionAggregate::class.simpleName!!,
       LocalDateTime.now(),
     )
 
@@ -167,7 +167,7 @@ class RollbackAssessmentCommandTest(
 
     val aggregateAfterSecondUpdate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
-      AssessmentVersionAggregate.aggregateType,
+      AssessmentVersionAggregate::class.simpleName!!,
       LocalDateTime.now(),
     )
 

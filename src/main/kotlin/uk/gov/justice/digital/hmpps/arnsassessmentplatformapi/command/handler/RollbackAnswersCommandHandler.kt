@@ -27,7 +27,7 @@ class RollbackAnswersCommandHandler(
   override val type = RollbackAnswersCommand::class
   override fun handle(command: RollbackAnswersCommand): CommandSuccessCommandResult {
     val assessment = assessmentService.findByUuid(command.assessmentUuid)
-    val aggregateType = AssessmentVersionAggregate.aggregateType
+    val aggregateType = AssessmentVersionAggregate::class
     val currentVersion: AggregateEntity = aggregateService.fetchAggregateForExactPointInTime(
       assessment,
       aggregateType,

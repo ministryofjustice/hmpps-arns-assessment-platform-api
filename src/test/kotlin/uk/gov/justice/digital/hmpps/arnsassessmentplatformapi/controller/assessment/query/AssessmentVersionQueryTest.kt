@@ -270,7 +270,7 @@ class AssessmentVersionQueryTest(
 
     val persistedAggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessment.uuid,
-      AssessmentVersionAggregate.Companion.aggregateType,
+      AssessmentVersionAggregate::class.simpleName!!,
       LocalDateTime.now(),
     )
 

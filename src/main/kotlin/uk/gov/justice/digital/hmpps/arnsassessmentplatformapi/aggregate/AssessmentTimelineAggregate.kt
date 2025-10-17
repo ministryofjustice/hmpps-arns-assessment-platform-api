@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
-import com.fasterxml.jackson.annotation.JsonTypeName
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
@@ -10,14 +9,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
 
-private const val TYPE = "ASSESSMENT_TIMELINE"
-
 data class TimelineItem(
   val details: String = "",
   val timestamp: LocalDateTime,
 )
 
-@JsonTypeName(TYPE)
 class AssessmentTimelineAggregate : Aggregate {
   private val timeline = mutableListOf<TimelineItem>()
   private var previousStatus: String? = null
@@ -79,11 +75,7 @@ class AssessmentTimelineAggregate : Aggregate {
       it.previousStatus = previousStatus
     }
 
-  override fun type() = aggregateType
-
   companion object : AggregateType {
-    override val getInstance = { AssessmentTimelineAggregate() }
-    override val aggregateType = TYPE
     override val createsOn: Set<KClass<out Event>> = setOf(AssessmentCreatedEvent::class)
     override val updatesOn: Set<KClass<out Event>> = setOf(AnswersUpdatedEvent::class, AnswersRolledBackEvent::class, AssessmentStatusUpdatedEvent::class)
   }

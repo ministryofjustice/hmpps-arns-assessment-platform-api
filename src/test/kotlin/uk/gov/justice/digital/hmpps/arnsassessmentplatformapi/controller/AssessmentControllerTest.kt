@@ -179,7 +179,7 @@ class AssessmentControllerTest(
       listOf(assessment1, assessment2).forEach { assessment ->
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.assessmentUuid,
-          AssessmentVersionAggregate.aggregateType,
+          AssessmentVersionAggregate::class.simpleName!!,
           LocalDateTime.now(),
         ).let { assertThat(it).isNotNull() }
       }

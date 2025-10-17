@@ -8,14 +8,14 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateS
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 
 @Component
-class AssessmentVersionHandler(
+class AssessmentVersionQueryHandler(
   private val assessmentService: AssessmentService,
   private val aggregateService: AggregateService,
 ) : QueryHandler<AssessmentVersionQuery> {
   override val type = AssessmentVersionQuery::class
   override fun handle(query: AssessmentVersionQuery): AssessmentVersionQueryResult {
     val aggregate = assessmentService.findByUuid(query.assessmentUuid)
-      .let { assessment -> aggregateService.fetchOrCreateAggregate(assessment, AssessmentVersionAggregate.aggregateType, query.timestamp) }
+      .let { assessment -> aggregateService.fetchOrCreateAggregate(assessment, AssessmentVersionAggregate::class, query.timestamp) }
       .data as AssessmentVersionAggregate
 
     return AssessmentVersionQueryResult(

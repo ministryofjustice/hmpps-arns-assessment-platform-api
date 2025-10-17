@@ -112,7 +112,7 @@ class UpdateAnswersCommandTest(
 
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
-      AssessmentVersionAggregate.aggregateType,
+      AssessmentVersionAggregate::class.simpleName!!,
       LocalDateTime.now(),
     )
 

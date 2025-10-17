@@ -63,7 +63,7 @@ class RollbackAnswersCommandHandlerTest {
     every {
       aggregateService.fetchAggregateForExactPointInTime(
         assessment,
-        AssessmentVersionAggregate.aggregateType,
+        AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-02T12:00:00"),
       )
     } returns AggregateEntity(
@@ -83,7 +83,7 @@ class RollbackAnswersCommandHandlerTest {
     every {
       aggregateService.fetchAggregateForExactPointInTime(
         assessment,
-        AssessmentVersionAggregate.aggregateType,
+        AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-01T12:00:00"),
       )
     } returns AggregateEntity(
@@ -131,7 +131,7 @@ class RollbackAnswersCommandHandlerTest {
     every {
       aggregateService.fetchAggregateForExactPointInTime(
         assessment,
-        AssessmentVersionAggregate.aggregateType,
+        AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-02T12:00:00"),
       )
     } returns AggregateEntity(
@@ -150,14 +150,14 @@ class RollbackAnswersCommandHandlerTest {
     every {
       aggregateService.fetchAggregateForExactPointInTime(
         assessment,
-        AssessmentVersionAggregate.aggregateType,
+        AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-01T12:00:00"),
       )
     } returns null
     every {
       aggregateService.createAggregateForPointInTime(
         assessment,
-        AssessmentVersionAggregate.aggregateType,
+        AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-01T12:00:00"),
       )
     } returns AggregateEntity(
@@ -204,14 +204,14 @@ class RollbackAnswersCommandHandlerTest {
     every {
       aggregateService.fetchAggregateForExactPointInTime(
         assessment,
-        AssessmentVersionAggregate.aggregateType,
+        AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-02T12:00:00"),
       )
     } returns null
     every {
       aggregateService.createAggregateForPointInTime(
         assessment,
-        AssessmentVersionAggregate.aggregateType,
+        AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-02T12:00:00"),
       )
     } returns AggregateEntity(
@@ -230,7 +230,7 @@ class RollbackAnswersCommandHandlerTest {
     every {
       aggregateService.fetchAggregateForExactPointInTime(
         assessment,
-        AssessmentVersionAggregate.aggregateType,
+        AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-01T12:00:00"),
       )
     } returns AggregateEntity(

@@ -6,8 +6,6 @@ import io.mockk.slot
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateTypeRegistry
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentTimelineAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
@@ -27,16 +25,10 @@ class AggregateServiceTest {
   val clock: Clock = mockk(relaxed = true)
   val aggregateRepository: AggregateRepository = mockk()
   val eventService: EventService = mockk()
-  val registry: AggregateTypeRegistry = mockk()
-  val aggregates = setOf(
-    AssessmentVersionAggregate,
-    AssessmentTimelineAggregate,
-  )
   val service = AggregateService(
     aggregateRepository = aggregateRepository,
     eventService = eventService,
     clock = clock,
-    registry = registry,
   )
 
   val assessment = AssessmentEntity(createdAt = LocalDateTime.parse("2025-01-01T12:00:00"))
@@ -46,22 +38,7 @@ class AggregateServiceTest {
   fun setUp() {
     every { clock.instant() } returns Instant.parse("2025-01-01T12:00:00Z")
     every { clock.zone } returns ZoneOffset.UTC
-    every { registry.getAggregates() } returns aggregates.associateBy { it.aggregateType }
-    every { registry.getAggregateByName(any()) } answers {
-      val name = firstArg<String>()
-      aggregates.find { it.aggregateType == name }
-    }
     every { aggregateRepository.save(any<AggregateEntity>()) } answers { firstArg<AggregateEntity>() }
-  }
-
-  @Nested
-  inner class GetAggregateTypes {
-    @Test
-    fun `it returns aggregate types`() {
-      val result = service.getAggregateTypes()
-
-      assertThat(result).isEqualTo(aggregates)
-    }
   }
 
   @Nested
@@ -98,7 +75,7 @@ class AggregateServiceTest {
     @Test
     fun `it returns an empty aggregate when passed no events`() {
       every { eventService.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns emptyList()
-      val result = service.createAggregate(assessment, AssessmentVersionAggregate.aggregateType)
+      val result = service.createAggregate(assessment, AssessmentVersionAggregate::class)
 
       assertThat(result.data.numberOfEventsApplied).isEqualTo(0)
       assertThat(result.eventsFrom).isEqualTo(assessment.createdAt)
@@ -111,7 +88,7 @@ class AggregateServiceTest {
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
-          AssessmentVersionAggregate.aggregateType,
+          AssessmentVersionAggregate::class.simpleName!!,
           lastEventTimestamp,
         )
       } returns AggregateEntity(
@@ -125,7 +102,7 @@ class AggregateServiceTest {
         ).apply { numberOfEventsApplied = events.size.toLong() },
       )
 
-      val result = service.createAggregate(assessment, AssessmentVersionAggregate.aggregateType)
+      val result = service.createAggregate(assessment, AssessmentVersionAggregate::class)
       assertThat(result.data.numberOfEventsApplied).isEqualTo(2)
       assertThat(result.eventsFrom).isEqualTo(firstEventTimestamp)
       assertThat(result.eventsTo).isEqualTo(lastEventTimestamp)
@@ -137,12 +114,12 @@ class AggregateServiceTest {
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
-          AssessmentVersionAggregate.aggregateType,
+          AssessmentVersionAggregate::class.simpleName!!,
           lastEventTimestamp,
         )
       } returns null
 
-      val result = service.createAggregate(assessment, AssessmentVersionAggregate.aggregateType)
+      val result = service.createAggregate(assessment, AssessmentVersionAggregate::class)
       assertThat(result.data.numberOfEventsApplied).isEqualTo(2)
       assertThat(result.eventsFrom).isEqualTo(firstEventTimestamp)
       assertThat(result.eventsTo).isEqualTo(lastEventTimestamp)
@@ -157,12 +134,12 @@ class AggregateServiceTest {
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
-          AssessmentVersionAggregate.aggregateType,
+          AssessmentVersionAggregate::class.simpleName!!,
           LocalDateTime.parse("2025-01-01T12:00:00"),
         )
       } returns latestAggregate
 
-      val result = service.fetchLatestAggregate(assessment.uuid, AssessmentVersionAggregate.aggregateType)
+      val result = service.fetchLatestAggregate(assessment.uuid, AssessmentVersionAggregate::class)
       assertThat(result).isNotNull
       assertThat(result?.assessment).isEqualTo(assessment)
       assertThat(result?.uuid).isEqualTo(latestAggregate.uuid)
@@ -174,12 +151,12 @@ class AggregateServiceTest {
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
-          AssessmentVersionAggregate.aggregateType,
+          AssessmentVersionAggregate::class.simpleName!!,
           LocalDateTime.parse("2025-01-01T12:00:00"),
         )
       } returns null
 
-      val result = service.fetchLatestAggregate(assessment.uuid, AssessmentVersionAggregate.aggregateType)
+      val result = service.fetchLatestAggregate(assessment.uuid, AssessmentVersionAggregate::class)
       assertThat(result).isNull()
     }
   }
@@ -193,12 +170,12 @@ class AggregateServiceTest {
       every {
         aggregateRepository.findByAssessmentAndTypeOnExactDate(
           assessment.uuid,
-          AssessmentVersionAggregate.aggregateType,
+          AssessmentVersionAggregate::class.simpleName!!,
           date,
         )
       } returns latestAggregate
 
-      val result = service.fetchAggregateForExactPointInTime(assessment, AssessmentVersionAggregate.aggregateType, date)
+      val result = service.fetchAggregateForExactPointInTime(assessment, AssessmentVersionAggregate::class, date)
       assertThat(result).isNotNull
       assertThat(result?.assessment).isEqualTo(assessment)
       assertThat(result?.uuid).isEqualTo(latestAggregate.uuid)
@@ -211,12 +188,12 @@ class AggregateServiceTest {
       every {
         aggregateRepository.findByAssessmentAndTypeOnExactDate(
           assessment.uuid,
-          AssessmentVersionAggregate.aggregateType,
+          AssessmentVersionAggregate::class.simpleName!!,
           LocalDateTime.parse("2025-01-01T12:00:00"),
         )
       } returns null
 
-      val result = service.fetchAggregateForExactPointInTime(assessment, AssessmentVersionAggregate.aggregateType, date)
+      val result = service.fetchAggregateForExactPointInTime(assessment, AssessmentVersionAggregate::class, date)
       assertThat(result).isNull()
     }
   }
@@ -249,7 +226,7 @@ class AggregateServiceTest {
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
-          AssessmentVersionAggregate.aggregateType,
+          AssessmentVersionAggregate::class.simpleName!!,
           LocalDateTime.parse("2025-01-01T12:00:00"),
         )
       } returns latestAggregate
@@ -262,7 +239,7 @@ class AggregateServiceTest {
         slot.captured.toList()
       }
 
-      val result = service.processEvents(assessment, AssessmentVersionAggregate.aggregateType, events)
+      val result = service.processEvents(assessment, AssessmentVersionAggregate::class, events)
       assertThat(result).describedAs("aggregate should be the latest").isEqualTo(slot.captured.last())
       val data = assertIs<AssessmentVersionAggregate>(result.data)
       assertThat(data.numberOfEventsApplied).isEqualTo(2)
@@ -276,7 +253,7 @@ class AggregateServiceTest {
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
-          AssessmentVersionAggregate.aggregateType,
+          AssessmentVersionAggregate::class.simpleName!!,
           LocalDateTime.parse("2025-01-01T12:00:00"),
         )
       } returns null
@@ -299,7 +276,7 @@ class AggregateServiceTest {
         slot.captured.toList()
       }
 
-      val result = service.processEvents(assessment, AssessmentVersionAggregate.aggregateType, events)
+      val result = service.processEvents(assessment, AssessmentVersionAggregate::class, events)
       assertThat(result).describedAs("aggregate should be the latest").isEqualTo(slot.captured.last())
       val data = assertIs<AssessmentVersionAggregate>(result.data)
       assertThat(data.numberOfEventsApplied).isEqualTo(2)
