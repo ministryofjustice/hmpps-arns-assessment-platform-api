@@ -5,9 +5,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.dto.commands.RequestableCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
-import java.time.Instant
 import kotlin.also
 import kotlin.jvm.java
 
@@ -47,12 +48,11 @@ class AuditService(
     service = serviceName,
     details = json(mapOf("assessmentUuid" to command.assessmentUuid)),
   ).run(::sendEvent)
-}
 
-data class AuditableEvent(
-  val who: String,
-  val what: String,
-  val `when`: Instant = Instant.now(),
-  val service: String,
-  val details: String,
-)
+  fun audit(query: RequestableQuery) = AuditableEvent(
+    who = query.user.id,
+    what = query::class.simpleName ?: "Unknown",
+    service = serviceName,
+    details = json(mapOf("assessmentUuid" to query.assessmentUuid)),
+  ).run(::sendEvent)
+}
