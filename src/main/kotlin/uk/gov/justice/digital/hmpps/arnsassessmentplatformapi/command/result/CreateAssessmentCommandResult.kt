@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result
 
-import com.fasterxml.jackson.annotation.JsonTypeName
 import java.util.UUID
 
-@JsonTypeName("CreateAssessmentResult")
 data class CreateAssessmentCommandResult(
   val assessmentUuid: UUID,
 ) : CommandResult {
