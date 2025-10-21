@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -26,6 +27,20 @@ class ArnsAssessmentPlatformApiExceptionHandler {
         ErrorResponse(
           status = statusCode,
           userMessage = "Validation failure: ${e.message}",
+          developerMessage = e.message,
+        ),
+      ).also { logException(e, statusCode) }
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException::class)
+  fun handleException(e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
+    val statusCode = BAD_REQUEST
+    return ResponseEntity
+      .status(statusCode)
+      .body(
+        ErrorResponse(
+          status = statusCode,
+          userMessage = "Invalid payload: ${e.message}",
           developerMessage = e.message,
         ),
       ).also { logException(e, statusCode) }
@@ -68,7 +83,7 @@ class ArnsAssessmentPlatformApiExceptionHandler {
     .body(
       ErrorResponse(
         status = INTERNAL_SERVER_ERROR,
-        userMessage = "Unexpected error: ${e.message}",
+        userMessage = "Unexpected error (${e::class}): ${e.message}",
         developerMessage = e.message,
       ),
     ).also { log.error("Unexpected exception", e) }
