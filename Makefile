@@ -62,62 +62,9 @@ lint-baseline: ## Generate a baseline file, ignoring all existing code smells.
 update: ## Downloads the latest versions of containers.
 	docker compose pull
 
-# Client builder config
-SPEC_URL ?= http://api:8080/v3/api-docs
-CACHE_DIR := typescript-client/.cache
-SPEC_JSON := $(CACHE_DIR)/spec.json
-SPEC_SORT := $(CACHE_DIR)/spec.sorted.json
-HASH_FILE := $(CACHE_DIR)/spec.sha256
-OUT_DIR := typescript-client/src
-NETWORK ?= hmpps-arns-assessment-platform_hmpps
-
-# Client builder util image config
-DOCKERFILE ?= ./typescript-client/Dockerfile
-BUILD_CTX  ?= ./typescript-client
-CLIENT_BUILDER_DOCKER := client-builder:latest
-
-.PHONY: build-util-docker-image
-build-util-docker-image:
-	@echo "🐳 Building $(CLIENT_BUILDER_DOCKER)"
-	@docker build -t $(CLIENT_BUILDER_DOCKER) -f $(DOCKERFILE) $(BUILD_CTX)
-
-.PHONY: client clean
-
-$(CACHE_DIR):
-	mkdir -p $@
-# Step 1: fetch latest spec into the cache
-$(SPEC_JSON): | $(CACHE_DIR) build-util-docker-image
-	@echo "📥 Fetching OpenAPI spec from $(SPEC_URL)"
-	@docker run --rm --network $(NETWORK) \
-        -v $(abspath $(CACHE_DIR)):/cache \
-        $(CLIENT_BUILDER_DOCKER) \
-        sh -c 'set -e; curl -sSL "$(SPEC_URL)" -o /cache/spec.json'
-
-# Generate the client code
-.PHONY: build-client
-build-client: | build-util-docker-image $(SPEC_JSON)
-	@docker run --rm -v $(abspath $(CACHE_DIR)):/cache \
-        $(CLIENT_BUILDER_DOCKER) jq -S . /cache/spec.json > $(SPEC_SORT)
-	@NEW_HASH=$$(docker run --rm $(CLIENT_BUILDER_DOCKER) bash -c "sha256sum" < $(SPEC_SORT) | cut -d' ' -f1); \
-        OLD_HASH=$$(cat $(HASH_FILE) 2>/dev/null || true); \
-        if [ "$$NEW_HASH" = "$$OLD_HASH" ]; then \
-            echo '✅ Spec unchanged, skipping codegen'; \
-            exit 0; \
-        fi; \
-        echo "⬆️ Spec updated! Old hash: $$OLD_HASH"; \
-        echo "🔄 New hash: $$NEW_HASH"; \
-        echo "$$NEW_HASH" > $(HASH_FILE); \
-        echo '⚙️ Generating client...'; \
-        docker run --rm --network $(NETWORK) \
-        -v $(abspath $(CACHE_DIR)):/home/node/app/cache \
-        -v $(abspath $(OUT_DIR)):/home/node/app/src/client \
-        $(CLIENT_BUILDER_DOCKER) \
-        bash -lc 'set -e; \
-            npx @hey-api/openapi-ts -i /home/node/app/cache/spec.json -o /home/node/app/build/ && \
-            mkdir -p /home/node/app/src/client && rm -rf /home/node/app/src/client/* && \
-            cp -r /home/node/app/build/* /home/node/app/src/client/'; \
-        echo '✅ Done! The output is in ./$(OUT_DIR)'
+build-client: ## Generates typescript client code
+	docker compose ${DEV_COMPOSE_FILES} run --rm typescript-client-builder
 
 clean: ## Stops and removes all project containers. Deletes local build/cache directories.
 	docker compose down
-	rm -rf .gradle build $(CACHE_DIR) $(OUT_DIR)
+	rm -rf .gradle build typescript-client/.cache typescript-client/src
