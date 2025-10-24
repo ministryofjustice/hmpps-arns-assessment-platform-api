@@ -8,5 +8,5 @@ data class CreateAssessmentCommand(
   override val user: User,
 ) : RequestableCommand {
   @JsonIgnore
-  override val assessmentUuid: UUID = UUID.randomUUID()
+  override val collectionUuid: UUID = UUID.randomUUID()
 }

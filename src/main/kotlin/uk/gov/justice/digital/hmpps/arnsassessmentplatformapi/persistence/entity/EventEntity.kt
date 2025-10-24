@@ -36,8 +36,8 @@ class EventEntity(
   val user: User,
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "assessment_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
-  val assessment: AssessmentEntity,
+  @JoinColumn(name = "collection_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
+  val collection: CollectionEntity,
 
   @Type(JsonType::class)
   @Column(name = "data", nullable = false)

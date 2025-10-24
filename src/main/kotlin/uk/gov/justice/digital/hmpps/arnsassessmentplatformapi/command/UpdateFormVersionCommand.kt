@@ -5,6 +5,6 @@ import java.util.UUID
 
 data class UpdateFormVersionCommand(
   override val user: User,
-  override val assessmentUuid: UUID,
+  override val collectionUuid: UUID,
   val version: String,
 ) : RequestableCommand

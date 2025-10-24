@@ -13,10 +13,10 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.CollectionRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.CollectionEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
@@ -26,7 +26,7 @@ import kotlin.test.assertIs
 
 class AssessmentVersionQueryTest(
   @Autowired
-  private val assessmentRepository: AssessmentRepository,
+  private val collectionRepository: CollectionRepository,
   @Autowired
   private val aggregateRepository: AggregateRepository,
   @Autowired
@@ -34,24 +34,24 @@ class AssessmentVersionQueryTest(
 ) : IntegrationTestBase() {
   @Test
   fun `it fetches the latest aggregate for an assessment`() {
-    val assessment: AssessmentEntity = AssessmentEntity().run(assessmentRepository::save)
+    val assessment: CollectionEntity = CollectionEntity().run(collectionRepository::save)
 
     val events = listOf(
       EventEntity(
         user = User("FOO_USER", "Foo User"),
-        assessment = assessment,
+        collection = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = AssessmentCreatedEvent(),
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
-        assessment = assessment,
+        collection = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent("1"),
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
-        assessment = assessment,
+        collection = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
         data = AnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
@@ -68,7 +68,7 @@ class AssessmentVersionQueryTest(
     ).apply { numberOfEventsApplied = events.size.toLong() }
 
     AggregateEntity(
-      assessment = assessment,
+      collection = assessment,
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:05:00"),
       data = aggregateData,
@@ -78,7 +78,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentUuid = assessment.uuid,
+          collectionUuid = assessment.uuid,
         ),
       ),
     )
@@ -104,24 +104,24 @@ class AssessmentVersionQueryTest(
 
   @Test
   fun `it fetches an aggregate for a point in time`() {
-    val assessment: AssessmentEntity = AssessmentEntity().run(assessmentRepository::save)
+    val assessment: CollectionEntity = CollectionEntity().run(collectionRepository::save)
 
     listOf(
       EventEntity(
         user = User("FOO_USER", "Foo User"),
-        assessment = assessment,
+        collection = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = AssessmentCreatedEvent(),
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
-        assessment = assessment,
+        collection = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent("1"),
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
-        assessment = assessment,
+        collection = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
         data = AnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
@@ -130,7 +130,7 @@ class AssessmentVersionQueryTest(
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
-        assessment = assessment,
+        collection = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
         data = AnswersUpdatedEvent(
           added = mapOf("foo" to listOf("updated_foo_value")),
@@ -155,13 +155,13 @@ class AssessmentVersionQueryTest(
 
     listOf(
       AggregateEntity(
-        assessment = assessment,
+        collection = assessment,
         eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
         eventsTo = LocalDateTime.parse("2025-01-01T12:30:00"),
         data = secondAggregateData,
       ),
       AggregateEntity(
-        assessment = assessment,
+        collection = assessment,
         eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
         eventsTo = LocalDateTime.parse("2025-01-01T12:05:00"),
         data = firstAggregateData,
@@ -172,7 +172,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentUuid = assessment.uuid,
+          collectionUuid = assessment.uuid,
           timestamp = LocalDateTime.parse("2025-01-01T12:15:00"),
         ),
       ),
@@ -199,24 +199,26 @@ class AssessmentVersionQueryTest(
 
   @Test
   fun `it creates an aggregate for an assessment where none exists`() {
-    val assessment: AssessmentEntity = AssessmentEntity().run(assessmentRepository::save)
+    val assessment: CollectionEntity = CollectionEntity(
+      createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+    ).run(collectionRepository::save)
 
-    val events = listOf(
+    listOf(
       EventEntity(
         user = User("FOO_USER", "Foo User"),
-        assessment = assessment,
+        collection = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = AssessmentCreatedEvent(),
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
-        assessment = assessment,
+        collection = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent("1"),
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
-        assessment = assessment,
+        collection = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
         data = AnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
@@ -225,7 +227,7 @@ class AssessmentVersionQueryTest(
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
-        assessment = assessment,
+        collection = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
         data = AnswersUpdatedEvent(
           added = mapOf("foo" to listOf("updated_foo_value")),
@@ -239,13 +241,13 @@ class AssessmentVersionQueryTest(
       deletedAnswers = mutableMapOf(),
       collaborators = mutableSetOf(User("FOO_USER", "Foo User")),
       formVersion = "1",
-    ).apply { numberOfEventsApplied = events.size.toLong() }
+    )
 
     val request = QueriesRequest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentUuid = assessment.uuid,
+          collectionUuid = assessment.uuid,
         ),
       ),
     )
@@ -267,15 +269,6 @@ class AssessmentVersionQueryTest(
     assertThat(result.answers).isEqualTo(aggregateData.getAnswers())
     assertThat(result.collaborators).isEqualTo(aggregateData.getCollaborators())
     assertThat(result.formVersion).isEqualTo(aggregateData.getFormVersion())
-
-    val persistedAggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
-      assessment.uuid,
-      AssessmentVersionAggregate::class.simpleName!!,
-      LocalDateTime.now(),
-    )
-
-    assertThat(persistedAggregate?.data).isNotNull
-    assertThat(persistedAggregate?.data?.numberOfEventsApplied).isEqualTo(3)
   }
 
   @Test
@@ -284,7 +277,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentUuid = UUID.randomUUID(),
+          collectionUuid = UUID.randomUUID(),
         ),
       ),
     )

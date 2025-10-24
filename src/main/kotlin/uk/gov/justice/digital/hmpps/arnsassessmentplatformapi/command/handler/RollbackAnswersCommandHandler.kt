@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CollectionService
 import java.time.Clock
 import java.time.LocalDateTime
 import kotlin.collections.component1
@@ -18,7 +18,7 @@ import kotlin.collections.iterator
 
 @Component
 class RollbackAnswersCommandHandler(
-  private val assessmentService: AssessmentService,
+  private val collectionService: CollectionService,
   private val aggregateService: AggregateService,
   private val eventBus: EventBus,
   private val clock: Clock,
@@ -26,7 +26,7 @@ class RollbackAnswersCommandHandler(
   private fun now() = LocalDateTime.now(clock)
   override val type = RollbackAnswersCommand::class
   override fun handle(command: RollbackAnswersCommand): CommandSuccessCommandResult {
-    val assessment = assessmentService.findByUuid(command.assessmentUuid)
+    val assessment = collectionService.findByUuid(command.collectionUuid)
     val aggregateType = AssessmentVersionAggregate::class
     val currentVersion: AggregateEntity = aggregateService.fetchAggregateForExactPointInTime(
       assessment,
@@ -54,7 +54,7 @@ class RollbackAnswersCommandHandler(
     eventBus.add(
       EventEntity(
         user = command.user,
-        assessment = assessment,
+        collection = assessment,
         data = AnswersRolledBackEvent(
           rolledBackTo = command.pointInTime,
           added = answersAdded,

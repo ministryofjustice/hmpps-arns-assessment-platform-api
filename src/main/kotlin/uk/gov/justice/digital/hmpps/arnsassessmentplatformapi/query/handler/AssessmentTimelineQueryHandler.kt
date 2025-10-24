@@ -5,16 +5,16 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentTimelineQueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CollectionService
 
 @Component
 class AssessmentTimelineQueryHandler(
-  private val assessmentService: AssessmentService,
+  private val collectionService: CollectionService,
   private val aggregateService: AggregateService,
 ) : QueryHandler<AssessmentTimelineQuery> {
   override val type = AssessmentTimelineQuery::class
   override fun handle(query: AssessmentTimelineQuery): AssessmentTimelineQueryResult {
-    val aggregate = assessmentService.findByUuid(query.assessmentUuid)
+    val aggregate = collectionService.findByUuid(query.collectionUuid)
       .let { assessment -> aggregateService.fetchOrCreateAggregate(assessment, AssessmentTimelineAggregate::class, query.timestamp) }
       .data as AssessmentTimelineAggregate
     return AssessmentTimelineQueryResult(aggregate.getTimeline())

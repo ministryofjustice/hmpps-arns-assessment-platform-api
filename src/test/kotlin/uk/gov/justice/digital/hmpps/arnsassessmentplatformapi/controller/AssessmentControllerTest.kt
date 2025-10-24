@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.respons
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.CollectionRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
 import java.time.LocalDateTime
@@ -29,7 +29,7 @@ import kotlin.test.assertIs
 
 class AssessmentControllerTest(
   @Autowired
-  private val assessmentRepository: AssessmentRepository,
+  private val collectionRepository: CollectionRepository,
   @Autowired
   private val aggregateRepository: AggregateRepository,
 ) : IntegrationTestBase() {
@@ -99,8 +99,8 @@ class AssessmentControllerTest(
 
       assertThat(result1.assessmentUuid).isNotEqualTo(result2.assessmentUuid)
 
-      assertThat(assessmentRepository.findByUuid(result1.assessmentUuid)).isNotNull()
-      assertThat(assessmentRepository.findByUuid(result2.assessmentUuid)).isNotNull()
+      assertThat(collectionRepository.findByUuid(result1.assessmentUuid)).isNotNull()
+      assertThat(collectionRepository.findByUuid(result2.assessmentUuid)).isNotNull()
     }
   }
 
@@ -154,8 +154,8 @@ class AssessmentControllerTest(
 
       val request = QueriesRequest(
         queries = listOf(
-          AssessmentVersionQuery(User("test-user-1", "Test User"), assessment1.assessmentUuid),
-          AssessmentVersionQuery(User("test-user-2", "Test User"), assessment2.assessmentUuid),
+          AssessmentVersionQuery(User("test-user-1", "Test User"), assessment1.collectionUuid),
+          AssessmentVersionQuery(User("test-user-2", "Test User"), assessment2.collectionUuid),
         ),
       )
 
@@ -178,7 +178,7 @@ class AssessmentControllerTest(
 
       listOf(assessment1, assessment2).forEach { assessment ->
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
-          assessment.assessmentUuid,
+          assessment.collectionUuid,
           AssessmentVersionAggregate::class.simpleName!!,
           LocalDateTime.now(),
         ).let { assertThat(it).isNotNull() }

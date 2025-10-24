@@ -15,14 +15,14 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.CollectionRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import java.util.UUID
 import kotlin.test.assertIs
 
 class CreateAssessmentCommandTest(
   @Autowired
-  val assessmentRepository: AssessmentRepository,
+  val collectionRepository: CollectionRepository,
   @Autowired
   val eventRepository: EventRepository,
 ) : IntegrationTestBase() {
@@ -63,11 +63,11 @@ class CreateAssessmentCommandTest(
 
     val assessmentUuid = requireNotNull(result.assessmentUuid) { "An assessmentUuid should be present on the response" }
 
-    val assessment = assessmentRepository.findByUuid(assessmentUuid)
+    val assessment = collectionRepository.findByUuid(assessmentUuid)
 
     assertThat(assessment).isNotNull
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentUuid)
+    val eventsForAssessment = eventRepository.findAllByCollectionUuid(assessmentUuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(1)
     assertIs<AssessmentCreatedEvent>(eventsForAssessment.last().data)
@@ -104,7 +104,7 @@ class CreateAssessmentCommandTest(
     val result = assertIs<CreateAssessmentCommandResult>(response?.commands[0]?.result)
     val actualAssessmentUuid = requireNotNull(result.assessmentUuid) { "An assessmentUuid should be present on the response" }
 
-    assertNull(assessmentRepository.findByUuid(requestedAssessmentUuid))
-    assertThat(assessmentRepository.findByUuid(actualAssessmentUuid)).isNotNull
+    assertNull(collectionRepository.findByUuid(requestedAssessmentUuid))
+    assertThat(collectionRepository.findByUuid(actualAssessmentUuid)).isNotNull
   }
 }

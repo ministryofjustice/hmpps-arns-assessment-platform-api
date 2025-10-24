@@ -6,6 +6,6 @@ import java.util.UUID
 
 data class RollbackAnswersCommand(
   override val user: User,
-  override val assessmentUuid: UUID,
+  override val collectionUuid: UUID,
   val pointInTime: LocalDateTime,
 ) : RequestableCommand

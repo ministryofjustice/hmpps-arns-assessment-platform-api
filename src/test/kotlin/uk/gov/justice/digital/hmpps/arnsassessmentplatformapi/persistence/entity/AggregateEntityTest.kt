@@ -11,11 +11,11 @@ import kotlin.test.assertIs
 class AggregateEntityTest {
   @Test
   fun `test it works`() {
-    val assessment = AssessmentEntity(createdAt = LocalDateTime.parse("2025-08-08T12:00:00"))
+    val assessment = CollectionEntity(createdAt = LocalDateTime.parse("2025-08-08T12:00:00"))
     val data = AssessmentVersionAggregate()
 
     val firstEvent = EventEntity(
-      assessment = assessment,
+      collection = assessment,
       createdAt = LocalDateTime.parse("2025-08-08T12:00:00"),
       user = User(
         id = "foo-user",
@@ -28,7 +28,7 @@ class AggregateEntityTest {
     )
 
     val secondEvent = EventEntity(
-      assessment = assessment,
+      collection = assessment,
       createdAt = LocalDateTime.parse("2025-08-08T13:30:00"),
       user = User(
         id = "foo-user",

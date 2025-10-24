@@ -16,17 +16,17 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.CollectionRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.CollectionEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
 class UpdateFormVersionCommandTest(
   @Autowired
-  val assessmentRepository: AssessmentRepository,
+  val collectionRepository: CollectionRepository,
   @Autowired
   val aggregateRepository: AggregateRepository,
 ) : IntegrationTestBase() {
@@ -43,10 +43,11 @@ class UpdateFormVersionCommandTest(
 
   @Test
   fun `it executes commands for assessments`() {
-    val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
-    assessmentRepository.save(assessmentEntity)
+    val assessmentEntity =
+      CollectionEntity(createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
+    collectionRepository.save(assessmentEntity)
     val aggregateEntity = AggregateEntity(
-      assessment = assessmentEntity,
+      collection = assessmentEntity,
       updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -60,13 +61,13 @@ class UpdateFormVersionCommandTest(
       listOf(
         EventEntity(
           user = user,
-          assessment = assessmentEntity,
+          collection = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(),
         ),
         EventEntity(
           user = user,
-          assessment = assessmentEntity,
+          collection = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = FormVersionUpdatedEvent(
             version = "old_form_version",
@@ -81,7 +82,7 @@ class UpdateFormVersionCommandTest(
 
         UpdateFormVersionCommand(
           user = User("test-user", "Test User"),
-          assessmentUuid = assessmentEntity.uuid,
+          collectionUuid = assessmentEntity.uuid,
           "updated_form_version",
         ),
       ),
@@ -101,7 +102,7 @@ class UpdateFormVersionCommandTest(
     assertThat(response?.commands[0]?.request).isEqualTo(request.commands[0])
     assertIs<CommandSuccessCommandResult>(response?.commands[0]?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByCollectionUuid(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(3)
     assertThat(eventsForAssessment.last().data).isInstanceOf(FormVersionUpdatedEvent::class.java)

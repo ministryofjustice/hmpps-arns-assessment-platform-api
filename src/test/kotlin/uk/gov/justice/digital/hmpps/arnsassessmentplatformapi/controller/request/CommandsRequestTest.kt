@@ -14,7 +14,7 @@ class CommandsRequestTest {
   fun `it creates`() {
     val updateAnswersCommand = UpdateAnswersCommand(
       user = User("FOO_USER", "Foo User"),
-      assessmentUuid = UUID.randomUUID(),
+      collectionUuid = UUID.randomUUID(),
       added = mapOf("foo" to listOf("foo_value")),
       removed = emptyList(),
     )

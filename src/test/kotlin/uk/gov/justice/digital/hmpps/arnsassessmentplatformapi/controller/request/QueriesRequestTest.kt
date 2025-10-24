@@ -15,7 +15,7 @@ class QueriesRequestTest {
   fun `it creates`() {
     val query = AssessmentTimelineQuery(
       user = User("FOO_USER", "Foo User"),
-      assessmentUuid = UUID.randomUUID(),
+      collectionUuid = UUID.randomUUID(),
       timestamp = LocalDateTime.now(),
     )
 
