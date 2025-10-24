@@ -59,9 +59,12 @@ lint-fix: ## Runs the Kotlin linter and auto-fixes.
 lint-baseline: ## Generate a baseline file, ignoring all existing code smells.
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle --parallel
 
-clean: ## Stops and removes all project containers. Deletes local build/cache directories.
-	docker compose down
-	rm -rf .gradle build
-
 update: ## Downloads the latest versions of containers.
 	docker compose pull
+
+build-client: ## Generates typescript client code
+	docker compose ${DEV_COMPOSE_FILES} run --rm typescript-client-builder
+
+clean: ## Stops and removes all project containers. Deletes local build/cache directories.
+	docker compose down
+	rm -rf .gradle build typescript-client/.cache typescript-client/src

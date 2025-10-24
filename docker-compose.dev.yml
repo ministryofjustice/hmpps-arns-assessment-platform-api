@@ -15,6 +15,19 @@ services:
       - "8080:8080"
       - "5005:5005"
 
+  typescript-client-builder:
+    build: typescript-client
+    depends_on:
+      - api
+    networks:
+      - hmpps
+    environment:
+      - SPEC_URL=http://api:8080/v3/api-docs
+      - HOST_DIR=typescript-client
+    volumes:
+      - ./typescript-client/.cache:/app/.cache
+      - ./typescript-client/src:/app/src
+
 volumes:
   .gradle:
   build:
