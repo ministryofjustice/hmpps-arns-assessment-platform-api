@@ -5,5 +5,5 @@ import java.util.UUID
 
 sealed interface RequestableQuery : Query {
   val user: User
-  val assessmentUuid: UUID
+  val collectionUuid: UUID
 }

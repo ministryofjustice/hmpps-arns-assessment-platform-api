@@ -17,17 +17,17 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdat
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.CollectionRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.CollectionEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
 class RollbackAssessmentCommandTest(
   @Autowired
-  val assessmentRepository: AssessmentRepository,
+  val collectionRepository: CollectionRepository,
   @Autowired
   val aggregateRepository: AggregateRepository,
 ) : IntegrationTestBase() {
@@ -44,10 +44,10 @@ class RollbackAssessmentCommandTest(
 
   @Test
   fun `it creates a rollback for a point in time`() {
-    val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.parse("2025-01-01T12:00:00"))
-    assessmentRepository.save(assessmentEntity)
+    val assessmentEntity = CollectionEntity(createdAt = LocalDateTime.parse("2025-01-01T12:00:00"))
+    collectionRepository.save(assessmentEntity)
     val aggregateEntity = AggregateEntity(
-      assessment = assessmentEntity,
+      collection = assessmentEntity,
       updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -61,13 +61,13 @@ class RollbackAssessmentCommandTest(
       listOf(
         EventEntity(
           user = user,
-          assessment = assessmentEntity,
+          collection = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
           data = AssessmentCreatedEvent(),
         ),
         EventEntity(
           user = user,
-          assessment = assessmentEntity,
+          collection = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AnswersUpdatedEvent(
             added = mapOf(
@@ -78,7 +78,7 @@ class RollbackAssessmentCommandTest(
         ),
         EventEntity(
           user = user,
-          assessment = assessmentEntity,
+          collection = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T13:45:00"),
           data = AnswersUpdatedEvent(
             added = mapOf(
@@ -89,7 +89,7 @@ class RollbackAssessmentCommandTest(
         ),
         EventEntity(
           user = user,
-          assessment = assessmentEntity,
+          collection = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-02T09:30:00"),
           data = AnswersUpdatedEvent(
             added = mapOf(
@@ -106,7 +106,7 @@ class RollbackAssessmentCommandTest(
       commands = listOf(
         RollbackAnswersCommand(
           user = User("test-user", "Test User"),
-          assessmentUuid = assessmentEntity.uuid,
+          collectionUuid = assessmentEntity.uuid,
           pointInTime = LocalDateTime.parse("2025-01-01T13:00:00"),
         ),
       ),
@@ -126,7 +126,7 @@ class RollbackAssessmentCommandTest(
     assertThat(response?.commands[0]?.request).isEqualTo(request.commands[0])
     assertIs<CommandSuccessCommandResult>(response?.commands[0]?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByCollectionUuid(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(5)
     assertThat(eventsForAssessment.last().data).isInstanceOf(AnswersRolledBackEvent::class.java)
@@ -147,7 +147,7 @@ class RollbackAssessmentCommandTest(
       commands = listOf(
         RollbackAnswersCommand(
           user = User("test-user", "Test User"),
-          assessmentUuid = assessmentEntity.uuid,
+          collectionUuid = assessmentEntity.uuid,
           pointInTime = LocalDateTime.parse("2025-01-02T10:00:00"),
         ),
       ),
@@ -160,7 +160,7 @@ class RollbackAssessmentCommandTest(
       .exchange()
       .expectStatus().isOk
 
-    val eventsAfterSecondRollback = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsAfterSecondRollback = eventRepository.findAllByCollectionUuid(assessmentEntity.uuid)
 
     assertThat(eventsAfterSecondRollback.size).isEqualTo(6)
     assertThat(eventsAfterSecondRollback.last().data).isInstanceOf(AnswersRolledBackEvent::class.java)

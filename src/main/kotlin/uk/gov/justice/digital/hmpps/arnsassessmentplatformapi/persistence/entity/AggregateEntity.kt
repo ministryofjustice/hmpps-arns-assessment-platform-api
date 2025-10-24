@@ -31,14 +31,14 @@ class AggregateEntity(
   var updatedAt: LocalDateTime = LocalDateTime.now(),
 
   @Column(name = "events_from")
-  val eventsFrom: LocalDateTime = LocalDateTime.now(),
+  val eventsFrom: LocalDateTime?,
 
   @Column(name = "events_to")
   var eventsTo: LocalDateTime = LocalDateTime.now(),
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "assessment_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
-  val assessment: AssessmentEntity,
+  @JoinColumn(name = "collection_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
+  val collection: CollectionEntity,
 
   @Type(JsonType::class)
   @Column(name = "data", nullable = false)
@@ -53,22 +53,22 @@ class AggregateEntity(
   fun clone(): AggregateEntity = AggregateEntity(
     eventsFrom = this.eventsFrom,
     eventsTo = this.eventsTo,
-    assessment = this.assessment,
+    collection = this.collection,
     data = this.data.clone(),
   )
 
   companion object {
-    fun init(assessment: AssessmentEntity, data: Aggregate, events: List<EventEntity> = emptyList()) = AggregateEntity(
-      assessment = assessment,
+    fun init(collection: CollectionEntity, data: Aggregate, events: List<EventEntity> = emptyList()) = AggregateEntity(
+      collection = collection,
       data = data,
-      eventsFrom = events.minByOrNull { it.createdAt }?.createdAt ?: assessment.createdAt,
+      eventsFrom = (events.minByOrNull { it.createdAt }?.createdAt ?: collection.createdAt),
     ).apply { events.forEach { data.apply(it) } }
 
-    fun getDefault(assessment: AssessmentEntity, data: Aggregate) = AggregateEntity(
-      assessment = assessment,
+    fun getDefault(collection: CollectionEntity, data: Aggregate) = AggregateEntity(
+      collection = collection,
       data = data,
-      eventsFrom = assessment.createdAt,
-      eventsTo = assessment.createdAt,
+      eventsFrom = collection.createdAt,
+      eventsTo = collection.createdAt,
       updatedAt = LocalDateTime.now(),
     )
   }

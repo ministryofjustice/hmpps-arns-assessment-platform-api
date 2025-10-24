@@ -21,12 +21,12 @@ class EventBus(
 
   fun commit() {
     val eventTypes = queue.map { it.data::class }
-    queue.groupBy { it.assessment }
-      .forEach { assessment, events ->
+    queue.groupBy { it.collection.rootUuid }
+      .forEach { collection, events ->
         aggregateTypeRegistry.getAggregates()
           .asSequence()
           .filter { (_, aggregate) -> aggregate.createsOn.any(eventTypes::contains) || aggregate.updatesOn.any(eventTypes::contains) }
-          .forEach { (aggregate, _) -> aggregateService.processEvents(assessment, aggregate, events) }
+          .forEach { (aggregate, _) -> aggregateService.processEvents(collection, aggregate, events) }
       }
     eventService.saveAll(queue)
     queue.clear()

@@ -6,21 +6,21 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CollectionService
 
 @Component
 class UpdateAssessmentStatusCommandHandler(
-  private val assessmentService: AssessmentService,
+  private val collectionService: CollectionService,
   private val eventBus: EventBus,
 ) : CommandHandler<UpdateAssessmentStatusCommand> {
   override val type = UpdateAssessmentStatusCommand::class
   override fun handle(command: UpdateAssessmentStatusCommand): CommandSuccessCommandResult {
-    val assessment = assessmentService.findByUuid(command.assessmentUuid)
+    val assessment = collectionService.findByUuid(command.collectionUuid)
     eventBus.add(
       with(command) {
         EventEntity(
           user = user,
-          assessment = assessment,
+          collection = assessment,
           data = AssessmentStatusUpdatedEvent(status),
         )
       },

@@ -5,6 +5,6 @@ import java.util.UUID
 
 data class UpdateAssessmentStatusCommand(
   override val user: User,
-  override val assessmentUuid: UUID,
+  override val collectionUuid: UUID,
   val status: String,
 ) : RequestableCommand

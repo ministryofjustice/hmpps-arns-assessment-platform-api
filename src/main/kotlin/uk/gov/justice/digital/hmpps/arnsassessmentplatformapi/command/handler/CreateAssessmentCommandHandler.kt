@@ -5,23 +5,23 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.CollectionRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.CollectionEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 
 @Component
 class CreateAssessmentCommandHandler(
-  private val assessmentRepository: AssessmentRepository,
+  private val collectionRepository: CollectionRepository,
   private val eventBus: EventBus,
 ) : CommandHandler<CreateAssessmentCommand> {
   override val type = CreateAssessmentCommand::class
   override fun handle(command: CreateAssessmentCommand): CreateAssessmentCommandResult {
-    val assessment = assessmentRepository.save(AssessmentEntity(uuid = command.assessmentUuid))
+    val assessment = collectionRepository.save(CollectionEntity(uuid = command.collectionUuid))
     eventBus.add(
       with(command) {
         EventEntity(
           user = user,
-          assessment = assessment,
+          collection = assessment,
           data = AssessmentCreatedEvent(),
         )
       },

@@ -12,18 +12,18 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAnsw
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.CollectionEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CollectionService
 import java.util.UUID
 import kotlin.test.assertIs
 
 class UpdateAnswersCommandHandlerTest {
-  val assessmentService: AssessmentService = mockk()
+  val collectionService: CollectionService = mockk()
   val eventBus: EventBus = mockk()
 
   val handler = UpdateAnswersCommandHandler(
-    assessmentService = assessmentService,
+    collectionService = collectionService,
     eventBus = eventBus,
   )
 
@@ -36,13 +36,13 @@ class UpdateAnswersCommandHandlerTest {
   fun `it handles the UpdateAnswers command`() {
     val command = UpdateAnswersCommand(
       user = User("FOO_USER", "Foo User"),
-      assessmentUuid = UUID.randomUUID(),
+      collectionUuid = UUID.randomUUID(),
       added = mapOf("foo" to listOf("foo_value")),
       removed = listOf("bar"),
     )
 
-    val assessment = AssessmentEntity(uuid = command.assessmentUuid)
-    every { assessmentService.findByUuid(command.assessmentUuid) } returns assessment
+    val assessment = CollectionEntity(uuid = command.collectionUuid)
+    every { collectionService.findByUuid(command.collectionUuid) } returns assessment
 
     val event = slot<EventEntity>()
     every { eventBus.add(capture(event)) } just Runs
@@ -50,7 +50,7 @@ class UpdateAnswersCommandHandlerTest {
     handler.execute(command)
     verify(exactly = 1) { eventBus.add(any<EventEntity>()) }
 
-    assertThat(event.captured.assessment.uuid).isEqualTo(command.assessmentUuid)
+    assertThat(event.captured.collection.uuid).isEqualTo(command.collectionUuid)
     assertThat(event.captured.user).isEqualTo(command.user)
     val eventData = assertIs<AnswersUpdatedEvent>(event.captured.data)
     assertThat(eventData.added).isEqualTo(command.added)

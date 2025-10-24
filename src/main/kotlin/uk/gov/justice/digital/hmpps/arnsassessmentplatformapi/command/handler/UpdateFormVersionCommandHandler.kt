@@ -6,11 +6,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CollectionService
 
 @Component
 class UpdateFormVersionCommandHandler(
-  private val assessmentService: AssessmentService,
+  private val collectionService: CollectionService,
   private val eventBus: EventBus,
 ) : CommandHandler<UpdateFormVersionCommand> {
   override val type = UpdateFormVersionCommand::class
@@ -19,7 +19,7 @@ class UpdateFormVersionCommandHandler(
       with(command) {
         EventEntity(
           user = user,
-          assessment = assessmentService.findByUuid(assessmentUuid),
+          collection = collectionService.findByUuid(collectionUuid),
           data = FormVersionUpdatedEvent(version),
         )
       },

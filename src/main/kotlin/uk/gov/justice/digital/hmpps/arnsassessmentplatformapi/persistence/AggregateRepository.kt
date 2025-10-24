@@ -13,7 +13,7 @@ interface AggregateRepository : JpaRepository<AggregateEntity, Long> {
   @Query(
     value = """
         SELECT * FROM aggregate 
-        WHERE assessment_uuid = :assessmentUuid 
+        WHERE collection_uuid = :collectionUuid 
           AND data ->> 'type' = :aggregateType 
           AND events_to <= :beforeDate 
         ORDER BY events_to DESC 
@@ -22,7 +22,7 @@ interface AggregateRepository : JpaRepository<AggregateEntity, Long> {
     nativeQuery = true,
   )
   fun findByAssessmentAndTypeBeforeDate(
-    @Param("assessmentUuid") assessmentUuid: UUID,
+    @Param("collectionUuid") collectionUuid: UUID,
     @Param("aggregateType") aggregateType: String,
     @Param("beforeDate") beforeDate: LocalDateTime,
   ): AggregateEntity?
@@ -30,7 +30,7 @@ interface AggregateRepository : JpaRepository<AggregateEntity, Long> {
   @Query(
     value = """
         SELECT * FROM aggregate 
-        WHERE assessment_uuid = :assessmentUuid 
+        WHERE collection_uuid = :collectionUuid 
           AND data ->> 'type' = :aggregateType 
           AND events_to = :beforeDate 
         ORDER BY events_to DESC 
@@ -39,7 +39,7 @@ interface AggregateRepository : JpaRepository<AggregateEntity, Long> {
     nativeQuery = true,
   )
   fun findByAssessmentAndTypeOnExactDate(
-    @Param("assessmentUuid") assessmentUuid: UUID,
+    @Param("collectionUuid") collectionUuid: UUID,
     @Param("aggregateType") aggregateType: String,
     @Param("beforeDate") beforeDate: LocalDateTime = LocalDateTime.now(),
   ): AggregateEntity?

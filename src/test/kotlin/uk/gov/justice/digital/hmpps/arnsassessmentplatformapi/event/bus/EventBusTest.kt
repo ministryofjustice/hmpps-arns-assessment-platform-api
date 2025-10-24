@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.CollectionEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
@@ -25,7 +25,7 @@ class EventBusTest {
   val aggregateTypeRegistry: AggregateTypeRegistry = mockk()
 
   val user = User("FOO_USER", "Foo User")
-  val assessment = AssessmentEntity()
+  val assessment = CollectionEntity()
 
   val aggregate = mockk<AssessmentVersionAggregate>()
   val aggregateType = mockk<AggregateType>()
@@ -33,7 +33,7 @@ class EventBusTest {
 
   val event = EventEntity(
     user = user,
-    assessment = assessment,
+    collection = assessment,
     data = AssessmentCreatedEvent(),
   )
 
@@ -41,12 +41,12 @@ class EventBusTest {
   fun setUp() {
     every {
       aggregateService.processEvents(
-        assessment,
+        assessment.uuid,
         aggregateName,
         any<List<EventEntity>>(),
       )
-    } returns AggregateEntity(
-      assessment = assessment,
+    } returns AggregateEntity.init(
+      collection = assessment,
       data = aggregate,
     )
 
@@ -68,7 +68,7 @@ class EventBusTest {
 
     val event = EventEntity(
       user = user,
-      assessment = assessment,
+      collection = assessment,
       data = AssessmentCreatedEvent(),
     )
 
@@ -115,7 +115,7 @@ class EventBusTest {
     eventBus.add(event)
     eventBus.commit()
 
-    verify(exactly = 1) { aggregateService.processEvents(assessment, aggregateName, listOf(event)) }
+    verify(exactly = 1) { aggregateService.processEvents(assessment.uuid, aggregateName, listOf(event)) }
     verify(exactly = 1) { eventService.saveAll(queue) }
     Assertions.assertThat(queue).withFailMessage("should flush the queue").isEmpty()
   }
@@ -136,7 +136,7 @@ class EventBusTest {
     eventBus.add(event)
     eventBus.commit()
 
-    verify(exactly = 1) { aggregateService.processEvents(assessment, aggregateName, listOf(event)) }
+    verify(exactly = 1) { aggregateService.processEvents(assessment.uuid, aggregateName, listOf(event)) }
     verify(exactly = 1) { eventService.saveAll(queue) }
     Assertions.assertThat(queue).withFailMessage("should flush the queue").isEmpty()
   }

@@ -12,18 +12,18 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateForm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.CollectionEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CollectionService
 import java.util.UUID
 import kotlin.test.assertIs
 
 class UpdateFormVersionCommandHandlerTest {
-  val assessmentService: AssessmentService = mockk()
+  val collectionService: CollectionService = mockk()
   val eventBus: EventBus = mockk()
 
   val handler = UpdateFormVersionCommandHandler(
-    assessmentService = assessmentService,
+    collectionService = collectionService,
     eventBus = eventBus,
   )
 
@@ -36,12 +36,12 @@ class UpdateFormVersionCommandHandlerTest {
   fun `it handles the UpdateFormVersion command`() {
     val command = UpdateFormVersionCommand(
       user = User("FOO_USER", "Foo User"),
-      assessmentUuid = UUID.randomUUID(),
+      collectionUuid = UUID.randomUUID(),
       version = "1.2",
     )
 
-    val assessment = AssessmentEntity(uuid = command.assessmentUuid)
-    every { assessmentService.findByUuid(command.assessmentUuid) } returns assessment
+    val assessment = CollectionEntity(uuid = command.collectionUuid)
+    every { collectionService.findByUuid(command.collectionUuid) } returns assessment
 
     val event = slot<EventEntity>()
     every { eventBus.add(capture(event)) } just Runs
@@ -49,7 +49,7 @@ class UpdateFormVersionCommandHandlerTest {
     handler.execute(command)
     verify(exactly = 1) { eventBus.add(any<EventEntity>()) }
 
-    assertThat(event.captured.assessment.uuid).isEqualTo(command.assessmentUuid)
+    assertThat(event.captured.collection.uuid).isEqualTo(command.collectionUuid)
     assertThat(event.captured.user).isEqualTo(command.user)
     val eventData = assertIs<FormVersionUpdatedEvent>(event.captured.data)
     assertThat(eventData.version).isEqualTo(command.version)

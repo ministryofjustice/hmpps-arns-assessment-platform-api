@@ -15,10 +15,10 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.CollectionEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.CollectionService
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDateTime
@@ -26,13 +26,13 @@ import java.util.UUID
 import kotlin.test.assertIs
 
 class RollbackAnswersCommandHandlerTest {
-  val assessmentService: AssessmentService = mockk()
+  val collectionService: CollectionService = mockk()
   val aggregateService: AggregateService = mockk()
   val eventBus: EventBus = mockk()
   val clock: Clock = mockk(relaxed = true)
 
   val handler = RollbackAnswersCommandHandler(
-    assessmentService = assessmentService,
+    collectionService = collectionService,
     aggregateService = aggregateService,
     eventBus = eventBus,
     clock = clock,
@@ -52,13 +52,13 @@ class RollbackAnswersCommandHandlerTest {
   fun `it handles the RollbackAnswers command`() {
     val command = RollbackAnswersCommand(
       user = User("FOO_USER", "Foo User"),
-      assessmentUuid = UUID.randomUUID(),
+      collectionUuid = UUID.randomUUID(),
       pointInTime = LocalDateTime.parse("2025-01-01T12:00:00"),
     )
 
-    val assessment = AssessmentEntity(uuid = command.assessmentUuid)
+    val assessment = CollectionEntity(uuid = command.collectionUuid)
 
-    every { assessmentService.findByUuid(command.assessmentUuid) } returns assessment
+    every { collectionService.findByUuid(command.collectionUuid) } returns assessment
     // current version
     every {
       aggregateService.fetchAggregateForExactPointInTime(
@@ -66,8 +66,8 @@ class RollbackAnswersCommandHandlerTest {
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-02T12:00:00"),
       )
-    } returns AggregateEntity(
-      assessment = assessment,
+    } returns AggregateEntity.init(
+      collection = assessment,
       data = AssessmentVersionAggregate(
         answers = mutableMapOf(
           "foo" to listOf("updated_foo_value"),
@@ -86,8 +86,8 @@ class RollbackAnswersCommandHandlerTest {
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-01T12:00:00"),
       )
-    } returns AggregateEntity(
-      assessment = assessment,
+    } returns AggregateEntity.init(
+      collection = assessment,
       data = AssessmentVersionAggregate(
         answers = mutableMapOf(
           "foo" to listOf("foo_value"),
@@ -103,7 +103,7 @@ class RollbackAnswersCommandHandlerTest {
     handler.execute(command)
     verify(exactly = 1) { eventBus.add(any<EventEntity>()) }
 
-    assertThat(event.captured.assessment.uuid).isEqualTo(command.assessmentUuid)
+    assertThat(event.captured.collection.uuid).isEqualTo(command.collectionUuid)
     assertThat(event.captured.user).isEqualTo(command.user)
     val eventData = assertIs<AnswersRolledBackEvent>(event.captured.data)
     assertThat(eventData.added).isEqualTo(
@@ -120,13 +120,13 @@ class RollbackAnswersCommandHandlerTest {
   fun `it creates the previous version if it does not exist`() {
     val command = RollbackAnswersCommand(
       user = User("FOO_USER", "Foo User"),
-      assessmentUuid = UUID.randomUUID(),
+      collectionUuid = UUID.randomUUID(),
       pointInTime = LocalDateTime.parse("2025-01-01T12:00:00"),
     )
 
-    val assessment = AssessmentEntity(uuid = command.assessmentUuid)
+    val assessment = CollectionEntity(uuid = command.collectionUuid)
 
-    every { assessmentService.findByUuid(command.assessmentUuid) } returns assessment
+    every { collectionService.findByUuid(command.collectionUuid) } returns assessment
     // current version
     every {
       aggregateService.fetchAggregateForExactPointInTime(
@@ -134,8 +134,8 @@ class RollbackAnswersCommandHandlerTest {
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-02T12:00:00"),
       )
-    } returns AggregateEntity(
-      assessment = assessment,
+    } returns AggregateEntity.init(
+      collection = assessment,
       data = AssessmentVersionAggregate(
         answers = mutableMapOf(
           "foo" to listOf("updated_foo_value"),
@@ -160,8 +160,8 @@ class RollbackAnswersCommandHandlerTest {
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-01T12:00:00"),
       )
-    } returns AggregateEntity(
-      assessment = assessment,
+    } returns AggregateEntity.init(
+      collection = assessment,
       data = AssessmentVersionAggregate(
         answers = mutableMapOf(
           "foo" to listOf("foo_value"),
@@ -176,7 +176,7 @@ class RollbackAnswersCommandHandlerTest {
     handler.execute(command)
     verify(exactly = 1) { eventBus.add(any<EventEntity>()) }
 
-    assertThat(event.captured.assessment.uuid).isEqualTo(command.assessmentUuid)
+    assertThat(event.captured.collection.uuid).isEqualTo(command.collectionUuid)
     assertThat(event.captured.user).isEqualTo(command.user)
     val eventData = assertIs<AnswersRolledBackEvent>(event.captured.data)
     assertThat(eventData.added).isEqualTo(
@@ -193,13 +193,13 @@ class RollbackAnswersCommandHandlerTest {
   fun `it creates the current version if it does not exist`() {
     val command = RollbackAnswersCommand(
       user = User("FOO_USER", "Foo User"),
-      assessmentUuid = UUID.randomUUID(),
+      collectionUuid = UUID.randomUUID(),
       pointInTime = LocalDateTime.parse("2025-01-01T12:00:00"),
     )
 
-    val assessment = AssessmentEntity(uuid = command.assessmentUuid)
+    val assessment = CollectionEntity(uuid = command.collectionUuid)
 
-    every { assessmentService.findByUuid(command.assessmentUuid) } returns assessment
+    every { collectionService.findByUuid(command.collectionUuid) } returns assessment
     // current version
     every {
       aggregateService.fetchAggregateForExactPointInTime(
@@ -214,8 +214,8 @@ class RollbackAnswersCommandHandlerTest {
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-02T12:00:00"),
       )
-    } returns AggregateEntity(
-      assessment = assessment,
+    } returns AggregateEntity.init(
+      collection = assessment,
       data = AssessmentVersionAggregate(
         answers = mutableMapOf(
           "foo" to listOf("updated_foo_value"),
@@ -233,8 +233,8 @@ class RollbackAnswersCommandHandlerTest {
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-01T12:00:00"),
       )
-    } returns AggregateEntity(
-      assessment = assessment,
+    } returns AggregateEntity.init(
+      collection = assessment,
       data = AssessmentVersionAggregate(
         answers = mutableMapOf(
           "foo" to listOf("foo_value"),
@@ -249,7 +249,7 @@ class RollbackAnswersCommandHandlerTest {
     handler.execute(command)
     verify(exactly = 1) { eventBus.add(any<EventEntity>()) }
 
-    assertThat(event.captured.assessment.uuid).isEqualTo(command.assessmentUuid)
+    assertThat(event.captured.collection.uuid).isEqualTo(command.collectionUuid)
     assertThat(event.captured.user).isEqualTo(command.user)
     val eventData = assertIs<AnswersRolledBackEvent>(event.captured.data)
     assertThat(eventData.added).isEqualTo(

@@ -6,6 +6,6 @@ import java.util.UUID
 
 data class AssessmentTimelineQuery(
   override val user: User,
-  override val assessmentUuid: UUID,
+  override val collectionUuid: UUID,
   val timestamp: LocalDateTime? = null,
 ) : RequestableQuery

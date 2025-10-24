@@ -9,13 +9,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdat
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.CollectionEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 class AssessmentTimelineAggregateTest {
-  val assessment = AssessmentEntity()
+  val assessment = CollectionEntity()
   val user = User("FOO_USER", "Foo User")
 
   @Nested
@@ -26,7 +26,7 @@ class AssessmentTimelineAggregateTest {
       aggregate.apply(
         EventEntity(
           createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-          assessment = assessment,
+          collection = assessment,
           user = user,
           data = AnswersUpdatedEvent(
             added = mapOf(
@@ -40,7 +40,7 @@ class AssessmentTimelineAggregateTest {
       aggregate.apply(
         EventEntity(
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
-          assessment = assessment,
+          collection = assessment,
           user = user,
           data = AnswersUpdatedEvent(
             added = mapOf(
@@ -74,7 +74,7 @@ class AssessmentTimelineAggregateTest {
       aggregate.apply(
         EventEntity(
           createdAt = LocalDateTime.parse("2025-01-01T13:00:00"),
-          assessment = assessment,
+          collection = assessment,
           user = user,
           data = AnswersRolledBackEvent(
             rolledBackTo = LocalDateTime.parse("2025-01-01T12:05:00"),
@@ -105,7 +105,7 @@ class AssessmentTimelineAggregateTest {
       aggregate.apply(
         EventEntity(
           createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-          assessment = assessment,
+          collection = assessment,
           user = user,
           data = AssessmentStatusUpdatedEvent("INCOMPLETE"),
         ),
@@ -114,7 +114,7 @@ class AssessmentTimelineAggregateTest {
       aggregate.apply(
         EventEntity(
           createdAt = LocalDateTime.parse("2025-01-01T13:00:00"),
-          assessment = assessment,
+          collection = assessment,
           user = user,
           data = AssessmentStatusUpdatedEvent("COMPLETE"),
         ),
@@ -166,7 +166,7 @@ class AssessmentTimelineAggregateTest {
         aggregate.apply(
           EventEntity(
             user = user,
-            assessment = assessment,
+            collection = assessment,
             data = AnswersUpdatedEvent(
               added = emptyMap(),
               removed = emptyList(),
@@ -217,7 +217,7 @@ class AssessmentTimelineAggregateTest {
       originalAggregate.apply(
         EventEntity(
           createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-          assessment = assessment,
+          collection = assessment,
           user = user,
           data = AnswersUpdatedEvent(
             added = mapOf(

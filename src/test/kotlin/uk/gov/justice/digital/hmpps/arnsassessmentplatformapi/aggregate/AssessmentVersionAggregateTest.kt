@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdat
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.CollectionEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -54,7 +54,7 @@ class AssessmentVersionAggregateTest {
       aggregate.apply(
         EventEntity(
           user = User("FOO_USER", "Foo User"),
-          assessment = AssessmentEntity(),
+          collection = CollectionEntity(),
           data = AnswersUpdatedEvent(
             added = mapOf("foo" to listOf("updated_foo_value")),
             removed = listOf("baz"),
@@ -83,7 +83,7 @@ class AssessmentVersionAggregateTest {
       aggregate.apply(
         EventEntity(
           user = User("FOO_USER", "Foo User"),
-          assessment = AssessmentEntity(),
+          collection = CollectionEntity(),
           data = AnswersRolledBackEvent(
             added = mapOf("foo" to listOf("previous_foo_value"), "bar" to listOf("bar_value")),
             removed = listOf("baz"),
@@ -106,7 +106,7 @@ class AssessmentVersionAggregateTest {
       aggregate.apply(
         EventEntity(
           user = User("FOO_USER", "Foo User"),
-          assessment = AssessmentEntity(),
+          collection = CollectionEntity(),
           data = FormVersionUpdatedEvent("updated_form_version"),
         ),
       )
@@ -128,7 +128,7 @@ class AssessmentVersionAggregateTest {
       originalAggregate.apply(
         EventEntity(
           user = User("FOO_USER", "Foo User"),
-          assessment = AssessmentEntity(),
+          collection = CollectionEntity(),
           data = AssessmentCreatedEvent(),
         ),
       )

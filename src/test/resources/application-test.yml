@@ -13,6 +13,14 @@ spring:
     schemas: assessment-platform
     locations: classpath:/db/migration
 
+hmpps.sqs:
+  provider: localstack
+  localstack:
+    url: http://localhost:4566
+  queues:
+    audit:
+      queueName: audit-queue
+
 server:
   shutdown: immediate
 

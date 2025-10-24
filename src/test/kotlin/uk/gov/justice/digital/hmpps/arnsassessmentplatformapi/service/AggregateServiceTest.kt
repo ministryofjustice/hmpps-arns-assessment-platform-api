@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdat
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.CollectionEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.Clock
 import java.time.Instant
@@ -25,13 +25,15 @@ class AggregateServiceTest {
   val clock: Clock = mockk(relaxed = true)
   val aggregateRepository: AggregateRepository = mockk()
   val eventService: EventService = mockk()
+  val collectionService: CollectionService = mockk()
   val service = AggregateService(
     aggregateRepository = aggregateRepository,
     eventService = eventService,
     clock = clock,
+    collectionService = collectionService,
   )
 
-  val assessment = AssessmentEntity(createdAt = LocalDateTime.parse("2025-01-01T12:00:00"))
+  val assessment = CollectionEntity(createdAt = LocalDateTime.parse("2025-01-01T12:00:00"))
   val user = User("FOO_USER", "Foo User")
 
   @BeforeEach
@@ -48,13 +50,13 @@ class AggregateServiceTest {
     val events = listOf(
       EventEntity(
         user = user,
-        assessment = assessment,
+        collection = assessment,
         createdAt = firstEventTimestamp,
         data = AssessmentCreatedEvent(),
       ),
       EventEntity(
         user = user,
-        assessment = assessment,
+        collection = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
         data = AnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
@@ -63,7 +65,7 @@ class AggregateServiceTest {
       ),
       EventEntity(
         user = user,
-        assessment = assessment,
+        collection = assessment,
         createdAt = lastEventTimestamp,
         data = AnswersUpdatedEvent(
           added = mapOf("bar" to listOf("bar_value")),
@@ -74,7 +76,15 @@ class AggregateServiceTest {
 
     @Test
     fun `it returns an empty aggregate when passed no events`() {
-      every { eventService.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns emptyList()
+      every {
+        eventService.findAllByCollectionUuidAndCreatedAtBefore(
+          assessment.uuid,
+          LocalDateTime.parse("2025-01-01T12:00:00"),
+        )
+      } returns emptyList()
+      every {
+        collectionService.findRoot(assessment)
+      } returns assessment
       val result = service.createAggregate(assessment, AssessmentVersionAggregate::class)
 
       assertThat(result.data.numberOfEventsApplied).isEqualTo(0)
@@ -84,22 +94,27 @@ class AggregateServiceTest {
 
     @Test
     fun `it finds an aggregate`() {
-      every { eventService.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns events
+      every {
+        eventService.findAllByCollectionUuidAndCreatedAtBefore(
+          assessment.uuid,
+          LocalDateTime.parse("2025-01-01T12:00:00"),
+        )
+      } returns events
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
           AssessmentVersionAggregate::class.simpleName!!,
           lastEventTimestamp,
         )
-      } returns AggregateEntity(
-        assessment = assessment,
-        eventsFrom = firstEventTimestamp,
+      } returns AggregateEntity.init(
+        collection = assessment,
         data = AssessmentVersionAggregate(
           answers = mutableMapOf(
             "foo" to listOf("foo_value"),
             "bar" to listOf("bar_value"),
           ),
-        ).apply { numberOfEventsApplied = events.size.toLong() },
+        ),
+        events = events,
       )
 
       val result = service.createAggregate(assessment, AssessmentVersionAggregate::class)
@@ -110,7 +125,12 @@ class AggregateServiceTest {
 
     @Test
     fun `it creates an aggregate`() {
-      every { eventService.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns events
+      every {
+        eventService.findAllByCollectionUuidAndCreatedAtBefore(
+          assessment.uuid,
+          LocalDateTime.parse("2025-01-01T12:00:00"),
+        )
+      } returns events
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
@@ -118,6 +138,9 @@ class AggregateServiceTest {
           lastEventTimestamp,
         )
       } returns null
+      every {
+        collectionService.findRoot(assessment)
+      } returns assessment
 
       val result = service.createAggregate(assessment, AssessmentVersionAggregate::class)
       assertThat(result.data.numberOfEventsApplied).isEqualTo(2)
@@ -130,7 +153,7 @@ class AggregateServiceTest {
   inner class FetchLatestAggregateForType {
     @Test
     fun `it fetches an the latest aggregate for a given type`() {
-      val latestAggregate = AggregateEntity(assessment = assessment, data = AssessmentVersionAggregate())
+      val latestAggregate = AggregateEntity.init(collection = assessment, data = AssessmentVersionAggregate())
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
@@ -141,7 +164,7 @@ class AggregateServiceTest {
 
       val result = service.fetchLatestAggregate(assessment.uuid, AssessmentVersionAggregate::class)
       assertThat(result).isNotNull
-      assertThat(result?.assessment).isEqualTo(assessment)
+      assertThat(result?.collection).isEqualTo(assessment)
       assertThat(result?.uuid).isEqualTo(latestAggregate.uuid)
       assertThat(result?.data).isEqualTo(latestAggregate.data)
     }
@@ -165,7 +188,7 @@ class AggregateServiceTest {
   inner class FetchAggregateForTypeOnDate {
     @Test
     fun `it fetches an the aggregate for a given type and date`() {
-      val latestAggregate = AggregateEntity(assessment = assessment, data = AssessmentVersionAggregate())
+      val latestAggregate = AggregateEntity.init(collection = assessment, data = AssessmentVersionAggregate())
       val date = LocalDateTime.parse("2025-01-01T12:00:00")
       every {
         aggregateRepository.findByAssessmentAndTypeOnExactDate(
@@ -177,7 +200,7 @@ class AggregateServiceTest {
 
       val result = service.fetchAggregateForExactPointInTime(assessment, AssessmentVersionAggregate::class, date)
       assertThat(result).isNotNull
-      assertThat(result?.assessment).isEqualTo(assessment)
+      assertThat(result?.collection).isEqualTo(assessment)
       assertThat(result?.uuid).isEqualTo(latestAggregate.uuid)
       assertThat(result?.data).isEqualTo(latestAggregate.data)
     }
@@ -204,7 +227,7 @@ class AggregateServiceTest {
     val events = listOf(
       EventEntity(
         user = user,
-        assessment = assessment,
+        collection = assessment,
         data = AnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
@@ -212,7 +235,7 @@ class AggregateServiceTest {
       ),
       EventEntity(
         user = user,
-        assessment = assessment,
+        collection = assessment,
         data = AnswersUpdatedEvent(
           added = mapOf("bar" to listOf("bar_value")),
           removed = listOf("foo"),
@@ -222,7 +245,7 @@ class AggregateServiceTest {
 
     @Test
     fun `it processes events and updates an existing aggregate`() {
-      val latestAggregate = AggregateEntity(assessment = assessment, data = AssessmentVersionAggregate())
+      val latestAggregate = AggregateEntity.init(collection = assessment, data = AssessmentVersionAggregate())
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
@@ -239,7 +262,7 @@ class AggregateServiceTest {
         slot.captured.toList()
       }
 
-      val result = service.processEvents(assessment, AssessmentVersionAggregate::class, events)
+      val result = service.processEvents(assessment.uuid, AssessmentVersionAggregate::class, events)
       assertThat(result).describedAs("aggregate should be the latest").isEqualTo(slot.captured.last())
       val data = assertIs<AssessmentVersionAggregate>(result.data)
       assertThat(data.numberOfEventsApplied).isEqualTo(2)
@@ -259,11 +282,11 @@ class AggregateServiceTest {
       } returns null
 
       every {
-        eventService.findAllByAssessmentUuid(assessment.uuid)
+        eventService.findAllByCollectionUuid(assessment.uuid)
       } returns listOf(
         EventEntity(
           user = user,
-          assessment = assessment,
+          collection = assessment,
           data = AssessmentCreatedEvent(),
         ),
       )
@@ -275,8 +298,11 @@ class AggregateServiceTest {
       } answers {
         slot.captured.toList()
       }
+      every {
+        collectionService.findByUuid(assessment.uuid)
+      } returns assessment
 
-      val result = service.processEvents(assessment, AssessmentVersionAggregate::class, events)
+      val result = service.processEvents(assessment.uuid, AssessmentVersionAggregate::class, events)
       assertThat(result).describedAs("aggregate should be the latest").isEqualTo(slot.captured.last())
       val data = assertIs<AssessmentVersionAggregate>(result.data)
       assertThat(data.numberOfEventsApplied).isEqualTo(2)

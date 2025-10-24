@@ -5,7 +5,7 @@ import java.util.UUID
 
 data class UpdateAnswersCommand(
   override val user: User,
-  override val assessmentUuid: UUID,
+  override val collectionUuid: UUID,
   val added: Map<String, List<String>>,
   val removed: List<String>,
 ) : RequestableCommand
