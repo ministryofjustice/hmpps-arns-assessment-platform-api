@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
@@ -53,7 +53,7 @@ class AssessmentVersionQueryTest(
         user = User("FOO_USER", "Foo User"),
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
-        data = AnswersUpdatedEvent(
+        data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
         ),
@@ -123,7 +123,7 @@ class AssessmentVersionQueryTest(
         user = User("FOO_USER", "Foo User"),
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
-        data = AnswersUpdatedEvent(
+        data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
         ),
@@ -132,7 +132,7 @@ class AssessmentVersionQueryTest(
         user = User("FOO_USER", "Foo User"),
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
-        data = AnswersUpdatedEvent(
+        data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("updated_foo_value")),
           removed = emptyList(),
         ),
@@ -218,7 +218,7 @@ class AssessmentVersionQueryTest(
         user = User("FOO_USER", "Foo User"),
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
-        data = AnswersUpdatedEvent(
+        data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
         ),
@@ -227,7 +227,7 @@ class AssessmentVersionQueryTest(
         user = User("FOO_USER", "Foo User"),
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
-        data = AnswersUpdatedEvent(
+        data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("updated_foo_value")),
           removed = emptyList(),
         ),

@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBackEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
@@ -32,12 +32,12 @@ class AssessmentVersionAggregate(
     }
   }
 
-  private fun handle(event: AnswersUpdatedEvent) {
+  private fun handle(event: AssessmentAnswersUpdatedEvent) {
     applyAnswers(event.added, event.removed)
     numberOfEventsApplied += 1
   }
 
-  private fun handle(event: AnswersRolledBackEvent) {
+  private fun handle(event: AssessmentAnswersRolledBackEvent) {
     applyAnswers(event.added, event.removed)
     numberOfEventsApplied += 1
   }
@@ -56,8 +56,8 @@ class AssessmentVersionAggregate(
   override fun apply(event: EventEntity): Boolean {
     collaborators.add(event.user)
     when (event.data) {
-      is AnswersUpdatedEvent -> handle(event.data)
-      is AnswersRolledBackEvent -> handle(event.data)
+      is AssessmentAnswersUpdatedEvent -> handle(event.data)
+      is AssessmentAnswersRolledBackEvent -> handle(event.data)
       is FormVersionUpdatedEvent -> handle(event.data)
       else -> return false
     }
@@ -78,6 +78,6 @@ class AssessmentVersionAggregate(
 
   companion object : AggregateType {
     override val createsOn = setOf(AssessmentCreatedEvent::class, AssessmentStatusUpdatedEvent::class)
-    override val updatesOn = setOf(AnswersUpdatedEvent::class, AnswersRolledBackEvent::class, FormVersionUpdatedEvent::class)
+    override val updatesOn = setOf(AssessmentAnswersUpdatedEvent::class, AssessmentAnswersRolledBackEvent::class, FormVersionUpdatedEvent::class)
   }
 }

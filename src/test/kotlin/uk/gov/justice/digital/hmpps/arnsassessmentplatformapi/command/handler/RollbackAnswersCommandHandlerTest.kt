@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollbackAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
@@ -105,7 +105,7 @@ class RollbackAnswersCommandHandlerTest {
 
     assertThat(event.captured.assessment.uuid).isEqualTo(command.assessmentUuid)
     assertThat(event.captured.user).isEqualTo(command.user)
-    val eventData = assertIs<AnswersRolledBackEvent>(event.captured.data)
+    val eventData = assertIs<AssessmentAnswersRolledBackEvent>(event.captured.data)
     assertThat(eventData.added).isEqualTo(
       mapOf(
         "foo" to listOf("foo_value"),
@@ -178,7 +178,7 @@ class RollbackAnswersCommandHandlerTest {
 
     assertThat(event.captured.assessment.uuid).isEqualTo(command.assessmentUuid)
     assertThat(event.captured.user).isEqualTo(command.user)
-    val eventData = assertIs<AnswersRolledBackEvent>(event.captured.data)
+    val eventData = assertIs<AssessmentAnswersRolledBackEvent>(event.captured.data)
     assertThat(eventData.added).isEqualTo(
       mapOf(
         "foo" to listOf("foo_value"),
@@ -251,7 +251,7 @@ class RollbackAnswersCommandHandlerTest {
 
     assertThat(event.captured.assessment.uuid).isEqualTo(command.assessmentUuid)
     assertThat(event.captured.user).isEqualTo(command.user)
-    val eventData = assertIs<AnswersRolledBackEvent>(event.captured.data)
+    val eventData = assertIs<AssessmentAnswersRolledBackEvent>(event.captured.data)
     assertThat(eventData.added).isEqualTo(
       mapOf(
         "foo" to listOf("foo_value"),

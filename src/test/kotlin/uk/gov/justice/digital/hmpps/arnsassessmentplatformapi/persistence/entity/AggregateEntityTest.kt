@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entit
 import org.assertj.core.api.Assertions.assertThat
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import java.time.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertIs
@@ -21,7 +21,7 @@ class AggregateEntityTest {
         id = "foo-user",
         name = "Foo User",
       ),
-      data = AnswersUpdatedEvent(
+      data = AssessmentAnswersUpdatedEvent(
         added = mapOf("foo" to listOf("Original answer for foo")),
         removed = emptyList(),
       ),
@@ -34,7 +34,7 @@ class AggregateEntityTest {
         id = "foo-user",
         name = "Foo User",
       ),
-      data = AnswersUpdatedEvent(
+      data = AssessmentAnswersUpdatedEvent(
         added = mapOf("foo" to listOf("Updated value for foo")),
         removed = emptyList(),
       ),

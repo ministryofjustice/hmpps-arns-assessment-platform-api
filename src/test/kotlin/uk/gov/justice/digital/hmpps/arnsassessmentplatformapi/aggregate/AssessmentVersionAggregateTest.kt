@@ -4,8 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBackEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
@@ -55,7 +55,7 @@ class AssessmentVersionAggregateTest {
         EventEntity(
           user = User("FOO_USER", "Foo User"),
           assessment = AssessmentEntity(),
-          data = AnswersUpdatedEvent(
+          data = AssessmentAnswersUpdatedEvent(
             added = mapOf("foo" to listOf("updated_foo_value")),
             removed = listOf("baz"),
           ),
@@ -84,7 +84,7 @@ class AssessmentVersionAggregateTest {
         EventEntity(
           user = User("FOO_USER", "Foo User"),
           assessment = AssessmentEntity(),
-          data = AnswersRolledBackEvent(
+          data = AssessmentAnswersRolledBackEvent(
             added = mapOf("foo" to listOf("previous_foo_value"), "bar" to listOf("bar_value")),
             removed = listOf("baz"),
             rolledBackTo = now,
@@ -140,11 +140,11 @@ class AssessmentVersionAggregateTest {
     @Test
     fun `it returns true when it updates on an event`() {
       listOf(
-        AnswersUpdatedEvent(
+        AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
         ),
-        AnswersRolledBackEvent(
+        AssessmentAnswersRolledBackEvent(
           added = mapOf("foo" to listOf("previous_foo_value")),
           removed = emptyList(),
           rolledBackTo = LocalDateTime.now().minus(1, ChronoUnit.DAYS),

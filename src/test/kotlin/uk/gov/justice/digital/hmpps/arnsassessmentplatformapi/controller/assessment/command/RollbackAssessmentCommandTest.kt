@@ -12,8 +12,8 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBackEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
@@ -69,7 +69,7 @@ class RollbackAssessmentCommandTest(
           user = user,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
-          data = AnswersUpdatedEvent(
+          data = AssessmentAnswersUpdatedEvent(
             added = mapOf(
               "foo" to listOf("bar"),
             ),
@@ -80,7 +80,7 @@ class RollbackAssessmentCommandTest(
           user = user,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T13:45:00"),
-          data = AnswersUpdatedEvent(
+          data = AssessmentAnswersUpdatedEvent(
             added = mapOf(
               "foo" to listOf("baz"),
             ),
@@ -91,7 +91,7 @@ class RollbackAssessmentCommandTest(
           user = user,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-02T09:30:00"),
-          data = AnswersUpdatedEvent(
+          data = AssessmentAnswersUpdatedEvent(
             added = mapOf(
               "bar" to listOf("foo"),
             ),
@@ -129,7 +129,7 @@ class RollbackAssessmentCommandTest(
     val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(5)
-    assertThat(eventsForAssessment.last().data).isInstanceOf(AnswersRolledBackEvent::class.java)
+    assertThat(eventsForAssessment.last().data).isInstanceOf(AssessmentAnswersRolledBackEvent::class.java)
 
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
@@ -163,7 +163,7 @@ class RollbackAssessmentCommandTest(
     val eventsAfterSecondRollback = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
 
     assertThat(eventsAfterSecondRollback.size).isEqualTo(6)
-    assertThat(eventsAfterSecondRollback.last().data).isInstanceOf(AnswersRolledBackEvent::class.java)
+    assertThat(eventsAfterSecondRollback.last().data).isInstanceOf(AssessmentAnswersRolledBackEvent::class.java)
 
     val aggregateAfterSecondUpdate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
