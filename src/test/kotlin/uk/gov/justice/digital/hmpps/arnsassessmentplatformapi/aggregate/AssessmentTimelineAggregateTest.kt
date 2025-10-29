@@ -4,8 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBackEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
@@ -28,7 +28,7 @@ class AssessmentTimelineAggregateTest {
           createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
           assessment = assessment,
           user = user,
-          data = AnswersUpdatedEvent(
+          data = AssessmentAnswersUpdatedEvent(
             added = mapOf(
               "foo" to listOf("foo_value"),
               "bar" to listOf("bar_value"),
@@ -42,7 +42,7 @@ class AssessmentTimelineAggregateTest {
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           assessment = assessment,
           user = user,
-          data = AnswersUpdatedEvent(
+          data = AssessmentAnswersUpdatedEvent(
             added = mapOf(
               "foo" to listOf("updated_foo_value"),
               "baz" to listOf("baz_value"),
@@ -76,7 +76,7 @@ class AssessmentTimelineAggregateTest {
           createdAt = LocalDateTime.parse("2025-01-01T13:00:00"),
           assessment = assessment,
           user = user,
-          data = AnswersRolledBackEvent(
+          data = AssessmentAnswersRolledBackEvent(
             rolledBackTo = LocalDateTime.parse("2025-01-01T12:05:00"),
             added = mapOf(
               "foo" to listOf("foo_value"),
@@ -150,8 +150,8 @@ class AssessmentTimelineAggregateTest {
       val aggregate = AssessmentTimelineAggregate()
 
       listOf(
-        AnswersUpdatedEvent::class,
-        AnswersRolledBackEvent::class,
+        AssessmentAnswersUpdatedEvent::class,
+        AssessmentAnswersRolledBackEvent::class,
         FormVersionUpdatedEvent::class,
         AssessmentStatusUpdatedEvent::class,
       ).forEach { event -> assertThat(aggregate.shouldCreate(event)).isEqualTo(false) }
@@ -167,14 +167,14 @@ class AssessmentTimelineAggregateTest {
           EventEntity(
             user = user,
             assessment = assessment,
-            data = AnswersUpdatedEvent(
+            data = AssessmentAnswersUpdatedEvent(
               added = emptyMap(),
               removed = emptyList(),
             ),
           ),
         )
 
-        assertThat(aggregate.shouldCreate(AnswersUpdatedEvent::class))
+        assertThat(aggregate.shouldCreate(AssessmentAnswersUpdatedEvent::class))
           .withFailMessage("Failed on iteration $it, aggregate has ${aggregate.numberOfEventsApplied} applied")
           .isEqualTo(it == threshold)
       }
@@ -186,11 +186,11 @@ class AssessmentTimelineAggregateTest {
     @Test
     fun `it returns true when it updates on an event`() {
       listOf(
-        AnswersUpdatedEvent(
+        AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
         ),
-        AnswersRolledBackEvent(
+        AssessmentAnswersRolledBackEvent(
           added = mapOf("foo" to listOf("previous_foo_value")),
           removed = emptyList(),
           rolledBackTo = LocalDateTime.now().minus(1, ChronoUnit.DAYS),
@@ -219,7 +219,7 @@ class AssessmentTimelineAggregateTest {
           createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
           assessment = assessment,
           user = user,
-          data = AnswersUpdatedEvent(
+          data = AssessmentAnswersUpdatedEvent(
             added = mapOf(
               "foo" to listOf("foo_value"),
               "bar" to listOf("bar_value"),

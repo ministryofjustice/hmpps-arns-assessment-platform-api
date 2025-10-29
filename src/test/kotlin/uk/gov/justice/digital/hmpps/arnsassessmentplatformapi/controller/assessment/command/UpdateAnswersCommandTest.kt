@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
@@ -68,7 +68,7 @@ class UpdateAnswersCommandTest(
           user = user,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
-          data = AnswersUpdatedEvent(
+          data = AssessmentAnswersUpdatedEvent(
             added = mapOf(
               "foo" to listOf("foo_value"),
               "bar" to listOf("bar_value"),
@@ -108,7 +108,7 @@ class UpdateAnswersCommandTest(
     val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(3)
-    assertThat(eventsForAssessment.last().data).isInstanceOf(AnswersUpdatedEvent::class.java)
+    assertThat(eventsForAssessment.last().data).isInstanceOf(AssessmentAnswersUpdatedEvent::class.java)
 
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
