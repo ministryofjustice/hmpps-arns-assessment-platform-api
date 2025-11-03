@@ -21,6 +21,7 @@ class AssessmentVersionQueryHandler(
     return AssessmentVersionQueryResult(
       formVersion = aggregate.getFormVersion(),
       answers = aggregate.getAnswers(),
+      collections = aggregate.getCollections(),
       collaborators = aggregate.getCollaborators(),
     )
   }

@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
@@ -8,11 +9,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
-
-data class TimelineItem(
-  val details: String = "",
-  val timestamp: LocalDateTime,
-)
 
 class AssessmentTimelineAggregate : Aggregate {
   private val timeline = mutableListOf<TimelineItem>()
