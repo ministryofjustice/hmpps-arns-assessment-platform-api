@@ -14,16 +14,14 @@ interface AggregateRepository : JpaRepository<AggregateEntity, Long> {
     value = """
         SELECT * FROM aggregate 
         WHERE assessment_uuid = :assessmentUuid 
-          AND data ->> 'type' = :aggregateType 
           AND events_to <= :beforeDate 
         ORDER BY events_to DESC 
         LIMIT 1
     """,
     nativeQuery = true,
   )
-  fun findByAssessmentAndTypeBeforeDate(
+  fun findByAssessmentBeforeDate(
     @Param("assessmentUuid") assessmentUuid: UUID,
-    @Param("aggregateType") aggregateType: String,
     @Param("beforeDate") beforeDate: LocalDateTime,
   ): AggregateEntity?
 
@@ -31,16 +29,14 @@ interface AggregateRepository : JpaRepository<AggregateEntity, Long> {
     value = """
         SELECT * FROM aggregate 
         WHERE assessment_uuid = :assessmentUuid 
-          AND data ->> 'type' = :aggregateType 
           AND events_to = :beforeDate 
         ORDER BY events_to DESC 
         LIMIT 1
     """,
     nativeQuery = true,
   )
-  fun findByAssessmentAndTypeOnExactDate(
+  fun findByAssessmentOnExactDate(
     @Param("assessmentUuid") assessmentUuid: UUID,
-    @Param("aggregateType") aggregateType: String,
     @Param("beforeDate") beforeDate: LocalDateTime = LocalDateTime.now(),
   ): AggregateEntity?
 }

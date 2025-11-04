@@ -13,7 +13,5 @@ class EventService(
   fun findAllByAssessmentUuid(uuid: UUID) = eventRepository.findAllByAssessmentUuid(uuid)
   fun findAllByAssessmentUuidAndCreatedAtBefore(uuid: UUID, pointInTime: LocalDateTime) = eventRepository.findAllByAssessmentUuidAndCreatedAtBefore(uuid, pointInTime)
 
-  fun saveAll(events: List<EventEntity>) {
-    eventRepository.saveAll(events)
-  }
+  fun save(event: EventEntity): EventEntity = eventRepository.save(event)
 }
