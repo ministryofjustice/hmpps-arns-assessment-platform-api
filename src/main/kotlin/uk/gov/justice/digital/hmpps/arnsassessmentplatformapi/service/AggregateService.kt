@@ -13,8 +13,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import java.time.Clock
 import java.time.LocalDateTime
 import java.util.UUID
-import kotlin.reflect.KClass
-import kotlin.reflect.full.createInstance
 
 @Service
 class AggregateService(
@@ -51,59 +49,6 @@ class AggregateService(
     assessment: AssessmentEntity,
     date: LocalDateTime,
   ): AggregateEntity? = aggregateRepository.findByAssessmentOnExactDate(assessment.uuid, date)
-
-  fun processEvents(
-    assessment: AssessmentEntity,
-    events: List<EventEntity>,
-  ): AggregateEntity {
-    val latest = fetchLatestAggregate(assessment.uuid)
-      ?: AggregateEntity(
-        assessment = assessment,
-        data = AssessmentAggregate(),
-        eventsFrom = assessment.createdAt,
-        eventsTo = assessment.createdAt,
-        updatedAt = now(),
-      )
-        .apply { eventService.findAllByAssessmentUuid(assessment.uuid).forEach { event -> apply(event) } }
-
-    events
-      .sortedBy { it.createdAt }
-      .fold(
-        object {
-          var current = latest
-          var isDirty = false
-          val toPersist = mutableListOf<AggregateEntity>()
-        },
-      ) { state, event ->
-        val applied = state.current.apply(event)
-        if (applied) {
-          state.apply {
-            current.eventsTo = event.createdAt
-            isDirty = true
-          }
-        }
-        state.current.updatedAt = now()
-
-        if (state.current.data.shouldCreate(event.data::class)) {
-          if (state.isDirty) state.toPersist += state.current
-
-          val cloned = state.current.clone().also { it.updatedAt = now() }
-          state.apply {
-            toPersist += cloned
-            current = cloned
-            isDirty = false
-          }
-        }
-
-        state
-      }.run {
-        if (isDirty) toPersist += current
-        if (toPersist.isNotEmpty()) aggregateRepository.saveAll(toPersist)
-        current
-      }
-
-    return latest
-  }
 
   fun createAggregateForPointInTime(
     assessment: AssessmentEntity,
