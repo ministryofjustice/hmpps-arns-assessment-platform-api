@@ -124,18 +124,7 @@ class AggregateService(
       updatedAt = now(),
     )
 
-    var lastAppliedAt: LocalDateTime? = null
-
-    return events.fold(base) { acc, event -> eventBus.handle(event, acc) }
-    events.forEach { event -> eventBus.handle(event, base) }
-    for (event in events) {
-
-      if (base.apply(event)) lastAppliedAt = event.createdAt
-    }
-
-    if (lastAppliedAt != null) base.eventsTo = lastAppliedAt
-    base.updatedAt = now()
-    return base
+    return events.fold(AssessmentState(base)) { acc, event -> eventBus.handle(event, acc) }.current()
   }
 
   fun fetchLatestState(assessment: AssessmentEntity) = let {
