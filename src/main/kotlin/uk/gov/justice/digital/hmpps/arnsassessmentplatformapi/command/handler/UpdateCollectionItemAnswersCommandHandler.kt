@@ -1,29 +1,30 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.ReorderCollectionItemCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemReorderedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 
 @Component
-class ReorderCollectionItemCommandHandler(
+class UpdateCollectionItemAnswersCommandHandler(
   private val assessmentService: AssessmentService,
   private val eventBus: EventBus,
   private val eventService: EventService,
-) : CommandHandler<ReorderCollectionItemCommand> {
-  override val type = ReorderCollectionItemCommand::class
-  override fun handle(command: ReorderCollectionItemCommand): CommandSuccessCommandResult {
+) : CommandHandler<UpdateCollectionItemAnswersCommand> {
+  override val type = UpdateCollectionItemAnswersCommand::class
+  override fun handle(command: UpdateCollectionItemAnswersCommand): CommandSuccessCommandResult {
     val event = with(command) {
       EventEntity(
         user = user,
         assessment = assessmentService.findByUuid(assessmentUuid),
-        data = CollectionItemReorderedEvent(
+        data = CollectionItemAnswersUpdatedEvent(
           collectionItemUuid = collectionItemUuid,
-          index = index,
+          added = added,
+          removed = removed,
         ),
       )
     }.run(eventService::save)

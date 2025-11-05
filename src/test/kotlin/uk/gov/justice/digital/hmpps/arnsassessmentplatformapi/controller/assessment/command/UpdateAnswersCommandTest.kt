@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
@@ -82,7 +82,7 @@ class UpdateAnswersCommandTest(
     val request = CommandsRequest(
 
       commands = listOf(
-        UpdateAnswersCommand(
+        UpdateAssessmentAnswersCommand(
           user = User("test-user", "Test User"),
           assessmentUuid = assessmentEntity.uuid,
           added = mapOf("foo" to listOf("updated_foo_value"), "baz" to listOf("baz_value")),

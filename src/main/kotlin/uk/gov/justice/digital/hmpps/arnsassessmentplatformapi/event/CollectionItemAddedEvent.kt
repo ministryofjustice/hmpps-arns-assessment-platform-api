@@ -6,5 +6,6 @@ data class CollectionItemAddedEvent(
   val collectionItemUuid: UUID,
   val collectionUuid: UUID,
   val answers: Map<String, List<String>>,
+  val properties: Map<String, List<String>>,
   val index: Int?,
 ) : Event

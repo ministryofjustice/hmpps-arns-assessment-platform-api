@@ -25,6 +25,7 @@ class UpdateFormVersionCommandHandlerTest {
   val handler = UpdateFormVersionCommandHandler(
     assessmentService = assessmentService,
     eventBus = eventBus,
+    eventService = eventService,
   )
 
   @Test

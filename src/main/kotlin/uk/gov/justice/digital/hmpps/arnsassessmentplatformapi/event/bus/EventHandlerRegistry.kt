@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus
 
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.exception.EventHandlerNotImplementedException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.handler.EventHandler
@@ -8,9 +10,15 @@ import kotlin.reflect.KClass
 
 @Component
 class EventHandlerRegistry(
-  handlers: List<EventHandler<out Event>>,
+  handlers: List<EventHandler<Event, AggregateState<out Aggregate<*>>>>,
 ) {
-  private val registry: Map<KClass<out Event>, EventHandler<out Event>> = handlers.associateBy { it.type }
+  private val registry = handlers.groupBy { it.eventType }
 
-  fun getHandlerFor(event: KClass<out Event>) = registry[event] ?: throw EventHandlerNotImplementedException("No handler registered for event: ${event.simpleName}")
+  fun <E: Event> getHandlersFor(eventType: KClass<out E>): List<EventHandler<E, AggregateState<out Aggregate<*>>>> =
+    registry[eventType]?.map {
+      @Suppress("UNCHECKED_CAST")
+      it as EventHandler<E, AggregateState<out Aggregate<*>>>
+    } ?: throw EventHandlerNotImplementedException(
+      "No handlers registered for event ${eventType.simpleName}"
+    )
 }

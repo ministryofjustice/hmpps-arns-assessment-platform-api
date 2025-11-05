@@ -7,23 +7,28 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionU
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 
 @Component
 class UpdateFormVersionCommandHandler(
   private val assessmentService: AssessmentService,
   private val eventBus: EventBus,
+  private val eventService: EventService,
 ) : CommandHandler<UpdateFormVersionCommand> {
   override val type = UpdateFormVersionCommand::class
   override fun handle(command: UpdateFormVersionCommand): CommandSuccessCommandResult {
-    eventBus.add(
-      with(command) {
-        EventEntity(
-          user = user,
-          assessment = assessmentService.findByUuid(assessmentUuid),
-          data = FormVersionUpdatedEvent(version),
-        )
-      },
-    )
+    val event = with(command) {
+      EventEntity(
+        user = user,
+        assessment = assessmentService.findByUuid(assessmentUuid),
+        data = FormVersionUpdatedEvent(version),
+      )
+    }.run(eventService::save)
+
+    assessmentService.fetchLatestState(event.assessment)
+      .let { eventBus.handle(event, it) }
+      .let { assessmentService.persist(it) }
+
     return CommandSuccessCommandResult()
   }
 }

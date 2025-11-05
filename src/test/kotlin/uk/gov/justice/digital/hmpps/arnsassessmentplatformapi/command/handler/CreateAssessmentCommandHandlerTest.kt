@@ -24,6 +24,8 @@ class CreateAssessmentCommandHandlerTest {
   val handler = CreateAssessmentCommandHandler(
     assessmentRepository = assessmentRepository,
     eventBus = eventBus,
+    assessmentService = assessmentService,
+    eventService = eventService,
   )
 
   @Test

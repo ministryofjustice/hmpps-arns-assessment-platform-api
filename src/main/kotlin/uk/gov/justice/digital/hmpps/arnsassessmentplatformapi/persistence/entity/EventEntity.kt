@@ -18,8 +18,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "event")
-class EventEntity(
-
+class EventEntity<E: Event>(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id")
@@ -41,5 +40,5 @@ class EventEntity(
 
   @Type(JsonType::class)
   @Column(name = "data", nullable = false)
-  val data: Event,
+  val data: E,
 )

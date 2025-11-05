@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Repository
-interface AggregateRepository : JpaRepository<AggregateEntity, Long> {
+interface AggregateRepository : JpaRepository<AggregateEntity<*>, Long> {
   @Query(
     value = """
         SELECT * FROM aggregate 
@@ -23,7 +23,7 @@ interface AggregateRepository : JpaRepository<AggregateEntity, Long> {
   fun findByAssessmentBeforeDate(
     @Param("assessmentUuid") assessmentUuid: UUID,
     @Param("beforeDate") beforeDate: LocalDateTime,
-  ): AggregateEntity?
+  ): AggregateEntity<*>?
 
   @Query(
     value = """
@@ -38,5 +38,5 @@ interface AggregateRepository : JpaRepository<AggregateEntity, Long> {
   fun findByAssessmentOnExactDate(
     @Param("assessmentUuid") assessmentUuid: UUID,
     @Param("beforeDate") beforeDate: LocalDateTime = LocalDateTime.now(),
-  ): AggregateEntity?
+  ): AggregateEntity<*>?
 }

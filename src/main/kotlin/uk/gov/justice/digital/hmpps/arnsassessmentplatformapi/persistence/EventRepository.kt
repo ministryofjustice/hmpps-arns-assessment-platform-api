@@ -7,8 +7,8 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Repository
-interface EventRepository : JpaRepository<EventEntity, Long> {
-  fun findAllByAssessmentUuid(uuid: UUID): List<EventEntity>
+interface EventRepository : JpaRepository<EventEntity<*>, Long> {
+  fun findAllByAssessmentUuid(uuid: UUID): List<EventEntity<*>>
 
-  fun findAllByAssessmentUuidAndCreatedAtBefore(uuid: UUID, dateTime: LocalDateTime): List<EventEntity>
+  fun findAllByAssessmentUuidAndCreatedAtBefore(uuid: UUID, dateTime: LocalDateTime): List<EventEntity<*>>
 }

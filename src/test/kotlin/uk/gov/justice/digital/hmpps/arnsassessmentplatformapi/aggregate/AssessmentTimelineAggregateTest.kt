@@ -3,12 +3,11 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -108,7 +107,7 @@ class AssessmentTimelineAggregateTest {
           createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
           assessment = assessment,
           user = user,
-          data = AssessmentStatusUpdatedEvent("INCOMPLETE"),
+          data = AssessmentPropertiesUpdatedEvent("INCOMPLETE"),
         ),
       )
 
@@ -117,7 +116,7 @@ class AssessmentTimelineAggregateTest {
           createdAt = LocalDateTime.parse("2025-01-01T13:00:00"),
           assessment = assessment,
           user = user,
-          data = AssessmentStatusUpdatedEvent("COMPLETE"),
+          data = AssessmentPropertiesUpdatedEvent("COMPLETE"),
         ),
       )
 
@@ -154,7 +153,7 @@ class AssessmentTimelineAggregateTest {
         AssessmentAnswersUpdatedEvent::class,
         AssessmentAnswersRolledBackEvent::class,
         FormVersionUpdatedEvent::class,
-        AssessmentStatusUpdatedEvent::class,
+        AssessmentPropertiesUpdatedEvent::class,
       ).forEach { event -> assertThat(aggregate.shouldCreate(event)).isEqualTo(false) }
     }
 
@@ -196,7 +195,7 @@ class AssessmentTimelineAggregateTest {
           removed = emptyList(),
           rolledBackTo = LocalDateTime.now().minus(1, ChronoUnit.DAYS),
         ),
-        AssessmentStatusUpdatedEvent("foo_event"),
+        AssessmentPropertiesUpdatedEvent("foo_event"),
       ).forEach { assertThat(AssessmentTimelineAggregate().shouldUpdate(it::class)).isEqualTo(true) }
     }
 

@@ -1,10 +1,11 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.model
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
 import java.util.UUID
 
 data class CollectionItem(
   val uuid: UUID,
-  val answers: MutableMap<String, List<String>>,
+  val answers: Answers,
+  val properties: Properties,
   val collections: MutableList<Collection>,
 ) {
   fun findCollection(id: UUID): Collection? = collections.firstOrNull { it.uuid == id }

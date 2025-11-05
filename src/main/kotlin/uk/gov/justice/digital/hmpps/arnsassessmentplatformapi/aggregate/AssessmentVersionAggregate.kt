@@ -1,17 +1,15 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.model.Collection
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAddedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemRemovedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemReorderedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -64,6 +62,7 @@ class AssessmentVersionAggregate(
     CollectionItem(
       uuid = event.collectionItemUuid,
       answers = event.answers.toMutableMap(),
+      properties = event,,
       collections = mutableListOf(),
     ).let { collectionItem ->
       with(getCollection(event.collectionUuid)) {
@@ -75,7 +74,7 @@ class AssessmentVersionAggregate(
     }
   }
 
-  private fun handle(event: CollectionItemUpdatedEvent) {
+  private fun handle(event: CollectionItemAnswersUpdatedEvent) {
     getCollectionItem(event.collectionItemUuid).run {
       event.added.forEach { answers.put(it.key, it.value) }
       event.removed.forEach { answers.remove(it) }
@@ -114,7 +113,7 @@ class AssessmentVersionAggregate(
       is FormVersionUpdatedEvent -> handle(event.data)
       is CollectionCreatedEvent -> handle(event.data)
       is CollectionItemAddedEvent -> handle(event.data)
-      is CollectionItemUpdatedEvent -> handle(event.data)
+      is CollectionItemAnswersUpdatedEvent -> handle(event.data)
       is CollectionItemRemovedEvent -> handle(event.data)
       is CollectionItemReorderedEvent -> handle(event.data)
       else -> return false
@@ -138,14 +137,14 @@ class AssessmentVersionAggregate(
   )
 
   companion object : AggregateType {
-    override val createsOn = setOf(AssessmentCreatedEvent::class, AssessmentStatusUpdatedEvent::class)
+    override val createsOn = setOf(AssessmentCreatedEvent::class, AssessmentPropertiesUpdatedEvent::class)
     override val updatesOn = setOf(
       AssessmentAnswersUpdatedEvent::class,
       AssessmentAnswersRolledBackEvent::class,
       FormVersionUpdatedEvent::class,
       CollectionCreatedEvent::class,
       CollectionItemAddedEvent::class,
-      CollectionItemUpdatedEvent::class,
+      CollectionItemAnswersUpdatedEvent::class,
       CollectionItemRemovedEvent::class,
       CollectionItemReorderedEvent::class,
     )

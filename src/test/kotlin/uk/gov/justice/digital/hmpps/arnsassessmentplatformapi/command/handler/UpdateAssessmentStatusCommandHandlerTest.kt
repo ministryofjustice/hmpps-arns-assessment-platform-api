@@ -8,9 +8,9 @@ import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentStatusCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -22,19 +22,20 @@ class UpdateAssessmentStatusCommandHandlerTest {
   val assessmentService: AssessmentService = mockk()
   val eventBus: EventBus = mockk()
 
-  val handler = UpdateAssessmentStatusCommandHandler(
-    assessmentService = assessmentService,
-    eventBus = eventBus,
+  val handler = UpdateAssessmentPropertiesCommandHandler(
+      assessmentService = assessmentService,
+      eventBus = eventBus,
+      eventService = eventService,
   )
 
   @Test
   fun `it stores the type of the command it is built to handle`() {
-    assertThat(handler.type).isEqualTo(UpdateAssessmentStatusCommand::class)
+    assertThat(handler.type).isEqualTo(UpdateAssessmentPropertiesCommand::class)
   }
 
   @Test
   fun `it handles the UpdateAssessmentStatus command`() {
-    val command = UpdateAssessmentStatusCommand(
+    val command = UpdateAssessmentPropertiesCommand(
       user = User("FOO_USER", "Foo User"),
       assessmentUuid = UUID.randomUUID(),
       status = "COMPLETE",
@@ -51,7 +52,7 @@ class UpdateAssessmentStatusCommandHandlerTest {
 
     assertThat(event.captured.assessment.uuid).isEqualTo(command.assessmentUuid)
     assertThat(event.captured.user).isEqualTo(command.user)
-    val eventData = assertIs<AssessmentStatusUpdatedEvent>(event.captured.data)
+    val eventData = assertIs<AssessmentPropertiesUpdatedEvent>(event.captured.data)
     assertThat(eventData.status).isEqualTo(command.status)
   }
 }

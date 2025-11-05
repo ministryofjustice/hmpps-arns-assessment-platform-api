@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.model
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
 import java.util.UUID
 

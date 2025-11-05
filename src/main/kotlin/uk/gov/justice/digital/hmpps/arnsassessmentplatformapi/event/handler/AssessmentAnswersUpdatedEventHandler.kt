@@ -1,39 +1,45 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.handler
 
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.Clock
 import java.time.LocalDateTime
 
-@Service
+@Component
 class AssessmentAnswersUpdatedEventHandler(
   private val clock: Clock,
-): EventHandler<AssessmentAnswersUpdatedEvent> {
-  override val type = AssessmentAnswersUpdatedEvent::class
+): EventHandler<AssessmentAnswersUpdatedEvent, AssessmentState> {
+
+  override val eventType = AssessmentAnswersUpdatedEvent::class
+  override val stateType = AssessmentState::class
+
   override fun handle(
-    event: EventEntity,
-    data: AssessmentAnswersUpdatedEvent,
+    event: EventEntity<AssessmentAnswersUpdatedEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    val aggregate = state.current()
+    updateAnswers(state, event.data)
+    updateTimeline(state, event.data, event.createdAt)
 
-    updateAnswers(state, data)
-    updateTimeline(state, data)
-
-    aggregate.eventsTo = event.createdAt
-    aggregate.updatedAt = LocalDateTime.now(clock)
-    aggregate.numberOfEventsApplied++
+    state.current().apply {
+      eventsTo = event.createdAt
+      updatedAt = LocalDateTime.now(clock)
+      numberOfEventsApplied += 1
+    }
 
     return state
   }
 
-  private fun updateTimeline(state: AssessmentState, event: AssessmentAnswersUpdatedEvent) {
-    state.current().data.timeline.add("Added ${event.added.size} answers")
+  fun updateTimeline(state: AssessmentState, event: AssessmentAnswersUpdatedEvent, timestamp: LocalDateTime) {
+    TimelineItem(
+      timestamp = timestamp,
+      details = "${event.added.size} answers updated and ${event.removed.size} removed",
+    ).run(state.current().data.timeline::add)
   }
 
-  private fun updateAnswers(state: AssessmentState, event: AssessmentAnswersUpdatedEvent) {
+  fun updateAnswers(state: AssessmentState, event: AssessmentAnswersUpdatedEvent) {
     with (state.current().data) {
       event.added.entries.map {
         answers.put(it.key, it.value)

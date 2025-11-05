@@ -11,13 +11,14 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.Type
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
 @Table(name = "aggregate")
-class AggregateEntity(
+class AggregateEntity<T: Aggregate<T>>(
   @Id
   @Column(name = "id")
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,14 +45,14 @@ class AggregateEntity(
 
   @Type(JsonType::class)
   @Column(name = "data", nullable = false)
-  val data: AssessmentAggregate,
+  val data: T,
 ) {
-  fun apply(event: EventEntity) {
+  fun apply(event: EventEntity<Event>) {
     eventsTo = event.createdAt
     updatedAt = LocalDateTime.now()
   }
 
-  fun clone(): AggregateEntity = AggregateEntity(
+  fun clone() = AggregateEntity(
     eventsFrom = this.eventsFrom,
     eventsTo = this.eventsTo,
     assessment = this.assessment,

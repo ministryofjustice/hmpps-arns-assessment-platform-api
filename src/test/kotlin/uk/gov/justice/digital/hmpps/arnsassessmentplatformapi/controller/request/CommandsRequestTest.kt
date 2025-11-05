@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.reques
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.assertThrows
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidCommandException
 import java.util.UUID
@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 class CommandsRequestTest {
   @Test
   fun `it creates`() {
-    val updateAnswersCommand = UpdateAnswersCommand(
+    val updateAnswersCommand = UpdateAssessmentAnswersCommand(
       user = User("FOO_USER", "Foo User"),
       assessmentUuid = UUID.randomUUID(),
       added = mapOf("foo" to listOf("foo_value")),

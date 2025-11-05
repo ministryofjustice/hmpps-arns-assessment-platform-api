@@ -1,18 +1,18 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
-import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.Clock
 import java.time.LocalDateTime
-import java.util.UUID
+import kotlin.reflect.KClass
+import kotlin.reflect.full.createInstance
 
 @Service
 class AggregateService(
@@ -23,67 +23,62 @@ class AggregateService(
 ) {
   private fun now(): LocalDateTime = LocalDateTime.now(clock)
 
-  @Transactional
-  fun createAggregate(assessment: AssessmentEntity): AggregateEntity = createAggregateForPointInTime(assessment, now())
-    .run(aggregateRepository::save)
+  inner class State<A: Aggregate<A>>(
+    private val type: KClass<A>,
+  ) {
+    fun createState(aggregateEntity: AggregateEntity<A>): AggregateState<A> =
+      when (type) {
+        AssessmentAggregate::class -> AssessmentState(aggregateEntity as AggregateEntity<AssessmentAggregate>) as AggregateState<A>
+        else -> throw Error("Unexpected aggregate type : $type")
+      }
 
-  fun fetchLatestAggregateBeforePointInTime(
-    assessmentUuid: UUID,
-    pointInTime: LocalDateTime,
-  ): AggregateEntity? = aggregateRepository.findByAssessmentBeforeDate(assessmentUuid, pointInTime)
-
-  fun fetchLatestAggregate(assessmentUuid: UUID): AggregateEntity? = fetchLatestAggregateBeforePointInTime(assessmentUuid, now())
-
-  fun fetchOrCreateAggregate(
-    assessment: AssessmentEntity,
-    pointInTime: LocalDateTime?,
-  ): AggregateEntity = if (pointInTime != null) {
-    fetchAggregateForExactPointInTime(assessment, pointInTime)
-      ?: createAggregateForPointInTime(assessment, pointInTime).run(aggregateRepository::save)
-  } else {
-    fetchLatestAggregate(assessment.uuid)
-      ?: createAggregateForPointInTime(assessment, now()).run(aggregateRepository::save)
-  }
-
-  fun fetchAggregateForExactPointInTime(
-    assessment: AssessmentEntity,
-    date: LocalDateTime,
-  ): AggregateEntity? = aggregateRepository.findByAssessmentOnExactDate(assessment.uuid, date)
-
-  fun createAggregateForPointInTime(
-    assessment: AssessmentEntity,
-    pointInTime: LocalDateTime,
-  ): AggregateEntity {
-    val events = eventService
-      .findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, pointInTime)
-      .sortedBy { it.createdAt }
-
-    val base = events.maxByOrNull { it.createdAt }?.let { latestEvent ->
-      fetchLatestAggregateBeforePointInTime(assessment.uuid, latestEvent.createdAt)
-        ?.clone()
-    } ?: AggregateEntity(
+    fun blankState(assessment: AssessmentEntity): AggregateState<A> = AggregateEntity(
       assessment = assessment,
-      data = AssessmentAggregate(),
+      data = type.createInstance(),
       eventsFrom = assessment.createdAt,
       eventsTo = assessment.createdAt,
       updatedAt = now(),
-    )
+    ).run(::createState)
 
-    return events.fold(AssessmentState(base)) { acc, event -> eventBus.handle(event, acc) }.current()
-  }
+    fun fetchState(
+      assessment: AssessmentEntity,
+      pointInTime: LocalDateTime?,
+    ): AggregateState<A> = when (pointInTime) {
+      null -> fetchLatestState(assessment)
+      else -> fetchStateForExactPointInTime(assessment, pointInTime)
+    }
 
-  fun fetchLatestState(assessment: AssessmentEntity) = let {
-    fetchLatestAggregate(assessment.uuid)
-      ?: AggregateEntity(
-        assessment = assessment,
-        data = AssessmentAggregate(),
-        eventsFrom = assessment.createdAt,
-        eventsTo = assessment.createdAt,
-        updatedAt = now(),
-      )
-  }.run(::AssessmentState)
+    fun fetchLatestState(assessment: AssessmentEntity): AggregateState<A> =
+      aggregateRepository.findByAssessmentBeforeDate(assessment.uuid, now())
+        ?.let { it as AggregateEntity<A> }
+        ?.run(::createState)
+        ?: createStateForPointInTime(assessment, now())
 
-  fun persistState(assessmentState: AssessmentState) {
-    aggregateRepository.saveAll(assessmentState.aggregates)
+    fun fetchStateForExactPointInTime(assessment: AssessmentEntity, pointInTime: LocalDateTime): AggregateState<A> =
+      aggregateRepository.findByAssessmentOnExactDate(assessment.uuid, pointInTime)
+        ?.let { it as AggregateEntity<A> }
+        ?.run(::createState)
+        ?: createStateForPointInTime(assessment, pointInTime)
+
+    fun createStateForPointInTime(
+      assessment: AssessmentEntity,
+      pointInTime: LocalDateTime,
+    ): AggregateState<A> {
+      val events = eventService
+        .findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, pointInTime)
+        .sortedBy { it.createdAt }
+
+      val base = events.maxByOrNull { it.createdAt }?.let { latestEvent ->
+        aggregateRepository.findByAssessmentBeforeDate(assessment.uuid, pointInTime)
+          ?.let { it as AggregateEntity<A> }
+          ?.run(::createState)
+      } ?: blankState(assessment)
+
+      return events.fold(base) { acc, event -> eventBus.handle(event) }
+    }
+
+    fun persist(state: AggregateState<A>) {
+      aggregateRepository.saveAll(state.aggregates)
+    }
   }
 }

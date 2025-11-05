@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -157,7 +157,7 @@ class AssessmentVersionAggregateTest {
     fun `it returns false when it does update on an event`() {
       listOf(
         AssessmentCreatedEvent(),
-        AssessmentStatusUpdatedEvent("foo_event"),
+        AssessmentPropertiesUpdatedEvent("foo_event"),
       ).forEach { assertThat(AssessmentVersionAggregate().shouldUpdate(it::class)).isEqualTo(false) }
     }
   }
