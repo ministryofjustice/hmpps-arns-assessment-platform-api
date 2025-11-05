@@ -48,6 +48,30 @@ class ResourceSecurityTest : IntegrationTestBase() {
       }
     }
   }
+
+  @Test
+  fun `Ensure command and query endpoints require ROLE_AAP__FRONTEND_RW`() {
+    val beans = context.getBeansOfType(RequestMappingHandlerMapping::class.java)
+    beans.forEach { (_, mapping) ->
+      mapping.handlerMethods.forEach { (mappingInfo, method) ->
+        val paths = mappingInfo.pathPatternsCondition?.patternValues ?: emptySet()
+
+        if (paths.any { it == "/command" || it == "/query" }) {
+          val classAnnotation = method.beanType.getAnnotation(PreAuthorize::class.java)
+          val methodAnnotation = method.getMethodAnnotation(PreAuthorize::class.java)
+          val annotation = methodAnnotation ?: classAnnotation
+
+          assertThat(annotation).withFailMessage {
+            "Endpoint ${paths.first()} must have @PreAuthorize annotation"
+          }.isNotNull()
+
+          assertThat(annotation?.value).withFailMessage {
+            "Endpoint ${paths.first()} must require ROLE_AAP__FRONTEND_RW, but has: ${annotation?.value}"
+          }.isEqualTo("hasAnyRole('ROLE_AAP__FRONTEND_RW')")
+        }
+      }
+    }
+  }
 }
 
 private fun RequestMappingInfo.getMappings() = methodsCondition.methods

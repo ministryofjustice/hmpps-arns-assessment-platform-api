@@ -60,7 +60,7 @@ class AssessmentControllerTest(
 
       val response = webTestClient.post().uri("/command")
         .contentType(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_ARNS_ASSESSMENT_PLATFORM_WRITE")))
+        .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
         .bodyValue(request)
         .exchange()
         .expectStatus().isBadRequest
@@ -82,7 +82,7 @@ class AssessmentControllerTest(
 
       val response = webTestClient.post().uri("/command")
         .contentType(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_ARNS_ASSESSMENT_PLATFORM_WRITE")))
+        .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
         .bodyValue(request)
         .exchange()
         .expectStatus().isOk
@@ -125,7 +125,7 @@ class AssessmentControllerTest(
 
       val response = webTestClient.post().uri("/query")
         .contentType(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_ARNS_ASSESSMENT_PLATFORM_READ")))
+        .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
         .bodyValue(request)
         .exchange()
         .expectStatus().isBadRequest
@@ -161,7 +161,7 @@ class AssessmentControllerTest(
 
       val response = webTestClient.post().uri("/query")
         .contentType(MediaType.APPLICATION_JSON)
-        .headers(setAuthorisation(roles = listOf("ROLE_ARNS_ASSESSMENT_PLATFORM_READ")))
+        .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
         .bodyValue(request)
         .exchange()
         .expectStatus().isOk
@@ -182,6 +182,83 @@ class AssessmentControllerTest(
           AssessmentVersionAggregate::class.simpleName!!,
           LocalDateTime.now(),
         ).let { assertThat(it).isNotNull() }
+      }
+    }
+  }
+
+  @Nested
+  inner class Security {
+    @Nested
+    inner class CommandEndpoint {
+      @Test
+      fun `it allows access with ROLE_AAP__FRONTEND_RW`() {
+        val request = CommandsRequest(
+          commands = listOf(CreateAssessmentCommand(User("test-user", "Test User"))),
+        )
+
+        webTestClient.post().uri("/command")
+          .contentType(MediaType.APPLICATION_JSON)
+          .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+          .bodyValue(request)
+          .exchange()
+          .expectStatus().isOk
+      }
+
+      @Test
+      fun `it denies access with no roles`() {
+        val request = CommandsRequest(
+          commands = listOf(CreateAssessmentCommand(User("test-user", "Test User"))),
+        )
+
+        webTestClient.post().uri("/command")
+          .contentType(MediaType.APPLICATION_JSON)
+          .headers(setAuthorisation(roles = listOf()))
+          .bodyValue(request)
+          .exchange()
+          .expectStatus().isForbidden
+      }
+    }
+
+    @Nested
+    inner class QueryEndpoint {
+      @Test
+      fun `it allows access with ROLE_AAP__FRONTEND_RW`() {
+        val assessment = CreateAssessmentCommand(User("test-user", "Test User"))
+
+        val httpRequest = MockHttpServletRequest()
+        RequestContextHolder.setRequestAttributes(ServletRequestAttributes(httpRequest))
+
+        try {
+          commandBus.dispatch(assessment)
+          eventBus.commit()
+        } finally {
+          RequestContextHolder.resetRequestAttributes()
+        }
+
+        val request = QueriesRequest(
+          queries = listOf(AssessmentVersionQuery(User("test-user", "Test User"), assessment.assessmentUuid)),
+        )
+
+        webTestClient.post().uri("/query")
+          .contentType(MediaType.APPLICATION_JSON)
+          .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+          .bodyValue(request)
+          .exchange()
+          .expectStatus().isOk
+      }
+
+      @Test
+      fun `it denies access with no roles`() {
+        val request = QueriesRequest(
+          queries = listOf(AssessmentVersionQuery(User("test-user", "Test User"), UUID.randomUUID())),
+        )
+
+        webTestClient.post().uri("/query")
+          .contentType(MediaType.APPLICATION_JSON)
+          .headers(setAuthorisation(roles = listOf()))
+          .bodyValue(request)
+          .exchange()
+          .expectStatus().isForbidden
       }
     }
   }
