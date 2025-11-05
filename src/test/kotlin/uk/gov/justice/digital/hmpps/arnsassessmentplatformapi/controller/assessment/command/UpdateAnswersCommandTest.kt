@@ -93,7 +93,7 @@ class UpdateAnswersCommandTest(
 
     val response = webTestClient.post().uri("/command")
       .header(HttpHeaders.CONTENT_TYPE, "application/json")
-      .headers(setAuthorisation(roles = listOf("ROLE_ARNS_ASSESSMENT_PLATFORM_WRITE")))
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
       .bodyValue(request)
       .exchange()
       .expectStatus().isOk
