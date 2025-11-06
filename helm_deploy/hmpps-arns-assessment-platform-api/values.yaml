@@ -1,6 +1,6 @@
 generic-service:
   nameOverride: hmpps-arns-assessment-platform-api
-  serviceAccountNmae: hmpps-arns-assessment-platform-service-account
+  serviceAccountName: hmpps-arns-assessment-platform-service-account
   productId: "HMPPS509" # productId for the product that this belongs too, i.e. DPS001, see README.md for details
 
   replicaCount: 4
