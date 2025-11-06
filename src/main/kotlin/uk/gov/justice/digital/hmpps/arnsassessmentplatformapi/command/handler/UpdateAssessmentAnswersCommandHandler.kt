@@ -19,7 +19,7 @@ class UpdateAssessmentAnswersCommandHandler(
 ) : CommandHandler<UpdateAssessmentAnswersCommand> {
   override val type = UpdateAssessmentAnswersCommand::class
   override fun handle(command: UpdateAssessmentAnswersCommand): CommandSuccessCommandResult {
-    with(command) {
+    val event = with(command) {
       EventEntity(
         user = user,
         assessment = assessmentService.findByUuid(assessmentUuid),
@@ -29,9 +29,9 @@ class UpdateAssessmentAnswersCommandHandler(
         ),
       )
     }
-      .run(eventService::save)
-      .run(eventBus::handle)
-      .run(stateService::persist)
+
+    eventBus.handle(event).run(stateService::persist)
+    eventService.save(event)
 
     return CommandSuccessCommandResult()
   }

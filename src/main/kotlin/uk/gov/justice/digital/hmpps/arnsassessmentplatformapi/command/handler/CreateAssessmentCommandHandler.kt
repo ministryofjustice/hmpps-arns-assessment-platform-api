@@ -21,16 +21,16 @@ class CreateAssessmentCommandHandler(
   override val type = CreateAssessmentCommand::class
   override fun handle(command: CreateAssessmentCommand): CreateAssessmentCommandResult {
     val assessment = assessmentRepository.save(AssessmentEntity(uuid = command.assessmentUuid))
-    with(command) {
+    val event = with(command) {
       EventEntity(
         user = user,
         assessment = assessment,
         data = AssessmentCreatedEvent(properties),
       )
     }
-      .run(eventService::save)
-      .run(eventBus::handle)
-      .run(stateService::persist)
+
+    eventBus.handle(event).run(stateService::persist)
+    eventService.save(event)
 
     return CreateAssessmentCommandResult(assessment.uuid)
   }

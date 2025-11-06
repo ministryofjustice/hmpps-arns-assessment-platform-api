@@ -5,15 +5,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemReorderedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import java.time.Clock
 import java.time.LocalDateTime
 
 @Component
 class CollectionItemReorderedEventHandler(
   private val clock: Clock,
-  stateService: StateService,
-) : AssessmentEventHandler<CollectionItemReorderedEvent>(stateService) {
+) : AssessmentEventHandler<CollectionItemReorderedEvent> {
   override val eventType = CollectionItemReorderedEvent::class
   override val stateType = AssessmentState::class
 
@@ -26,6 +24,8 @@ class CollectionItemReorderedEventHandler(
     if (!aggregate.data.collections.any { collection -> collection.reorderItem(event.data.collectionItemUuid, event.data.index) }) {
       throw Error("Collection item ID ${event.data.collectionItemUuid} does not exist")
     }
+
+    aggregate.data.collaborators.add(event.user)
 
     aggregate.apply {
       eventsTo = event.createdAt

@@ -23,7 +23,7 @@ class RollbackAnswersCommandHandler(
   private fun now() = LocalDateTime.now(clock)
   override val type = RollBackAssessmentAnswersCommand::class
   override fun handle(command: RollBackAssessmentAnswersCommand): CommandSuccessCommandResult {
-    with(command) {
+    val event = with(command) {
       EventEntity(
         user = command.user,
         assessment = assessmentService.findByUuid(assessmentUuid),
@@ -32,9 +32,9 @@ class RollbackAnswersCommandHandler(
         ),
       )
     }
-      .run(eventService::save)
-      .run(eventBus::handle)
-      .run(stateService::persist)
+
+    eventBus.handle(event).run(stateService::persist)
+    eventService.save(event)
 
     return CommandSuccessCommandResult()
   }

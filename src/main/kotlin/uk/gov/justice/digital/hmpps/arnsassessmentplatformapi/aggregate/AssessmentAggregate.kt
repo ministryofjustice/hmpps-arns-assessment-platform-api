@@ -1,6 +1,5 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User

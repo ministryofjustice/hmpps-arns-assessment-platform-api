@@ -8,7 +8,7 @@ import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
@@ -75,8 +75,14 @@ class AssessmentControllerTest(
     fun `it can process multiple commands`() {
       val request = CommandsRequest(
         commands = listOf(
-          CreateAssessmentCommand(User("test-user-1", "Test User")),
-          CreateAssessmentCommand(User("test-user-2", "Test User")),
+          CreateAssessmentCommand(
+            User("test-user-1", "Test User"),
+            properties = emptyMap(),
+          ),
+          CreateAssessmentCommand(
+            User("test-user-2", "Test User"),
+            properties = emptyMap(),
+          ),
         ),
       )
 
@@ -138,8 +144,14 @@ class AssessmentControllerTest(
 
     @Test
     fun `it can process multiple queries`() {
-      val assessment1 = CreateAssessmentCommand(User("test-user-1", "Test User"))
-      val assessment2 = CreateAssessmentCommand(User("test-user-2", "Test User"))
+      val assessment1 = CreateAssessmentCommand(
+        User("test-user-1", "Test User"),
+        properties = emptyMap(),
+      )
+      val assessment2 = CreateAssessmentCommand(
+        User("test-user-2", "Test User"),
+        properties = emptyMap(),
+      )
 
       val httpRequest = MockHttpServletRequest()
       RequestContextHolder.setRequestAttributes(ServletRequestAttributes(httpRequest))
@@ -147,7 +159,6 @@ class AssessmentControllerTest(
       try {
         commandBus.dispatch(assessment1)
         commandBus.dispatch(assessment2)
-        eventBus.commit()
       } finally {
         RequestContextHolder.resetRequestAttributes()
       }
@@ -179,7 +190,7 @@ class AssessmentControllerTest(
       listOf(assessment1, assessment2).forEach { assessment ->
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.assessmentUuid,
-          AssessmentVersionAggregate::class.simpleName!!,
+          AssessmentAggregate::class.simpleName!!,
           LocalDateTime.now(),
         ).let { assertThat(it).isNotNull() }
       }

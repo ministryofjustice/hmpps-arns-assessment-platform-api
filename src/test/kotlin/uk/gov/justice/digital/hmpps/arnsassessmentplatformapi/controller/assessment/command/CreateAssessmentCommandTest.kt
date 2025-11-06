@@ -43,6 +43,7 @@ class CreateAssessmentCommandTest(
       commands = listOf(
         CreateAssessmentCommand(
           user = User("test-user", "Test User"),
+          properties = mapOf("prop1" to listOf("val1")),
         ),
       ),
     )

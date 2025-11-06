@@ -6,15 +6,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import java.time.Clock
 import java.time.LocalDateTime
 
 @Component
 class AssessmentPropertiesUpdatedEventHandler(
   private val clock: Clock,
-  stateService: StateService,
-) : AssessmentEventHandler<AssessmentPropertiesUpdatedEvent>(stateService) {
+) : AssessmentEventHandler<AssessmentPropertiesUpdatedEvent> {
 
   override val eventType = AssessmentPropertiesUpdatedEvent::class
   override val stateType = AssessmentState::class
@@ -25,6 +23,7 @@ class AssessmentPropertiesUpdatedEventHandler(
   ): AssessmentState {
     updateTimeline(state, event.data, event.createdAt)
     updateProperties(state, event.data)
+    state.get().data.collaborators.add(event.user)
 
     state.get().apply {
       eventsTo = event.createdAt

@@ -19,7 +19,7 @@ class ReorderCollectionItemCommandHandler(
 ) : CommandHandler<ReorderCollectionItemCommand> {
   override val type = ReorderCollectionItemCommand::class
   override fun handle(command: ReorderCollectionItemCommand): CommandSuccessCommandResult {
-    with(command) {
+    val event = with(command) {
       EventEntity(
         user = user,
         assessment = assessmentService.findByUuid(assessmentUuid),
@@ -29,9 +29,9 @@ class ReorderCollectionItemCommandHandler(
         ),
       )
     }
-      .run(eventService::save)
-      .run(eventBus::handle)
-      .run(stateService::persist)
+
+    eventBus.handle(event).run(stateService::persist)
+    eventService.save(event)
 
     return CommandSuccessCommandResult()
   }

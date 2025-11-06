@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 
 @Component
 class EventHandlerRegistry(
-  handlers: List<EventHandler<Event, AggregateState<out Aggregate<*>>>>,
+  handlers: List<EventHandler<out Event, out AggregateState<out Aggregate<*>>>>,
 ) {
   private val registry = handlers.groupBy { it.eventType }
 

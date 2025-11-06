@@ -19,16 +19,16 @@ class CreateCollectionCommandHandler(
 ) : CommandHandler<CreateCollectionCommand> {
   override val type = CreateCollectionCommand::class
   override fun handle(command: CreateCollectionCommand): CreateCollectionCommandResult {
-    with(command) {
+    val event = with(command) {
       EventEntity(
         user = user,
         assessment = assessmentService.findByUuid(assessmentUuid),
         data = CollectionCreatedEvent(collectionUuid, name, parentCollectionItemUuid),
       )
     }
-      .run(eventService::save)
-      .run(eventBus::handle)
-      .run(stateService::persist)
+
+    eventBus.handle(event).run(stateService::persist)
+    eventService.save(event)
 
     return CreateCollectionCommandResult(command.collectionUuid)
   }

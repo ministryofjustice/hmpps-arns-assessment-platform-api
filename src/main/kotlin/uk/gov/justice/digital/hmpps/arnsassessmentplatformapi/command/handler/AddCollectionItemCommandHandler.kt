@@ -19,16 +19,16 @@ class AddCollectionItemCommandHandler(
 ) : CommandHandler<AddCollectionItemCommand> {
   override val type = AddCollectionItemCommand::class
   override fun handle(command: AddCollectionItemCommand): AddCollectionItemCommandResult {
-    with(command) {
+    val event = with(command) {
       EventEntity(
         user = user,
         assessment = assessmentService.findByUuid(assessmentUuid),
         data = CollectionItemAddedEvent(collectionItemUuid, collectionUuid, answers, properties, index),
       )
     }
-      .run(eventService::save)
-      .run(eventBus::handle)
-      .run(stateService::persist)
+
+    eventBus.handle(event).run(stateService::persist)
+    eventService.save(event)
 
     return AddCollectionItemCommandResult(command.collectionItemUuid)
   }

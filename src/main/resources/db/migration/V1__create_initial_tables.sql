@@ -32,6 +32,7 @@ CREATE TABLE aggregate
     events_to       TIMESTAMPTZ                                       NOT NULL,
     events_applied  BIGINT                                            NOT NULL,
     data            JSONB                                             NOT NULL,
+    data_type       TEXT GENERATED ALWAYS AS (data ->> 'type') STORED NOT NULL,
     assessment_uuid UUID                                              NOT NULL,
     CONSTRAINT pk_aggregate PRIMARY KEY (id),
     CONSTRAINT fk_aggregate_assessment FOREIGN KEY (assessment_uuid) REFERENCES assessment (uuid) ON DELETE CASCADE

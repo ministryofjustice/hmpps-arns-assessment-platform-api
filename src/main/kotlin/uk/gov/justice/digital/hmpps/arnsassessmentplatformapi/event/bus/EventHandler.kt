@@ -10,5 +10,5 @@ interface EventHandler<E : Event, S : AggregateState<out Aggregate<*>>> {
   val eventType: KClass<out E>
   val stateType: KClass<out S>
 
-  fun execute(event: EventEntity<E>, stateOverride: S?): S
+  fun handle(event: EventEntity<E>, state: S): S
 }

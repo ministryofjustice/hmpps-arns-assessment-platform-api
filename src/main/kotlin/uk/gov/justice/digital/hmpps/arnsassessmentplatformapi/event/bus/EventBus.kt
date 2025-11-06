@@ -4,16 +4,31 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import kotlin.reflect.full.createInstance
 
 @Component
 class EventBus(
   val registry: EventHandlerRegistry,
+  val stateService: StateService,
+  val eventService: EventService,
 ) {
   private fun <E : Event, S : State> execute(event: EventEntity<E>, state: S): S {
     registry.getHandlersFor(event.data::class).map { handler ->
       val aggregateType = handler.stateType.createInstance().type
-      state[aggregateType] = handler.execute(event, state[aggregateType])
+      val stateProvider = stateService.stateForType(aggregateType)
+      val stateForType = state[aggregateType] ?: stateProvider.fetchLatestState(event.assessment)
+      if (stateForType == null) {
+        state[aggregateType] = stateProvider.blankState(event.assessment)
+        eventService
+          .findAllByAssessmentUuidAndCreatedAtBefore(event.assessment.uuid, event.createdAt)
+          .plus(event)
+          .sortedBy { it.createdAt }
+          .fold(state) { acc: State, event -> execute(event, acc) }
+      } else {
+        state[aggregateType] = handler.handle(event, stateForType)
+      }
     }
     return state
   }

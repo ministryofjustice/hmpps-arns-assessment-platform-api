@@ -6,15 +6,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAddedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import java.time.Clock
 import java.time.LocalDateTime
 
 @Component
 class CollectionItemAddedEventHandler(
   private val clock: Clock,
-  stateService: StateService,
-) : AssessmentEventHandler<CollectionItemAddedEvent>(stateService) {
+) : AssessmentEventHandler<CollectionItemAddedEvent> {
   override val eventType = CollectionItemAddedEvent::class
   override val stateType = AssessmentState::class
 
@@ -37,6 +35,8 @@ class CollectionItemAddedEventHandler(
     event.data.index?.let { index ->
       collection.items.add(index, collectionItem)
     } ?: collection.items.add(collectionItem)
+
+    aggregate.data.collaborators.add(event.user)
 
     aggregate.apply {
       eventsTo = event.createdAt

@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAn
 import java.time.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertIs
+import kotlin.text.get
 
 class AggregateEntityTest {
   @Test

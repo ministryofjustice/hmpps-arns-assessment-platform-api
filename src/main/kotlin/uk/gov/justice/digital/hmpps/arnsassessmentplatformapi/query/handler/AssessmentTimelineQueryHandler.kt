@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentTimelineQueryResult
@@ -17,8 +17,8 @@ class AssessmentTimelineQueryHandler(
   override fun handle(query: AssessmentTimelineQuery): AssessmentTimelineQueryResult {
     val assessment = assessmentService.findByUuid(query.assessmentUuid)
 
-    val state = stateService.ForType(AssessmentAggregate::class)
-      .fetchState(assessment, query.timestamp) as AssessmentState
+    val state = stateService.stateForType(AssessmentAggregate::class)
+      .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
 
     return AssessmentTimelineQueryResult(state.get().data.timeline)
   }

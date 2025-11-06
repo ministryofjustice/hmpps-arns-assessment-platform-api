@@ -1,7 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.handler
 
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
@@ -14,8 +15,8 @@ import java.time.LocalDateTime
 @Component
 class AssessmentAnswersRolledBackEventHandler(
   private val clock: Clock,
-  private val stateService: StateService,
-) : AssessmentEventHandler<AssessmentAnswersRolledBackEvent>(stateService) {
+  @param:Lazy private val stateService: StateService,
+) : AssessmentEventHandler<AssessmentAnswersRolledBackEvent> {
 
   override val eventType = AssessmentAnswersRolledBackEvent::class
   override val stateType = AssessmentState::class
@@ -26,7 +27,7 @@ class AssessmentAnswersRolledBackEventHandler(
   ): AssessmentState {
     val aggregate = state.get()
 
-    val previousState = stateService.ForType(AssessmentAggregate::class).fetchStateForExactPointInTime(
+    val previousState = stateService.stateForType(AssessmentAggregate::class).fetchOrCreateStateForExactPointInTime(
       event.assessment,
       event.data.rolledBackTo,
     ) as AssessmentState
@@ -46,6 +47,7 @@ class AssessmentAnswersRolledBackEventHandler(
 
     AssessmentAnswersUpdatedEventHandler.updateAnswers(state, answersAdded, answersRemoved)
 
+    aggregate.data.collaborators.add(event.user)
     aggregate.data.timeline.add(
       TimelineItem(
         timestamp = event.createdAt,

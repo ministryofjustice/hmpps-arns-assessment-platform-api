@@ -19,7 +19,7 @@ class RemoveCollectionItemCommandHandler(
 ) : CommandHandler<RemoveCollectionItemCommand> {
   override val type = RemoveCollectionItemCommand::class
   override fun handle(command: RemoveCollectionItemCommand): CommandSuccessCommandResult {
-    with(command) {
+    val event = with(command) {
       EventEntity(
         user = user,
         assessment = assessmentService.findByUuid(assessmentUuid),
@@ -28,9 +28,9 @@ class RemoveCollectionItemCommandHandler(
         ),
       )
     }
-      .run(eventService::save)
-      .run(eventBus::handle)
-      .run(stateService::persist)
+
+    eventBus.handle(event).run(stateService::persist)
+    eventService.save(event)
 
     return CommandSuccessCommandResult()
   }
