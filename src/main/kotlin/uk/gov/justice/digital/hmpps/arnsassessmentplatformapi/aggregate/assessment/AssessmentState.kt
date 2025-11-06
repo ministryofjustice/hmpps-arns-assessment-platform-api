@@ -5,12 +5,15 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 
 class AssessmentState(
   override val aggregates: MutableList<AggregateEntity<AssessmentAggregate>> = mutableListOf(),
-): AggregateState<AssessmentAggregate> {
+) : AggregateState<AssessmentAggregate> {
   override val type = AssessmentAggregate::class
 
-  constructor(aggregate: AggregateEntity<AssessmentAggregate>) : this() { aggregates.add(aggregate) }
+  constructor(aggregate: AggregateEntity<AssessmentAggregate>) : this() {
+    aggregates.add(aggregate)
+  }
 
-  fun get(): AggregateEntity<AssessmentAggregate> =
-    (aggregates.last().takeIf { it.numberOfEventsApplied < 50 }
-      ?: aggregates.last().clone().also { aggregates.add(it) })
+  fun get(): AggregateEntity<AssessmentAggregate> = (
+    aggregates.last().takeIf { it.numberOfEventsApplied < 50 }
+      ?: aggregates.last().clone().also { aggregates.add(it) }
+    )
 }

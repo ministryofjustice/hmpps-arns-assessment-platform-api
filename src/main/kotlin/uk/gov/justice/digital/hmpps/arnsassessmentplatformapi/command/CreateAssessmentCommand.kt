@@ -6,7 +6,7 @@ import java.util.UUID
 
 data class CreateAssessmentCommand(
   override val user: User,
-  val properties: Map<String, List<String>>
+  val properties: Map<String, List<String>>,
 ) : RequestableCommand {
   @JsonIgnore
   override val assessmentUuid: UUID = UUID.randomUUID()

@@ -1,18 +1,20 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.handler
 
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import java.time.Clock
 import java.time.LocalDateTime
 
 @Component
 class AssessmentCreatedEventHandler(
   private val clock: Clock,
-): EventHandler<AssessmentCreatedEvent, AssessmentState> {
+  stateService: StateService,
+) : AssessmentEventHandler<AssessmentCreatedEvent>(stateService) {
   override val eventType = AssessmentCreatedEvent::class
   override val stateType = AssessmentState::class
 

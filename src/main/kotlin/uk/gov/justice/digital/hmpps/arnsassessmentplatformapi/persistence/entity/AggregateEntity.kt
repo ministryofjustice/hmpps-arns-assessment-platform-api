@@ -18,7 +18,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "aggregate")
-class AggregateEntity<T: Aggregate<T>>(
+class AggregateEntity<T : Aggregate<T>>(
   @Id
   @Column(name = "id")
   @GeneratedValue(strategy = GenerationType.IDENTITY)

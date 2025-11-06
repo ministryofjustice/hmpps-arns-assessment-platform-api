@@ -23,10 +23,10 @@ class UpdateFormVersionCommandHandlerTest {
   val eventBus: EventBus = mockk()
 
   val handler = UpdateFormVersionCommandHandler(
-      assessmentService = assessmentService,
-      eventBus = eventBus,
-      eventService = eventService,
-      stateService = stateService,
+    assessmentService = assessmentService,
+    eventBus = eventBus,
+    eventService = eventService,
+    stateService = stateService,
   )
 
   @Test

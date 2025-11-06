@@ -18,7 +18,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "event")
-class EventEntity<E: Event>(
+class EventEntity<E : Event>(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id")

@@ -1,18 +1,20 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.handler
 
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAddedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import java.time.Clock
 import java.time.LocalDateTime
 
 @Component
 class CollectionItemAddedEventHandler(
   private val clock: Clock,
-): EventHandler<CollectionItemAddedEvent, AssessmentState> {
+  stateService: StateService,
+) : AssessmentEventHandler<CollectionItemAddedEvent>(stateService) {
   override val eventType = CollectionItemAddedEvent::class
   override val stateType = AssessmentState::class
 
@@ -20,7 +22,7 @@ class CollectionItemAddedEventHandler(
     event: EventEntity<CollectionItemAddedEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    val collectionItem = with (event.data) {
+    val collectionItem = with(event.data) {
       CollectionItem(
         uuid = collectionItemUuid,
         answers = answers.toMutableMap(),

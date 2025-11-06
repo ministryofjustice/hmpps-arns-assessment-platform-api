@@ -23,10 +23,10 @@ class UpdateAssessmentStatusCommandHandlerTest {
   val eventBus: EventBus = mockk()
 
   val handler = UpdateAssessmentPropertiesCommandHandler(
-      assessmentService = assessmentService,
-      eventBus = eventBus,
-      eventService = eventService,
-      stateService = stateService,
+    assessmentService = assessmentService,
+    eventBus = eventBus,
+    eventService = eventService,
+    stateService = stateService,
   )
 
   @Test

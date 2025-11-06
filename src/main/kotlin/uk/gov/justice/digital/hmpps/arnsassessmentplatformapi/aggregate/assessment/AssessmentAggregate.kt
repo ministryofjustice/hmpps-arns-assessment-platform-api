@@ -23,7 +23,7 @@ data class AssessmentAggregate(
   val collaborators: Collaborators = mutableSetOf(),
   val timeline: Timeline = mutableListOf(),
   var formVersion: FormVersion = null,
-): Aggregate<AssessmentAggregate> {
+) : Aggregate<AssessmentAggregate> {
   override fun clone() = AssessmentAggregate(
     properties = properties.toMutableMap(),
     answers = answers.toMutableMap(),

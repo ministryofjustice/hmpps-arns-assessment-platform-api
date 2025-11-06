@@ -6,9 +6,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import kotlin.reflect.KClass
 
-interface EventHandler<E: Event, S: AggregateState<out Aggregate<*>>> {
+interface EventHandler<E : Event, S : AggregateState<out Aggregate<*>>> {
   val eventType: KClass<out E>
   val stateType: KClass<out S>
 
-  fun handle(event: EventEntity<E>, state: S): S
+  fun execute(event: EventEntity<E>, stateOverride: S?): S
 }

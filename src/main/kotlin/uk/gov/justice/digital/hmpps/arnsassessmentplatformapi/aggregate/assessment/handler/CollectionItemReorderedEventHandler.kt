@@ -1,17 +1,19 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.handler
 
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemReorderedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import java.time.Clock
 import java.time.LocalDateTime
 
 @Component
 class CollectionItemReorderedEventHandler(
   private val clock: Clock,
-): EventHandler<CollectionItemReorderedEvent, AssessmentState> {
+  stateService: StateService,
+) : AssessmentEventHandler<CollectionItemReorderedEvent>(stateService) {
   override val eventType = CollectionItemReorderedEvent::class
   override val stateType = AssessmentState::class
 
