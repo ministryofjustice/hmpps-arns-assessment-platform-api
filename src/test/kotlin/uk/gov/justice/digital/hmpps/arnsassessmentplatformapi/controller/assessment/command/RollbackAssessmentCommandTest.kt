@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollbackAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollBackAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
@@ -104,7 +104,7 @@ class RollbackAssessmentCommandTest(
     val request = CommandsRequest(
 
       commands = listOf(
-        RollbackAnswersCommand(
+        RollBackAssessmentAnswersCommand(
           user = User("test-user", "Test User"),
           assessmentUuid = assessmentEntity.uuid,
           pointInTime = LocalDateTime.parse("2025-01-01T13:00:00"),
@@ -145,7 +145,7 @@ class RollbackAssessmentCommandTest(
     val secondRequest = CommandsRequest(
 
       commands = listOf(
-        RollbackAnswersCommand(
+        RollBackAssessmentAnswersCommand(
           user = User("test-user", "Test User"),
           assessmentUuid = assessmentEntity.uuid,
           pointInTime = LocalDateTime.parse("2025-01-02T10:00:00"),

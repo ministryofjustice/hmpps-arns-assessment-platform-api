@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
@@ -55,14 +56,14 @@ class AssessmentTimelineAggregateTest {
       val timeline = aggregate.getTimeline()
 
       assertThat(timeline).contains(
-        TimelineItem(
-          timestamp = LocalDateTime.parse("2025-01-01T12:00:00"),
-          details = "2 answers updated and 0 removed",
-        ),
-        TimelineItem(
-          timestamp = LocalDateTime.parse("2025-01-01T12:30:00"),
-          details = "2 answers updated and 1 removed",
-        ),
+          TimelineItem(
+              timestamp = LocalDateTime.parse("2025-01-01T12:00:00"),
+              details = "2 answers updated and 0 removed",
+          ),
+          TimelineItem(
+              timestamp = LocalDateTime.parse("2025-01-01T12:30:00"),
+              details = "2 answers updated and 1 removed",
+          ),
       )
       assertThat(aggregate.numberOfEventsApplied).isEqualTo(2)
     }
@@ -90,10 +91,10 @@ class AssessmentTimelineAggregateTest {
       val timeline = aggregate.getTimeline()
 
       assertThat(timeline).contains(
-        TimelineItem(
-          timestamp = LocalDateTime.parse("2025-01-01T13:00:00"),
-          details = "Rolled back 3 answers",
-        ),
+          TimelineItem(
+              timestamp = LocalDateTime.parse("2025-01-01T13:00:00"),
+              details = "Rolled back 3 answers",
+          ),
       )
       assertThat(aggregate.numberOfEventsApplied).isEqualTo(1)
     }
@@ -123,14 +124,14 @@ class AssessmentTimelineAggregateTest {
       val timeline = aggregate.getTimeline()
 
       assertThat(timeline).contains(
-        TimelineItem(
-          timestamp = LocalDateTime.parse("2025-01-01T12:00:00"),
-          details = "Assessment status changed to \"INCOMPLETE\"",
-        ),
-        TimelineItem(
-          timestamp = LocalDateTime.parse("2025-01-01T13:00:00"),
-          details = "Assessment status changed from \"INCOMPLETE\" to \"COMPLETE\"",
-        ),
+          TimelineItem(
+              timestamp = LocalDateTime.parse("2025-01-01T12:00:00"),
+              details = "Assessment status changed to \"INCOMPLETE\"",
+          ),
+          TimelineItem(
+              timestamp = LocalDateTime.parse("2025-01-01T13:00:00"),
+              details = "Assessment status changed from \"INCOMPLETE\" to \"COMPLETE\"",
+          ),
       )
       assertThat(aggregate.numberOfEventsApplied).isEqualTo(2)
     }

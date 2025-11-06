@@ -1,5 +1,6 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment
 
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 
 class AssessmentState(
@@ -9,7 +10,7 @@ class AssessmentState(
 
   constructor(aggregate: AggregateEntity<AssessmentAggregate>) : this() { aggregates.add(aggregate) }
 
-  fun current(): AggregateEntity<AssessmentAggregate> =
+  fun get(): AggregateEntity<AssessmentAggregate> =
     (aggregates.last().takeIf { it.numberOfEventsApplied < 50 }
       ?: aggregates.last().clone().also { aggregates.add(it) })
 }

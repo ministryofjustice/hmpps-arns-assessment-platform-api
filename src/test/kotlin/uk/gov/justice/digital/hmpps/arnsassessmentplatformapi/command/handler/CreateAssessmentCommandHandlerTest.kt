@@ -22,10 +22,11 @@ class CreateAssessmentCommandHandlerTest {
   val eventBus: EventBus = mockk()
 
   val handler = CreateAssessmentCommandHandler(
-    assessmentRepository = assessmentRepository,
-    eventBus = eventBus,
-    assessmentService = assessmentService,
-    eventService = eventService,
+      assessmentRepository = assessmentRepository,
+      eventBus = eventBus,
+      assessmentService = assessmentService,
+      eventService = eventService,
+      stateService = stateService,
   )
 
   @Test

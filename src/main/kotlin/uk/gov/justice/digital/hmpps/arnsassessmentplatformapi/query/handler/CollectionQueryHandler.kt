@@ -1,26 +1,30 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Collection
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.CollectionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.CollectionQueryResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 
 @Component
 class CollectionQueryHandler(
   private val assessmentService: AssessmentService,
-  private val aggregateService: AggregateService,
+  private val stateService: StateService,
 ) : QueryHandler<CollectionQuery> {
   override val type = CollectionQuery::class
   override fun handle(query: CollectionQuery): CollectionQueryResult {
-    val aggregate = assessmentService.findByUuid(query.assessmentUuid)
-      .let { assessment -> aggregateService.fetchState(assessment, AssessmentVersionAggregate::class, query.timestamp) }
-      .data as AssessmentVersionAggregate
+    val assessment = assessmentService.findByUuid(query.assessmentUuid)
+
+    val state = stateService.ForType(AssessmentAggregate::class)
+      .fetchState(assessment, query.timestamp) as AssessmentState
+
+    val collection = state.get().data.getCollection(query.collectionUuid)
 
     return CollectionQueryResult(
-      collection = truncateCollection(aggregate.getCollection(query.collectionUuid), query.depth),
+      collection = truncateCollection(collection, query.depth),
     )
   }
 

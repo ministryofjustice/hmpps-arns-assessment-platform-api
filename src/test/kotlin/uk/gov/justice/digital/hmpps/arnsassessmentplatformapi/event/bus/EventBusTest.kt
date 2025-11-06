@@ -16,11 +16,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 
 class EventBusTest {
-  val aggregateService: AggregateService = mockk()
+  val stateService: StateService = mockk()
   val eventService: EventService = mockk()
   val aggregateTypeRegistry: AggregateTypeRegistry = mockk()
 
@@ -40,7 +40,7 @@ class EventBusTest {
   @BeforeEach
   fun setUp() {
     every {
-      aggregateService.processEvents(
+      stateService.processEvents(
         assessment,
         aggregateName,
         any<List<EventEntity>>(),
@@ -61,7 +61,7 @@ class EventBusTest {
     val queue = mutableListOf<EventEntity>()
     val eventBus = EventBus(
       queue = queue,
-      aggregateService = aggregateService,
+      stateService = stateService,
       eventService = eventService,
       aggregateTypeRegistry = aggregateTypeRegistry,
     )
@@ -83,7 +83,7 @@ class EventBusTest {
     val queue = mutableListOf<EventEntity>()
     val eventBus = EventBus(
       queue = queue,
-      aggregateService = aggregateService,
+      stateService = stateService,
       eventService = eventService,
       aggregateTypeRegistry = aggregateTypeRegistry,
     )
@@ -94,7 +94,7 @@ class EventBusTest {
     eventBus.add(event)
     eventBus.commit()
 
-    verify(exactly = 0) { aggregateService.processEvents(any(), any(), any()) }
+    verify(exactly = 0) { stateService.processEvents(any(), any(), any()) }
     verify(exactly = 1) { eventService.saveAll(queue) }
     Assertions.assertThat(queue).withFailMessage("should flush the queue").isEmpty()
   }
@@ -104,7 +104,7 @@ class EventBusTest {
     val queue = mutableListOf<EventEntity>()
     val eventBus = EventBus(
       queue = queue,
-      aggregateService = aggregateService,
+      stateService = stateService,
       eventService = eventService,
       aggregateTypeRegistry = aggregateTypeRegistry,
     )
@@ -115,7 +115,7 @@ class EventBusTest {
     eventBus.add(event)
     eventBus.commit()
 
-    verify(exactly = 1) { aggregateService.processEvents(assessment, aggregateName, listOf(event)) }
+    verify(exactly = 1) { stateService.processEvents(assessment, aggregateName, listOf(event)) }
     verify(exactly = 1) { eventService.saveAll(queue) }
     Assertions.assertThat(queue).withFailMessage("should flush the queue").isEmpty()
   }
@@ -125,7 +125,7 @@ class EventBusTest {
     val queue = mutableListOf<EventEntity>()
     val eventBus = EventBus(
       queue = queue,
-      aggregateService = aggregateService,
+      stateService = stateService,
       eventService = eventService,
       aggregateTypeRegistry = aggregateTypeRegistry,
     )
@@ -136,7 +136,7 @@ class EventBusTest {
     eventBus.add(event)
     eventBus.commit()
 
-    verify(exactly = 1) { aggregateService.processEvents(assessment, aggregateName, listOf(event)) }
+    verify(exactly = 1) { stateService.processEvents(assessment, aggregateName, listOf(event)) }
     verify(exactly = 1) { eventService.saveAll(queue) }
     Assertions.assertThat(queue).withFailMessage("should flush the queue").isEmpty()
   }

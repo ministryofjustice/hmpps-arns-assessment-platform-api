@@ -5,7 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregat
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.exception.EventHandlerNotImplementedException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.handler.EventHandler
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
 import kotlin.reflect.KClass
 
 @Component

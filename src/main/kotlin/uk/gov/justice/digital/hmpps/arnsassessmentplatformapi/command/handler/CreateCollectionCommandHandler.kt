@@ -8,26 +8,27 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 
 @Component
 class CreateCollectionCommandHandler(
   private val assessmentService: AssessmentService,
   private val eventBus: EventBus,
   private val eventService: EventService,
+  private val stateService: StateService,
 ) : CommandHandler<CreateCollectionCommand> {
   override val type = CreateCollectionCommand::class
   override fun handle(command: CreateCollectionCommand): CreateCollectionCommandResult {
-    val event = with(command) {
+    with(command) {
       EventEntity(
         user = user,
         assessment = assessmentService.findByUuid(assessmentUuid),
         data = CollectionCreatedEvent(collectionUuid, name, parentCollectionItemUuid),
       )
-    }.run(eventService::save)
-
-    assessmentService.fetchLatestState(event.assessment)
-      .let { eventBus.handle(event, it) }
-      .let { assessmentService.persist(it) }
+    }
+      .run(eventService::save)
+      .run(eventBus::handle)
+      .run(stateService::persist)
 
     return CreateCollectionCommandResult(command.collectionUuid)
   }

@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 
@@ -14,10 +15,11 @@ class UpdateAssessmentAnswersCommandHandler(
   private val assessmentService: AssessmentService,
   private val eventBus: EventBus,
   private val eventService: EventService,
+  private val stateService: StateService,
 ) : CommandHandler<UpdateAssessmentAnswersCommand> {
   override val type = UpdateAssessmentAnswersCommand::class
   override fun handle(command: UpdateAssessmentAnswersCommand): CommandSuccessCommandResult {
-    val event = with(command) {
+    with(command) {
       EventEntity(
         user = user,
         assessment = assessmentService.findByUuid(assessmentUuid),
@@ -26,11 +28,10 @@ class UpdateAssessmentAnswersCommandHandler(
           removed = removed,
         ),
       )
-    }.run(eventService::save)
-
-    assessmentService.fetchLatestState(event.assessment)
-      .let { eventBus.handle(event, it) }
-      .let { assessmentService.persist(it) }
+    }
+      .run(eventService::save)
+      .run(eventBus::handle)
+      .run(stateService::persist)
 
     return CommandSuccessCommandResult()
   }

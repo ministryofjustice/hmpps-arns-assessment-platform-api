@@ -1,9 +1,10 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.handler
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.handler
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.TimelineItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.Clock
 import java.time.LocalDateTime
@@ -23,7 +24,7 @@ class AssessmentPropertiesUpdatedEventHandler(
     updateTimeline(state, event.data, event.createdAt)
     updateProperties(state, event.data)
 
-    state.current().apply {
+    state.get().apply {
       eventsTo = event.createdAt
       updatedAt = LocalDateTime.now(clock)
       numberOfEventsApplied += 1
@@ -32,9 +33,9 @@ class AssessmentPropertiesUpdatedEventHandler(
     return state
   }
 
-  fun updateTimeline(state: AssessmentState, event: AssessmentPropertiesUpdatedEvent, timestamp: LocalDateTime) {
+  private fun updateTimeline(state: AssessmentState, event: AssessmentPropertiesUpdatedEvent, timestamp: LocalDateTime) {
     event.added.entries.map {
-      val previous = state.current().data.properties[it.key]
+      val previous = state.get().data.properties[it.key]
       when {
         previous.isNullOrEmpty() -> "Assessment property '${it.key}' set to '${it.value}'"
         previous == it.value -> null
@@ -43,13 +44,13 @@ class AssessmentPropertiesUpdatedEventHandler(
         TimelineItem(
           timestamp = timestamp,
           details = details,
-        ).run(state.current().data.timeline::add)
+        ).run(state.get().data.timeline::add)
       }
     }
   }
 
-  fun updateProperties(state: AssessmentState, event: AssessmentPropertiesUpdatedEvent) {
-    with (state.current().data) {
+  private fun updateProperties(state: AssessmentState, event: AssessmentPropertiesUpdatedEvent) {
+    with (state.get().data) {
       event.added.entries.map {
         properties.put(it.key, it.value)
         deletedProperties.remove(it.key)

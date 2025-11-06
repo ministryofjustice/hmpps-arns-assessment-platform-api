@@ -26,6 +26,7 @@ class UpdateAssessmentStatusCommandHandlerTest {
       assessmentService = assessmentService,
       eventBus = eventBus,
       eventService = eventService,
+      stateService = stateService,
   )
 
   @Test

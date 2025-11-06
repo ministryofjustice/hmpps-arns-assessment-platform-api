@@ -8,30 +8,29 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 
 @Component
 class CreateAssessmentCommandHandler(
   private val assessmentRepository: AssessmentRepository,
   private val eventBus: EventBus,
-  private val assessmentService: AssessmentService,
   private val eventService: EventService,
+  private val stateService: StateService,
 ) : CommandHandler<CreateAssessmentCommand> {
   override val type = CreateAssessmentCommand::class
   override fun handle(command: CreateAssessmentCommand): CreateAssessmentCommandResult {
     val assessment = assessmentRepository.save(AssessmentEntity(uuid = command.assessmentUuid))
-    val event = with(command) {
+    with(command) {
       EventEntity(
         user = user,
         assessment = assessment,
         data = AssessmentCreatedEvent(properties),
       )
-    }.run(eventService::save)
-
-    assessmentService.blankState(event.assessment)
-      .let { eventBus.handle(event, it) }
-      .let { assessmentService.persist(it) }
+    }
+      .run(eventService::save)
+      .run(eventBus::handle)
+      .run(stateService::persist)
 
     return CreateAssessmentCommandResult(assessment.uuid)
   }

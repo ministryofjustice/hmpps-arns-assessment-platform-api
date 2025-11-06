@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Add
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAddedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 
@@ -14,20 +15,20 @@ class AddCollectionItemCommandHandler(
   private val assessmentService: AssessmentService,
   private val eventBus: EventBus,
   private val eventService: EventService,
+  private val stateService: StateService,
 ) : CommandHandler<AddCollectionItemCommand> {
   override val type = AddCollectionItemCommand::class
   override fun handle(command: AddCollectionItemCommand): AddCollectionItemCommandResult {
-    val event = with(command) {
+    with(command) {
       EventEntity(
         user = user,
         assessment = assessmentService.findByUuid(assessmentUuid),
         data = CollectionItemAddedEvent(collectionItemUuid, collectionUuid, answers, properties, index),
       )
-    }.run(eventService::save)
-
-    assessmentService.fetchLatestState(event.assessment)
-      .let { eventBus.handle(event, it) }
-      .let { assessmentService.persist(it) }
+    }
+      .run(eventService::save)
+      .run(eventBus::handle)
+      .run(stateService::persist)
 
     return AddCollectionItemCommandResult(command.collectionItemUuid)
   }

@@ -3,8 +3,9 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
@@ -15,7 +16,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
 @Service
-class AggregateService(
+class StateService(
   private val aggregateRepository: AggregateRepository,
   private val eventService: EventService,
   private val eventBus: EventBus,
@@ -23,7 +24,11 @@ class AggregateService(
 ) {
   private fun now(): LocalDateTime = LocalDateTime.now(clock)
 
-  inner class State<A: Aggregate<A>>(
+  fun persist(state: State) {
+    aggregateRepository.saveAll(state.values.map { it.aggregates }.flatten())
+  }
+
+  inner class ForType<A: Aggregate<A>>(
     private val type: KClass<A>,
   ) {
     fun createState(aggregateEntity: AggregateEntity<A>): AggregateState<A> =
@@ -63,22 +68,12 @@ class AggregateService(
     fun createStateForPointInTime(
       assessment: AssessmentEntity,
       pointInTime: LocalDateTime,
-    ): AggregateState<A> {
-      val events = eventService
+    ): AggregateState<A> =
+      eventService
         .findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, pointInTime)
         .sortedBy { it.createdAt }
-
-      val base = events.maxByOrNull { it.createdAt }?.let { latestEvent ->
-        aggregateRepository.findByAssessmentBeforeDate(assessment.uuid, pointInTime)
-          ?.let { it as AggregateEntity<A> }
-          ?.run(::createState)
-      } ?: blankState(assessment)
-
-      return events.fold(base) { acc, event -> eventBus.handle(event) }
-    }
-
-    fun persist(state: AggregateState<A>) {
-      aggregateRepository.saveAll(state.aggregates)
-    }
+        .run(eventBus::handle)
+        .getOrDefault(type, blankState(assessment))
+        .let { it as AggregateState<A> }
   }
 }

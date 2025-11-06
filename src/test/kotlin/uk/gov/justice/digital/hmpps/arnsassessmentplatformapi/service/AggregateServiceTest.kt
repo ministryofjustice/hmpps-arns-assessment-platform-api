@@ -25,7 +25,7 @@ class AggregateServiceTest {
   val clock: Clock = mockk(relaxed = true)
   val aggregateRepository: AggregateRepository = mockk()
   val eventService: EventService = mockk()
-  val service = AggregateService(
+  val service = StateService(
     aggregateRepository = aggregateRepository,
     eventService = eventService,
     clock = clock,

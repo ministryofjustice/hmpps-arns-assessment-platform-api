@@ -1,6 +1,10 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment
 
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import java.util.UUID
 import kotlin.collections.mutableListOf
 
 typealias Timeline = MutableList<TimelineItem>
@@ -29,4 +33,9 @@ data class AssessmentAggregate(
     timeline = timeline.toMutableList(),
     formVersion = formVersion,
   )
+
+  fun getCollection(id: UUID) = collections.firstOrNull { it.uuid == id }
+    ?: collections.firstNotNullOfOrNull { collection -> collection.items.firstNotNullOfOrNull { it.findCollection(id) } } ?: throw Error("Collection ID $id does not exist")
+
+  fun getCollectionItem(id: UUID) = collections.firstNotNullOfOrNull { it.findItem(id) } ?: throw Error("Collection item ID $id does not exist")
 }
