@@ -77,11 +77,11 @@ class AssessmentControllerTest(
         commands = listOf(
           CreateAssessmentCommand(
             User("test-user-1", "Test User"),
-            properties = emptyMap(),
+            formVersion = "1",
           ),
           CreateAssessmentCommand(
             User("test-user-2", "Test User"),
-            properties = emptyMap(),
+            formVersion = "1",
           ),
         ),
       )
@@ -146,11 +146,11 @@ class AssessmentControllerTest(
     fun `it can process multiple queries`() {
       val assessment1 = CreateAssessmentCommand(
         User("test-user-1", "Test User"),
-        properties = emptyMap(),
+        formVersion = "1",
       )
       val assessment2 = CreateAssessmentCommand(
         User("test-user-2", "Test User"),
-        properties = emptyMap(),
+        formVersion = "1",
       )
 
       val httpRequest = MockHttpServletRequest()

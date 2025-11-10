@@ -25,7 +25,10 @@ class CreateAssessmentCommandHandler(
       EventEntity(
         user = user,
         assessment = assessment,
-        data = AssessmentCreatedEvent(properties),
+        data = AssessmentCreatedEvent(
+          formVersion = formVersion,
+          properties = properties,
+        ),
       )
     }
 
