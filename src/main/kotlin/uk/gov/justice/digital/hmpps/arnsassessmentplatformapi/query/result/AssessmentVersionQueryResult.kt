@@ -5,9 +5,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Collabor
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Collections
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.FormVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Properties
+import java.time.LocalDateTime
 
 data class AssessmentVersionQueryResult(
   val formVersion: FormVersion,
+  val createdAt: LocalDateTime,
+  val updatedAt: LocalDateTime,
   val answers: Answers,
   val properties: Properties,
   val collections: Collections,

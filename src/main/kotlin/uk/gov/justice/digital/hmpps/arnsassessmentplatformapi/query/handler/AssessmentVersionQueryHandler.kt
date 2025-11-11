@@ -24,6 +24,8 @@ class AssessmentVersionQueryHandler(
 
     return AssessmentVersionQueryResult(
       formVersion = data.formVersion,
+      createdAt = data.createdAt,
+      updatedAt = data.updatedAt,
       answers = data.answers,
       properties = data.properties,
       collections = data.collections,
