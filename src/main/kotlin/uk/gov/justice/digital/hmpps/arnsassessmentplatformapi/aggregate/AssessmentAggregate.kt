@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
+import io.micrometer.core.instrument.MockClock.clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.collections.mutableListOf
 
@@ -14,6 +16,8 @@ typealias Collections = MutableList<Collection>
 typealias FormVersion = String?
 
 data class AssessmentAggregate(
+  var createdAt: LocalDateTime,
+  var updatedAt: LocalDateTime,
   val properties: Properties = mutableMapOf(),
   val deletedProperties: Properties = mutableMapOf(),
   val answers: Answers = mutableMapOf(),
@@ -24,6 +28,8 @@ data class AssessmentAggregate(
   var formVersion: FormVersion = null,
 ) : Aggregate<AssessmentAggregate> {
   override fun clone() = AssessmentAggregate(
+    createdAt = createdAt,
+    updatedAt = updatedAt,
     properties = properties.toMutableMap(),
     answers = answers.toMutableMap(),
     deletedAnswers = deletedAnswers.toMutableMap(),

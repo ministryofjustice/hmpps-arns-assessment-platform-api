@@ -25,7 +25,10 @@ class CollectionItemRemovedEventHandler(
       throw Error("Collection item ID ${event.data.collectionItemUuid} does not exist")
     }
 
-    aggregate.data.collaborators.add(event.user)
+    aggregate.data.apply {
+      updatedAt = event.createdAt
+      collaborators.add(event.user)
+    }
 
     aggregate.apply {
       eventsTo = event.createdAt

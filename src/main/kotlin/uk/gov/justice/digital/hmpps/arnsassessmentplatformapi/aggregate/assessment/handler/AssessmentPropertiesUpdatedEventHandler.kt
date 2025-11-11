@@ -23,7 +23,10 @@ class AssessmentPropertiesUpdatedEventHandler(
   ): AssessmentState {
     updateTimeline(state, event.data, event.createdAt)
     updateProperties(state, event.data)
-    state.get().data.collaborators.add(event.user)
+    state.get().data.apply {
+      updatedAt = event.createdAt
+      collaborators.add(event.user)
+    }
 
     state.get().apply {
       eventsTo = event.createdAt

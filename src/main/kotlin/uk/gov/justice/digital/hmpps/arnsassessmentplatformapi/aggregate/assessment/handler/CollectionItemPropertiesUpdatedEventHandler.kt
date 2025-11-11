@@ -27,7 +27,10 @@ class CollectionItemPropertiesUpdatedEventHandler(
       event.data.removed.forEach { answers.remove(it) }
     }
 
-    aggregate.data.collaborators.add(event.user)
+    aggregate.data.apply {
+      updatedAt = event.createdAt
+      collaborators.add(event.user)
+    }
 
     aggregate.apply {
       eventsTo = event.createdAt

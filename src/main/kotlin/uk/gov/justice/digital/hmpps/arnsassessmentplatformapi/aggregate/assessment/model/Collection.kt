@@ -6,7 +6,7 @@ import java.util.UUID
 data class Collection(
   val uuid: UUID,
   val createdAt: LocalDateTime,
-  val updatedAt: LocalDateTime,
+  var updatedAt: LocalDateTime,
   val name: String,
   val items: MutableList<CollectionItem>,
 ) {

@@ -23,7 +23,10 @@ class AssessmentAnswersUpdatedEventHandler(
   ): AssessmentState {
     updateAnswers(state, event.data.added, event.data.removed)
     updateTimeline(state, event.data, event.createdAt)
-    state.get().data.collaborators.add(event.user)
+    state.get().data.apply {
+      collaborators.add(event.user)
+      updatedAt = event.createdAt
+    }
 
     state.get().apply {
       eventsTo = event.createdAt

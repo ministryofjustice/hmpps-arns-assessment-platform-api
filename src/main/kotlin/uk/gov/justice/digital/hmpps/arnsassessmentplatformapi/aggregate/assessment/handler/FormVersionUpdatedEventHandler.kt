@@ -29,9 +29,11 @@ class FormVersionUpdatedEventHandler(
       ),
     )
 
-    aggregate.data.formVersion = event.data.version
-
-    aggregate.data.collaborators.add(event.user)
+    aggregate.data.apply {
+      formVersion = event.data.version
+      updatedAt = event.createdAt
+      collaborators.add(event.user)
+    }
 
     aggregate.apply {
       eventsTo = event.createdAt

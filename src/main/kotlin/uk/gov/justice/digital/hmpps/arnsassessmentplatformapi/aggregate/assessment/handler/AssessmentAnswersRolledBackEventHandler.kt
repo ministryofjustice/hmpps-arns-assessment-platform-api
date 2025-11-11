@@ -54,6 +54,7 @@ class AssessmentAnswersRolledBackEventHandler(
         details = "Rolled back ${answersAdded.size + answersRemoved.size} answers",
       ),
     )
+    aggregate.data.updatedAt = event.createdAt
 
     aggregate.apply {
       eventsTo = event.createdAt
