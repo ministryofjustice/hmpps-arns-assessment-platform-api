@@ -25,6 +25,8 @@ class CollectionCreatedEventHandler(
         uuid = collectionUuid,
         name = name,
         items = mutableListOf(),
+        createdAt = event.createdAt,
+        updatedAt = event.createdAt,
       )
     }
 

@@ -1,9 +1,12 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model
 
+import java.time.LocalDateTime
 import java.util.UUID
 
 data class Collection(
   val uuid: UUID,
+  val createdAt: LocalDateTime,
+  val updatedAt: LocalDateTime,
   val name: String,
   val items: MutableList<CollectionItem>,
 ) {

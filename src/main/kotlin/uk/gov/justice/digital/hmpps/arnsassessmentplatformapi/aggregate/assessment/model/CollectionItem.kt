@@ -2,10 +2,13 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Answers
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Properties
+import java.time.LocalDateTime
 import java.util.UUID
 
 data class CollectionItem(
   val uuid: UUID,
+  val createdAt: LocalDateTime,
+  var updatedAt: LocalDateTime,
   val answers: Answers,
   val properties: Properties,
   val collections: MutableList<Collection>,

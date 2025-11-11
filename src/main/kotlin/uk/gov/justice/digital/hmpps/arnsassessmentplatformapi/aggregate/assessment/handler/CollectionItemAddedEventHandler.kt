@@ -26,6 +26,8 @@ class CollectionItemAddedEventHandler(
         answers = answers.toMutableMap(),
         properties = properties.toMutableMap(),
         collections = mutableListOf(),
+        createdAt = event.createdAt,
+        updatedAt = event.createdAt,
       )
     }
 

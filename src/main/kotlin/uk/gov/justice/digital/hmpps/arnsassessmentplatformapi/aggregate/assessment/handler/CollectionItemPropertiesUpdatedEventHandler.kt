@@ -22,6 +22,7 @@ class CollectionItemPropertiesUpdatedEventHandler(
     val aggregate = state.get()
 
     aggregate.data.getCollectionItem(event.data.collectionItemUuid).run {
+      updatedAt = event.createdAt
       event.data.added.forEach { answers.put(it.key, it.value) }
       event.data.removed.forEach { answers.remove(it) }
     }
