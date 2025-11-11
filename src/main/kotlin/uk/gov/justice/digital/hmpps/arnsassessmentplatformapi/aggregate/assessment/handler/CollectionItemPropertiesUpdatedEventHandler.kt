@@ -1,0 +1,39 @@
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.handler
+
+import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemPropertiesUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import java.time.Clock
+import java.time.LocalDateTime
+
+@Component
+class CollectionItemPropertiesUpdatedEventHandler(
+  private val clock: Clock,
+) : AssessmentEventHandler<CollectionItemPropertiesUpdatedEvent> {
+  override val eventType = CollectionItemPropertiesUpdatedEvent::class
+  override val stateType = AssessmentState::class
+
+  override fun handle(
+    event: EventEntity<CollectionItemPropertiesUpdatedEvent>,
+    state: AssessmentState,
+  ): AssessmentState {
+    val aggregate = state.get()
+
+    aggregate.data.getCollectionItem(event.data.collectionItemUuid).run {
+      event.data.added.forEach { answers.put(it.key, it.value) }
+      event.data.removed.forEach { answers.remove(it) }
+    }
+
+    aggregate.data.collaborators.add(event.user)
+
+    aggregate.apply {
+      eventsTo = event.createdAt
+      updatedAt = LocalDateTime.now(clock)
+      numberOfEventsApplied += 1
+    }
+
+    return state
+  }
+}
