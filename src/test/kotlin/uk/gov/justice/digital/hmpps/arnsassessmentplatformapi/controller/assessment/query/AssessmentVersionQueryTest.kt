@@ -85,7 +85,7 @@ class AssessmentVersionQueryTest(
 
     val response = webTestClient.post().uri("/query")
       .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_ARNS_ASSESSMENT_PLATFORM_READ")))
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
       .bodyValue(request)
       .exchange()
       .expectStatus().isOk
@@ -180,7 +180,7 @@ class AssessmentVersionQueryTest(
 
     val response = webTestClient.post().uri("/query")
       .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_ARNS_ASSESSMENT_PLATFORM_READ")))
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
       .bodyValue(request)
       .exchange()
       .expectStatus().isOk
@@ -252,7 +252,7 @@ class AssessmentVersionQueryTest(
 
     val response = webTestClient.post().uri("/query")
       .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_ARNS_ASSESSMENT_PLATFORM_READ")))
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
       .bodyValue(request)
       .exchange()
       .expectStatus().isOk
@@ -291,7 +291,7 @@ class AssessmentVersionQueryTest(
 
     webTestClient.post().uri("/query")
       .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_ARNS_ASSESSMENT_PLATFORM_READ")))
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
       .bodyValue(request)
       .exchange()
       .expectStatus().isNotFound

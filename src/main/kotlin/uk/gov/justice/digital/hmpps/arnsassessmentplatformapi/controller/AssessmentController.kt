@@ -50,7 +50,7 @@ class AssessmentController(
       ),
     ],
   )
-  @PreAuthorize("hasAnyRole('ROLE_ARNS_ASSESSMENT_PLATFORM_WRITE')")
+  @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW')")
   @Transactional
   fun executeCommands(
     @RequestBody
@@ -80,7 +80,7 @@ class AssessmentController(
       ),
     ],
   )
-  @PreAuthorize("hasAnyRole('ROLE_ARNS_ASSESSMENT_PLATFORM_READ')")
+  @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW')")
   @Transactional
   fun executeQueries(
     @RequestBody
