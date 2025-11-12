@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.Clock
@@ -22,17 +21,11 @@ class FormVersionUpdatedEventHandler(
   ): AssessmentState {
     val aggregate = state.get()
 
-    aggregate.data.timeline.add(
-      TimelineItem(
-        details = "Form version updated to ${event.data.version}",
-        timestamp = event.createdAt,
-      ),
-    )
-
     aggregate.data.apply {
       formVersion = event.data.version
       updatedAt = event.createdAt
       collaborators.add(event.user)
+      event.data.timeline?.run(timeline::add)
     }
 
     aggregate.apply {

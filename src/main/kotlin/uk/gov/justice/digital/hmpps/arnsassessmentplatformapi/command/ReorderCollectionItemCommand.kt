@@ -8,4 +8,5 @@ data class ReorderCollectionItemCommand(
   val index: Int,
   override val user: User,
   override val assessmentUuid: UUID,
+  override val timeline: CommandTimeline? = null,
 ) : RequestableCommand

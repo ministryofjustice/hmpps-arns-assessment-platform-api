@@ -8,4 +8,5 @@ data class RollBackAssessmentAnswersCommand(
   override val user: User,
   override val assessmentUuid: UUID,
   val pointInTime: LocalDateTime,
+  override val timeline: CommandTimeline? = null,
 ) : RequestableCommand

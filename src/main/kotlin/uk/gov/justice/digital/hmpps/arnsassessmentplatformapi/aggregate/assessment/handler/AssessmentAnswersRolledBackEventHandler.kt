@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
@@ -47,13 +46,10 @@ class AssessmentAnswersRolledBackEventHandler(
 
     AssessmentAnswersUpdatedEventHandler.updateAnswers(state, answersAdded, answersRemoved)
 
-    aggregate.data.collaborators.add(event.user)
-    aggregate.data.timeline.add(
-      TimelineItem(
-        timestamp = event.createdAt,
-        details = "Rolled back ${answersAdded.size + answersRemoved.size} answers",
-      ),
-    )
+    aggregate.data.apply {
+      collaborators.add(event.user)
+      event.data.timeline?.run(timeline::add)
+    }
     aggregate.data.updatedAt = event.createdAt
 
     aggregate.apply {

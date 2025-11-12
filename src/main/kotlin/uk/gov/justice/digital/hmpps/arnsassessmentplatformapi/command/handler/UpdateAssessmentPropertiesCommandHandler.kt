@@ -23,7 +23,7 @@ class UpdateAssessmentPropertiesCommandHandler(
       EventEntity(
         user = user,
         assessment = assessmentService.findByUuid(assessmentUuid),
-        data = AssessmentPropertiesUpdatedEvent(added, removed),
+        data = AssessmentPropertiesUpdatedEvent(added, removed, timeline?.into()),
       )
     }
 

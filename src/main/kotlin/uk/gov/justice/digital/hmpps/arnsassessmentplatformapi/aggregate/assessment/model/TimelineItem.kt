@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import java.time.LocalDateTime
 
 data class TimelineItem(
-  val details: String = "",
-  val timestamp: LocalDateTime,
+  val type: String,
+  val createdAt: LocalDateTime,
+  val data: Map<String, Any>
 )

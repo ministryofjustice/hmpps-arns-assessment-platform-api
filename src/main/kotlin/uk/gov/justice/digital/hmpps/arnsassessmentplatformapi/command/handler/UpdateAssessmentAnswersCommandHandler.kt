@@ -26,6 +26,7 @@ class UpdateAssessmentAnswersCommandHandler(
         data = AssessmentAnswersUpdatedEvent(
           added = added,
           removed = removed,
+          timeline = timeline?.into()
         ),
       )
     }

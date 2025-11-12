@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.Clock
@@ -21,11 +20,11 @@ class AssessmentPropertiesUpdatedEventHandler(
     event: EventEntity<AssessmentPropertiesUpdatedEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    updateTimeline(state, event.data, event.createdAt)
     updateProperties(state, event.data)
     state.get().data.apply {
       updatedAt = event.createdAt
       collaborators.add(event.user)
+      event.data.timeline?.run(timeline::add)
     }
 
     state.get().apply {
@@ -35,22 +34,6 @@ class AssessmentPropertiesUpdatedEventHandler(
     }
 
     return state
-  }
-
-  private fun updateTimeline(state: AssessmentState, event: AssessmentPropertiesUpdatedEvent, timestamp: LocalDateTime) {
-    event.added.entries.map {
-      val previous = state.get().data.properties[it.key]
-      when {
-        previous.isNullOrEmpty() -> "Assessment property '${it.key}' set to '${it.value}'"
-        previous == it.value -> null
-        else -> "Assessment property '${it.key}' changed from '$previous' to '${it.value}'"
-      }?.let { details ->
-        TimelineItem(
-          timestamp = timestamp,
-          details = details,
-        ).run(state.get().data.timeline::add)
-      }
-    }
   }
 
   private fun updateProperties(state: AssessmentState, event: AssessmentPropertiesUpdatedEvent) {

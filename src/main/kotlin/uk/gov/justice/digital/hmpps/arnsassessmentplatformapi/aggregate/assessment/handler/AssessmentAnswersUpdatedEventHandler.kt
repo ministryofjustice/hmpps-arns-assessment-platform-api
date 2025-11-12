@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.Clock
@@ -22,9 +21,9 @@ class AssessmentAnswersUpdatedEventHandler(
     state: AssessmentState,
   ): AssessmentState {
     updateAnswers(state, event.data.added, event.data.removed)
-    updateTimeline(state, event.data, event.createdAt)
     state.get().data.apply {
       collaborators.add(event.user)
+      event.data.timeline?.run(timeline::add)
       updatedAt = event.createdAt
     }
 
@@ -35,13 +34,6 @@ class AssessmentAnswersUpdatedEventHandler(
     }
 
     return state
-  }
-
-  private fun updateTimeline(state: AssessmentState, event: AssessmentAnswersUpdatedEvent, timestamp: LocalDateTime) {
-    TimelineItem(
-      timestamp = timestamp,
-      details = "${event.added.size} answers updated and ${event.removed.size} removed",
-    ).run(state.get().data.timeline::add)
   }
 
   companion object {

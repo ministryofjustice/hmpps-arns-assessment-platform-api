@@ -9,6 +9,7 @@ data class CreateCollectionCommand(
   val parentCollectionItemUuid: UUID?,
   override val user: User,
   override val assessmentUuid: UUID,
+  override val timeline: CommandTimeline? = null,
 ) : RequestableCommand {
   @JsonIgnore
   val collectionUuid: UUID = UUID.randomUUID()

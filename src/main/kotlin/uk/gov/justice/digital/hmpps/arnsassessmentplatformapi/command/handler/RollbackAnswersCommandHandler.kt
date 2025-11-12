@@ -29,6 +29,7 @@ class RollbackAnswersCommandHandler(
         assessment = assessmentService.findByUuid(assessmentUuid),
         data = AssessmentAnswersRolledBackEvent(
           rolledBackTo = command.pointInTime,
+          timeline = timeline?.into(),
         ),
       )
     }

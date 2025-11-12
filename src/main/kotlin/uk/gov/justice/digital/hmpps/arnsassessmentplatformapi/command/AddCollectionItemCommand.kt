@@ -11,6 +11,7 @@ data class AddCollectionItemCommand(
   val index: Int?,
   override val user: User,
   override val assessmentUuid: UUID,
+  override val timeline: CommandTimeline? = null,
 ) : RequestableCommand {
   @JsonIgnore
   val collectionItemUuid: UUID = UUID.randomUUID()

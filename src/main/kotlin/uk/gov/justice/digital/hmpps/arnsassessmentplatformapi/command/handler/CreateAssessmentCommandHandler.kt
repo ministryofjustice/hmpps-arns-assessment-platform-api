@@ -28,6 +28,7 @@ class CreateAssessmentCommandHandler(
         data = AssessmentCreatedEvent(
           formVersion = formVersion,
           properties = properties,
+          timeline = timeline?.into()
         ),
       )
     }
