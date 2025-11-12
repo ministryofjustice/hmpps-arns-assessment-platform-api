@@ -1,11 +1,18 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.model.Collection
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Answers
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Collaborators
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Collections
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.FormVersion
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Properties
+import java.time.LocalDateTime
 
 data class AssessmentVersionQueryResult(
-  val formVersion: String?,
-  val answers: Map<String, List<String>>,
-  val collections: List<Collection>,
-  val collaborators: Set<User>,
+  val formVersion: FormVersion,
+  val createdAt: LocalDateTime,
+  val updatedAt: LocalDateTime,
+  val answers: Answers,
+  val properties: Properties,
+  val collections: Collections,
+  val collaborators: Collaborators,
 ) : QueryResult

@@ -1,28 +1,35 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 
 @Component
 class AssessmentVersionQueryHandler(
   private val assessmentService: AssessmentService,
-  private val aggregateService: AggregateService,
+  private val stateService: StateService,
 ) : QueryHandler<AssessmentVersionQuery> {
   override val type = AssessmentVersionQuery::class
   override fun handle(query: AssessmentVersionQuery): AssessmentVersionQueryResult {
-    val aggregate = assessmentService.findByUuid(query.assessmentUuid)
-      .let { assessment -> aggregateService.fetchOrCreateAggregate(assessment, AssessmentVersionAggregate::class, query.timestamp) }
-      .data as AssessmentVersionAggregate
+    val assessment = assessmentService.findByUuid(query.assessmentUuid)
+
+    val state = stateService.stateForType(AssessmentAggregate::class)
+      .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
+
+    val data = state.get().data
 
     return AssessmentVersionQueryResult(
-      formVersion = aggregate.getFormVersion(),
-      answers = aggregate.getAnswers(),
-      collections = aggregate.getCollections(),
-      collaborators = aggregate.getCollaborators(),
+      formVersion = data.formVersion,
+      createdAt = data.createdAt,
+      updatedAt = data.updatedAt,
+      answers = data.answers,
+      properties = data.properties,
+      collections = data.collections,
+      collaborators = data.collaborators,
     )
   }
 }

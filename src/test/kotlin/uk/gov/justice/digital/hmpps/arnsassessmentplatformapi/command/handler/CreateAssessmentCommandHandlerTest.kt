@@ -24,6 +24,9 @@ class CreateAssessmentCommandHandlerTest {
   val handler = CreateAssessmentCommandHandler(
     assessmentRepository = assessmentRepository,
     eventBus = eventBus,
+    assessmentService = assessmentService,
+    eventService = eventService,
+    stateService = stateService,
   )
 
   @Test
@@ -35,6 +38,7 @@ class CreateAssessmentCommandHandlerTest {
   fun `it handles the CreateAssessment command`() {
     val command = CreateAssessmentCommand(
       user = User("FOO_USER", "Foo User"),
+      formVersion = "1",
     )
 
     val assessment = slot<AssessmentEntity>()

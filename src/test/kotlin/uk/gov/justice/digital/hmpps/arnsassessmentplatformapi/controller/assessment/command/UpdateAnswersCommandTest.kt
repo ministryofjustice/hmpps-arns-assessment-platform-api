@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
@@ -50,7 +50,7 @@ class UpdateAnswersCommandTest(
       updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
-      data = AssessmentVersionAggregate(),
+      data = AssessmentAggregate(),
     )
     aggregateRepository.save(aggregateEntity)
 
@@ -62,7 +62,9 @@ class UpdateAnswersCommandTest(
           user = user,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
-          data = AssessmentCreatedEvent(),
+          data = AssessmentCreatedEvent(
+            properties = emptyMap(),
+          ),
         ),
         EventEntity(
           user = user,
@@ -82,7 +84,7 @@ class UpdateAnswersCommandTest(
     val request = CommandsRequest(
 
       commands = listOf(
-        UpdateAnswersCommand(
+        UpdateAssessmentAnswersCommand(
           user = User("test-user", "Test User"),
           assessmentUuid = assessmentEntity.uuid,
           added = mapOf("foo" to listOf("updated_foo_value"), "baz" to listOf("baz_value")),
@@ -112,14 +114,14 @@ class UpdateAnswersCommandTest(
 
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
-      AssessmentVersionAggregate::class.simpleName!!,
+      AssessmentAggregate::class.simpleName!!,
       LocalDateTime.now(),
     )
 
     assertThat(aggregate).isNotNull
-    val data = assertIs<AssessmentVersionAggregate>(aggregate?.data)
-    assertThat(data.getAnswers()["foo"]).isEqualTo(listOf("updated_foo_value"))
-    assertThat(data.getAnswers()["bar"]).isNull()
-    assertThat(data.getAnswers()["baz"]).isEqualTo(listOf("baz_value"))
+    val data = assertIs<AssessmentAggregate>(aggregate?.data)
+    assertThat(data.answers["foo"]).isEqualTo(listOf("updated_foo_value"))
+    assertThat(data.answers["bar"]).isNull()
+    assertThat(data.answers["baz"]).isEqualTo(listOf("baz_value"))
   }
 }

@@ -1,34 +1,39 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus
 
 import org.springframework.stereotype.Component
-import org.springframework.web.context.annotation.RequestScope
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateTypeRegistry
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import kotlin.reflect.full.createInstance
 
 @Component
-@RequestScope
 class EventBus(
-  private val queue: MutableList<EventEntity>,
-  private val aggregateService: AggregateService,
-  private val aggregateTypeRegistry: AggregateTypeRegistry,
-  private val eventService: EventService,
+  val registry: EventHandlerRegistry,
+  val stateService: StateService,
+  val eventService: EventService,
 ) {
-  fun add(event: EventEntity) {
-    queue.add(event)
+  private fun <E : Event, S : State> execute(event: EventEntity<E>, state: S): S {
+    registry.getHandlersFor(event.data::class).map { handler ->
+      val aggregateType = handler.stateType.createInstance().type
+      val stateProvider = stateService.stateForType(aggregateType)
+      val stateForType = state[aggregateType] ?: stateProvider.fetchLatestState(event.assessment)
+      if (stateForType == null) {
+        state[aggregateType] = stateProvider.blankState(event.assessment)
+        eventService
+          .findAllByAssessmentUuidAndCreatedAtBefore(event.assessment.uuid, event.createdAt)
+          .plus(event)
+          .sortedBy { it.createdAt }
+          .fold(state) { acc: State, event -> execute(event, acc) }
+      } else {
+        state[aggregateType] = handler.handle(event, stateForType)
+      }
+    }
+    return state
   }
 
-  fun commit() {
-    val eventTypes = queue.map { it.data::class }
-    queue.groupBy { it.assessment }
-      .forEach { assessment, events ->
-        aggregateTypeRegistry.getAggregates()
-          .asSequence()
-          .filter { (_, aggregate) -> aggregate.createsOn.any(eventTypes::contains) || aggregate.updatesOn.any(eventTypes::contains) }
-          .forEach { (aggregate, _) -> aggregateService.processEvents(assessment, aggregate, events) }
-      }
-    eventService.saveAll(queue)
-    queue.clear()
-  }
+  fun handle(event: EventEntity<*>) = handle(listOf(event))
+
+  fun handle(events: List<EventEntity<*>>) = events.fold(mutableMapOf()) { acc: State, event -> execute(event, acc) }
 }

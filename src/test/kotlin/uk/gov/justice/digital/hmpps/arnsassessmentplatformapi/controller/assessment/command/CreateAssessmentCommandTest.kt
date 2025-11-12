@@ -39,12 +39,14 @@ class CreateAssessmentCommandTest(
 
   @Test
   fun `it creates an assessment`() {
+    val command = CreateAssessmentCommand(
+      user = User("test-user", "Test User"),
+      formVersion = "1",
+      properties = mapOf("prop1" to listOf("val1")),
+    )
+
     val request = CommandsRequest(
-      commands = listOf(
-        CreateAssessmentCommand(
-          user = User("test-user", "Test User"),
-        ),
-      ),
+      commands = listOf(command),
     )
 
     val response = webTestClient.post().uri("/command")
@@ -70,7 +72,12 @@ class CreateAssessmentCommandTest(
     val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentUuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(1)
-    assertIs<AssessmentCreatedEvent>(eventsForAssessment.last().data)
+
+    val event = eventsForAssessment.last().data
+    assertIs<AssessmentCreatedEvent>(event)
+
+    assertThat(event.formVersion).isEqualTo(command.formVersion)
+    assertThat(event.properties).isEqualTo(command.properties)
   }
 
   @Test

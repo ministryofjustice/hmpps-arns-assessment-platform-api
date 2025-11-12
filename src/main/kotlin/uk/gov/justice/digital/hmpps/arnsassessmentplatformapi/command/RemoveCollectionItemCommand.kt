@@ -7,4 +7,5 @@ data class RemoveCollectionItemCommand(
   val collectionItemUuid: UUID,
   override val user: User,
   override val assessmentUuid: UUID,
+  override val timeline: CommandTimeline? = null,
 ) : RequestableCommand

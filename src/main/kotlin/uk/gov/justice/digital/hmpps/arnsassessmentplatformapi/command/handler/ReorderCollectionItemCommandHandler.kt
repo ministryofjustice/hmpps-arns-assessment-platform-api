@@ -7,27 +7,33 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionIt
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 
 @Component
 class ReorderCollectionItemCommandHandler(
   private val assessmentService: AssessmentService,
   private val eventBus: EventBus,
+  private val eventService: EventService,
+  private val stateService: StateService,
 ) : CommandHandler<ReorderCollectionItemCommand> {
   override val type = ReorderCollectionItemCommand::class
   override fun handle(command: ReorderCollectionItemCommand): CommandSuccessCommandResult {
-    val assessment = assessmentService.findByUuid(command.assessmentUuid)
-    eventBus.add(
-      with(command) {
-        EventEntity(
-          user = user,
-          assessment = assessment,
-          data = CollectionItemReorderedEvent(
-            collectionItemUuid = collectionItemUuid,
-            index = index,
-          ),
-        )
-      },
-    )
+    val event = with(command) {
+      EventEntity(
+        user = user,
+        assessment = assessmentService.findByUuid(assessmentUuid),
+        data = CollectionItemReorderedEvent(
+          collectionItemUuid = collectionItemUuid,
+          index = index,
+          timeline = timeline?.into(),
+        ),
+      )
+    }
+
+    eventBus.handle(event).run(stateService::persist)
+    eventService.save(event)
+
     return CommandSuccessCommandResult()
   }
 }

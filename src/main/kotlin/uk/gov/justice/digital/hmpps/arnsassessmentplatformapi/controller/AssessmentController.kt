@@ -18,14 +18,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.respons
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueryResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.bus.QueryBus
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestController
 class AssessmentController(
   private val commandBus: CommandBus,
-  private val eventBus: EventBus,
   private val queryBus: QueryBus,
 ) {
   @RequestMapping(path = ["/command"], method = [RequestMethod.POST])
@@ -56,7 +54,6 @@ class AssessmentController(
     @RequestBody
     request: CommandsRequest,
   ) = CommandsResponse(request.commands.map { CommandResponse(it, commandBus.dispatch(it)) })
-    .also { eventBus.commit() }
 
   @RequestMapping(path = ["/query"], method = [RequestMethod.POST])
   @Operation(description = "Execute queries on an assessment")

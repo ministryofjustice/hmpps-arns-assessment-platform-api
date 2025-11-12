@@ -10,15 +10,15 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollbackAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollBackAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AggregateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDateTime
@@ -27,15 +27,16 @@ import kotlin.test.assertIs
 
 class RollbackAnswersCommandHandlerTest {
   val assessmentService: AssessmentService = mockk()
-  val aggregateService: AggregateService = mockk()
+  val stateService: StateService = mockk()
   val eventBus: EventBus = mockk()
   val clock: Clock = mockk(relaxed = true)
 
   val handler = RollbackAnswersCommandHandler(
     assessmentService = assessmentService,
-    aggregateService = aggregateService,
+    stateService = stateService,
     eventBus = eventBus,
     clock = clock,
+    eventService = eventService,
   )
 
   @BeforeEach
@@ -45,12 +46,12 @@ class RollbackAnswersCommandHandlerTest {
 
   @Test
   fun `it stores the type of the command it is built to handle`() {
-    assertThat(handler.type).isEqualTo(RollbackAnswersCommand::class)
+    assertThat(handler.type).isEqualTo(RollBackAssessmentAnswersCommand::class)
   }
 
   @Test
   fun `it handles the RollbackAnswers command`() {
-    val command = RollbackAnswersCommand(
+    val command = RollBackAssessmentAnswersCommand(
       user = User("FOO_USER", "Foo User"),
       assessmentUuid = UUID.randomUUID(),
       pointInTime = LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -61,7 +62,7 @@ class RollbackAnswersCommandHandlerTest {
     every { assessmentService.findByUuid(command.assessmentUuid) } returns assessment
     // current version
     every {
-      aggregateService.fetchAggregateForExactPointInTime(
+      stateService.fetchAggregateForExactPointInTime(
         assessment,
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-02T12:00:00"),
@@ -81,7 +82,7 @@ class RollbackAnswersCommandHandlerTest {
     )
     // previous version
     every {
-      aggregateService.fetchAggregateForExactPointInTime(
+      stateService.fetchAggregateForExactPointInTime(
         assessment,
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -118,7 +119,7 @@ class RollbackAnswersCommandHandlerTest {
 
   @Test
   fun `it creates the previous version if it does not exist`() {
-    val command = RollbackAnswersCommand(
+    val command = RollBackAssessmentAnswersCommand(
       user = User("FOO_USER", "Foo User"),
       assessmentUuid = UUID.randomUUID(),
       pointInTime = LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -129,7 +130,7 @@ class RollbackAnswersCommandHandlerTest {
     every { assessmentService.findByUuid(command.assessmentUuid) } returns assessment
     // current version
     every {
-      aggregateService.fetchAggregateForExactPointInTime(
+      stateService.fetchAggregateForExactPointInTime(
         assessment,
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-02T12:00:00"),
@@ -148,14 +149,14 @@ class RollbackAnswersCommandHandlerTest {
     )
     // previous version
     every {
-      aggregateService.fetchAggregateForExactPointInTime(
+      stateService.fetchAggregateForExactPointInTime(
         assessment,
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-01T12:00:00"),
       )
     } returns null
     every {
-      aggregateService.createAggregateForPointInTime(
+      stateService.createAggregateForPointInTime(
         assessment,
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -191,7 +192,7 @@ class RollbackAnswersCommandHandlerTest {
 
   @Test
   fun `it creates the current version if it does not exist`() {
-    val command = RollbackAnswersCommand(
+    val command = RollBackAssessmentAnswersCommand(
       user = User("FOO_USER", "Foo User"),
       assessmentUuid = UUID.randomUUID(),
       pointInTime = LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -202,14 +203,14 @@ class RollbackAnswersCommandHandlerTest {
     every { assessmentService.findByUuid(command.assessmentUuid) } returns assessment
     // current version
     every {
-      aggregateService.fetchAggregateForExactPointInTime(
+      stateService.fetchAggregateForExactPointInTime(
         assessment,
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-02T12:00:00"),
       )
     } returns null
     every {
-      aggregateService.createAggregateForPointInTime(
+      stateService.createAggregateForPointInTime(
         assessment,
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-02T12:00:00"),
@@ -228,7 +229,7 @@ class RollbackAnswersCommandHandlerTest {
     )
     // previous version
     every {
-      aggregateService.fetchAggregateForExactPointInTime(
+      stateService.fetchAggregateForExactPointInTime(
         assessment,
         AssessmentVersionAggregate::class,
         LocalDateTime.parse("2025-01-01T12:00:00"),

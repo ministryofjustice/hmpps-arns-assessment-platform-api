@@ -17,7 +17,7 @@ import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentStatusCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
@@ -129,7 +129,7 @@ class AuditServiceTest {
 
     @JvmStatic
     fun provideAuditable(): Stream<Any> = Stream.of(
-      UpdateAssessmentStatusCommand(user, assessmentUuid, "TEST_STATUS"), // RequestableCommand
+      UpdateAssessmentPropertiesCommand(user, assessmentUuid, "TEST_STATUS"), // RequestableCommand
       AssessmentTimelineQuery(user, assessmentUuid, LocalDateTime.now()), // RequestableQuery
     )
   }

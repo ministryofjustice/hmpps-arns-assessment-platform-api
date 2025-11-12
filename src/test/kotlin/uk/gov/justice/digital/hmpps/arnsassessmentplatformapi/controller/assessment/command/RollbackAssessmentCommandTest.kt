@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollbackAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollBackAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
@@ -51,7 +51,7 @@ class RollbackAssessmentCommandTest(
       updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
-      data = AssessmentVersionAggregate(),
+      data = AssessmentAggregate(),
     )
     aggregateRepository.save(aggregateEntity)
 
@@ -63,7 +63,9 @@ class RollbackAssessmentCommandTest(
           user = user,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-          data = AssessmentCreatedEvent(),
+          data = AssessmentCreatedEvent(
+            properties = emptyMap(),
+          ),
         ),
         EventEntity(
           user = user,
@@ -104,7 +106,7 @@ class RollbackAssessmentCommandTest(
     val request = CommandsRequest(
 
       commands = listOf(
-        RollbackAnswersCommand(
+        RollBackAssessmentAnswersCommand(
           user = User("test-user", "Test User"),
           assessmentUuid = assessmentEntity.uuid,
           pointInTime = LocalDateTime.parse("2025-01-01T13:00:00"),
@@ -133,19 +135,19 @@ class RollbackAssessmentCommandTest(
 
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
-      AssessmentVersionAggregate::class.simpleName!!,
+      AssessmentAggregate::class.simpleName!!,
       LocalDateTime.now(),
     )
 
     assertThat(aggregate).isNotNull
-    val data = assertIs<AssessmentVersionAggregate>(aggregate?.data)
-    assertThat(data.getAnswers()["foo"]).isEqualTo(listOf("bar"))
-    assertThat(data.getAnswers()["bar"]).isNull()
+    val data = assertIs<AssessmentAggregate>(aggregate?.data)
+    assertThat(data.answers["foo"]).isEqualTo(listOf("bar"))
+    assertThat(data.answers["bar"]).isNull()
 
     val secondRequest = CommandsRequest(
 
       commands = listOf(
-        RollbackAnswersCommand(
+        RollBackAssessmentAnswersCommand(
           user = User("test-user", "Test User"),
           assessmentUuid = assessmentEntity.uuid,
           pointInTime = LocalDateTime.parse("2025-01-02T10:00:00"),
@@ -167,13 +169,13 @@ class RollbackAssessmentCommandTest(
 
     val aggregateAfterSecondUpdate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
-      AssessmentVersionAggregate::class.simpleName!!,
+      AssessmentAggregate::class.simpleName!!,
       LocalDateTime.now(),
     )
 
     assertThat(aggregateAfterSecondUpdate).isNotNull
-    val dataAfterSecondUpdate = assertIs<AssessmentVersionAggregate>(aggregateAfterSecondUpdate?.data)
-    assertThat(dataAfterSecondUpdate.getAnswers()["foo"]).isEqualTo(listOf("baz"))
-    assertThat(dataAfterSecondUpdate.getAnswers()["bar"]).isEqualTo(listOf("foo"))
+    val dataAfterSecondUpdate = assertIs<AssessmentAggregate>(aggregateAfterSecondUpdate?.data)
+    assertThat(dataAfterSecondUpdate.answers["foo"]).isEqualTo(listOf("baz"))
+    assertThat(dataAfterSecondUpdate.answers["bar"]).isEqualTo(listOf("foo"))
   }
 }

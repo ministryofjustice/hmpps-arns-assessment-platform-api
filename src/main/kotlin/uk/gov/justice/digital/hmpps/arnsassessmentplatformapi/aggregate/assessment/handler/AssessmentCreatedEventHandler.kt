@@ -1,0 +1,42 @@
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.handler
+
+import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import java.time.Clock
+import java.time.LocalDateTime
+
+@Component
+class AssessmentCreatedEventHandler(
+  private val clock: Clock,
+) : AssessmentEventHandler<AssessmentCreatedEvent> {
+  override val eventType = AssessmentCreatedEvent::class
+  override val stateType = AssessmentState::class
+
+  override fun handle(
+    event: EventEntity<AssessmentCreatedEvent>,
+    state: AssessmentState,
+  ): AssessmentState {
+    updateProperties(state, event.data)
+    state.get().data.apply {
+      createdAt = event.createdAt
+      formVersion = event.data.formVersion
+      collaborators.add(event.user)
+      event.data.timeline?.run(timeline::add)
+    }
+
+    state.get().apply {
+      eventsTo = event.createdAt
+      updatedAt = LocalDateTime.now(clock)
+      numberOfEventsApplied += 1
+    }
+
+    return state
+  }
+
+  private fun updateProperties(state: AssessmentState, event: AssessmentCreatedEvent) {
+    state.get().data.properties.putAll(event.properties)
+  }
+}

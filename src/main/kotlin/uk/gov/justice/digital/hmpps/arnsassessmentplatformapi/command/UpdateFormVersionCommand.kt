@@ -7,4 +7,5 @@ data class UpdateFormVersionCommand(
   override val user: User,
   override val assessmentUuid: UUID,
   val version: String,
+  override val timeline: CommandTimeline? = null,
 ) : RequestableCommand

@@ -1,3 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command
 
-class TestableCommand : Command
+class TestableCommand(
+  override val timeline: CommandTimeline? = null,
+) : Command

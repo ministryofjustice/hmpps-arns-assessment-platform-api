@@ -12,13 +12,13 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.Type
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import java.time.LocalDateTime
 import java.util.UUID
-import kotlin.apply
 
 @Entity
 @Table(name = "aggregate")
-class AggregateEntity(
+class AggregateEntity<T : Aggregate<T>>(
   @Id
   @Column(name = "id")
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,40 +36,26 @@ class AggregateEntity(
   @Column(name = "events_to")
   var eventsTo: LocalDateTime = LocalDateTime.now(),
 
+  @Column(name = "events_applied", nullable = false)
+  var numberOfEventsApplied: Long = 0,
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "assessment_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
   val assessment: AssessmentEntity,
 
   @Type(JsonType::class)
   @Column(name = "data", nullable = false)
-  val data: Aggregate,
+  val data: T,
 ) {
-  fun apply(event: EventEntity): Boolean {
+  fun apply(event: EventEntity<Event>) {
     eventsTo = event.createdAt
     updatedAt = LocalDateTime.now()
-    return data.apply(event)
   }
 
-  fun clone(): AggregateEntity = AggregateEntity(
+  fun clone() = AggregateEntity(
     eventsFrom = this.eventsFrom,
     eventsTo = this.eventsTo,
     assessment = this.assessment,
     data = this.data.clone(),
   )
-
-  companion object {
-    fun init(assessment: AssessmentEntity, data: Aggregate, events: List<EventEntity> = emptyList()) = AggregateEntity(
-      assessment = assessment,
-      data = data,
-      eventsFrom = events.minByOrNull { it.createdAt }?.createdAt ?: assessment.createdAt,
-    ).apply { events.forEach { data.apply(it) } }
-
-    fun getDefault(assessment: AssessmentEntity, data: Aggregate) = AggregateEntity(
-      assessment = assessment,
-      data = data,
-      eventsFrom = assessment.createdAt,
-      eventsTo = assessment.createdAt,
-      updatedAt = LocalDateTime.now(),
-    )
-  }
 }

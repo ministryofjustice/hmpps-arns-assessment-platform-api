@@ -1,6 +1,9 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-sealed interface Event
+sealed interface Event {
+  val timeline: TimelineItem?
+}
