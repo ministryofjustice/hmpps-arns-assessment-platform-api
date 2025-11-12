@@ -24,7 +24,6 @@ class AssessmentAnswersUpdatedEventHandler(
     state.get().data.apply {
       collaborators.add(event.user)
       event.data.timeline?.run(timeline::add)
-      updatedAt = event.createdAt
     }
 
     state.get().apply {

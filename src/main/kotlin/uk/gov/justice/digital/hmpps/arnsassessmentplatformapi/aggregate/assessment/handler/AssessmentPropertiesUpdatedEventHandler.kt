@@ -22,7 +22,6 @@ class AssessmentPropertiesUpdatedEventHandler(
   ): AssessmentState {
     updateProperties(state, event.data)
     state.get().data.apply {
-      updatedAt = event.createdAt
       collaborators.add(event.user)
       event.data.timeline?.run(timeline::add)
     }

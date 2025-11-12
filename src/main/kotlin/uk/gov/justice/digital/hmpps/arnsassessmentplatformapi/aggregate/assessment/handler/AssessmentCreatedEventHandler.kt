@@ -21,7 +21,6 @@ class AssessmentCreatedEventHandler(
   ): AssessmentState {
     updateProperties(state, event.data)
     state.get().data.apply {
-      createdAt = event.createdAt
       formVersion = event.data.formVersion
       collaborators.add(event.user)
       event.data.timeline?.run(timeline::add)

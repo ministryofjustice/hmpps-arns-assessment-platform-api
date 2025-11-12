@@ -50,7 +50,6 @@ class AssessmentAnswersRolledBackEventHandler(
       collaborators.add(event.user)
       event.data.timeline?.run(timeline::add)
     }
-    aggregate.data.updatedAt = event.createdAt
 
     aggregate.apply {
       eventsTo = event.createdAt

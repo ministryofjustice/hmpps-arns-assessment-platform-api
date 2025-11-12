@@ -47,7 +47,7 @@ class StateService(
       updatedAt = now(),
     ).run(::createState)
 
-    fun fetchLatestState(assessment: AssessmentEntity): AggregateState<A>? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, type.simpleName!!, now())
+    fun fetchLatestStateBefore(assessment: AssessmentEntity, pointInTime: LocalDateTime): AggregateState<A>? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, type.simpleName!!, pointInTime)
       ?.let { it as AggregateEntity<A> }
       ?.run(::createState)
 

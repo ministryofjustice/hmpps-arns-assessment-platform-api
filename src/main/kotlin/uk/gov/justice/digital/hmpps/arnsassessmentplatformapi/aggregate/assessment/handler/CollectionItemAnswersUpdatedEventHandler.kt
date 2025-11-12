@@ -28,7 +28,6 @@ class CollectionItemAnswersUpdatedEventHandler(
     }
 
     aggregate.data.apply {
-      updatedAt = event.createdAt
       collaborators.add(event.user)
       event.data.timeline?.run(timeline::add)
     }

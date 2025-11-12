@@ -18,7 +18,7 @@ class EventBus(
     registry.getHandlersFor(event.data::class).map { handler ->
       val aggregateType = handler.stateType.createInstance().type
       val stateProvider = stateService.stateForType(aggregateType)
-      val stateForType = state[aggregateType] ?: stateProvider.fetchLatestState(event.assessment)
+      val stateForType = state[aggregateType] ?: stateProvider.fetchLatestStateBefore(event.assessment, event.createdAt)
       if (stateForType == null) {
         state[aggregateType] = stateProvider.blankState(event.assessment)
         eventService
