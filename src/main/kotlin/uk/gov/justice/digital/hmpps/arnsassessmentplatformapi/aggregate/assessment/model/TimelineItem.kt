@@ -5,5 +5,5 @@ import java.time.LocalDateTime
 data class TimelineItem(
   val type: String,
   val createdAt: LocalDateTime,
-  val data: Map<String, Any>
+  val data: Map<String, Any>,
 )
