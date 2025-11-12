@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
@@ -56,7 +56,7 @@ class AggregateServiceTest {
         user = user,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
-        data = AnswersUpdatedEvent(
+        data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
         ),
@@ -65,7 +65,7 @@ class AggregateServiceTest {
         user = user,
         assessment = assessment,
         createdAt = lastEventTimestamp,
-        data = AnswersUpdatedEvent(
+        data = AssessmentAnswersUpdatedEvent(
           added = mapOf("bar" to listOf("bar_value")),
           removed = emptyList(),
         ),
@@ -205,7 +205,7 @@ class AggregateServiceTest {
       EventEntity(
         user = user,
         assessment = assessment,
-        data = AnswersUpdatedEvent(
+        data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
         ),
@@ -213,7 +213,7 @@ class AggregateServiceTest {
       EventEntity(
         user = user,
         assessment = assessment,
-        data = AnswersUpdatedEvent(
+        data = AssessmentAnswersUpdatedEvent(
           added = mapOf("bar" to listOf("bar_value")),
           removed = listOf("foo"),
         ),

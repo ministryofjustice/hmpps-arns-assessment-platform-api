@@ -10,7 +10,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -52,7 +52,7 @@ class UpdateAnswersCommandHandlerTest {
 
     assertThat(event.captured.assessment.uuid).isEqualTo(command.assessmentUuid)
     assertThat(event.captured.user).isEqualTo(command.user)
-    val eventData = assertIs<AnswersUpdatedEvent>(event.captured.data)
+    val eventData = assertIs<AssessmentAnswersUpdatedEvent>(event.captured.data)
     assertThat(eventData.added).isEqualTo(command.added)
     assertThat(eventData.removed).isEqualTo(command.removed)
   }

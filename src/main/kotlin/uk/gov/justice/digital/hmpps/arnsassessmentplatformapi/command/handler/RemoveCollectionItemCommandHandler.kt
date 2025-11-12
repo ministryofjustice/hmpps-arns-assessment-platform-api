@@ -1,28 +1,28 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemRemovedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 
 @Component
-class UpdateAnswersCommandHandler(
+class RemoveCollectionItemCommandHandler(
   private val assessmentService: AssessmentService,
   private val eventBus: EventBus,
-) : CommandHandler<UpdateAnswersCommand> {
-  override val type = UpdateAnswersCommand::class
-  override fun handle(command: UpdateAnswersCommand): CommandSuccessCommandResult {
+) : CommandHandler<RemoveCollectionItemCommand> {
+  override val type = RemoveCollectionItemCommand::class
+  override fun handle(command: RemoveCollectionItemCommand): CommandSuccessCommandResult {
+    val assessment = assessmentService.findByUuid(command.assessmentUuid)
     eventBus.add(
       with(command) {
         EventEntity(
           user = user,
-          assessment = assessmentService.findByUuid(assessmentUuid),
-          data = AssessmentAnswersUpdatedEvent(
-            added = added,
-            removed = removed,
+          assessment = assessment,
+          data = CollectionItemRemovedEvent(
+            collectionItemUuid = collectionItemUuid,
           ),
         )
       },

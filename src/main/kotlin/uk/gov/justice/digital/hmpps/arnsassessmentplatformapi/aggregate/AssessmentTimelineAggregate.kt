@@ -1,7 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersRolledBackEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.model.TimelineItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentStatusUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
@@ -9,16 +10,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
 
-data class TimelineItem(
-  val details: String = "",
-  val timestamp: LocalDateTime,
-)
-
 class AssessmentTimelineAggregate : Aggregate {
   private val timeline = mutableListOf<TimelineItem>()
   private var previousStatus: String? = null
 
-  private fun handle(timestamp: LocalDateTime, event: AnswersUpdatedEvent) {
+  private fun handle(timestamp: LocalDateTime, event: AssessmentAnswersUpdatedEvent) {
     timeline.add(
       TimelineItem(
         timestamp = timestamp,
@@ -28,7 +24,7 @@ class AssessmentTimelineAggregate : Aggregate {
     numberOfEventsApplied += 1
   }
 
-  private fun handle(timestamp: LocalDateTime, event: AnswersRolledBackEvent) {
+  private fun handle(timestamp: LocalDateTime, event: AssessmentAnswersRolledBackEvent) {
     timeline.add(
       TimelineItem(
         timestamp = timestamp,
@@ -56,8 +52,8 @@ class AssessmentTimelineAggregate : Aggregate {
 
   override fun apply(event: EventEntity): Boolean {
     when (event.data) {
-      is AnswersUpdatedEvent -> handle(event.createdAt, event.data)
-      is AnswersRolledBackEvent -> handle(event.createdAt, event.data)
+      is AssessmentAnswersUpdatedEvent -> handle(event.createdAt, event.data)
+      is AssessmentAnswersRolledBackEvent -> handle(event.createdAt, event.data)
       is AssessmentStatusUpdatedEvent -> handle(event.createdAt, event.data)
       else -> return false
     }
@@ -77,6 +73,6 @@ class AssessmentTimelineAggregate : Aggregate {
 
   companion object : AggregateType {
     override val createsOn: Set<KClass<out Event>> = setOf(AssessmentCreatedEvent::class)
-    override val updatesOn: Set<KClass<out Event>> = setOf(AnswersUpdatedEvent::class, AnswersRolledBackEvent::class, AssessmentStatusUpdatedEvent::class)
+    override val updatesOn: Set<KClass<out Event>> = setOf(AssessmentAnswersUpdatedEvent::class, AssessmentAnswersRolledBackEvent::class, AssessmentStatusUpdatedEvent::class)
   }
 }
