@@ -22,7 +22,7 @@ class EventBus(
       if (stateForType == null) {
         state[aggregateType] = stateProvider.blankState(event.assessment)
         eventService
-          .findAllByAssessmentUuidAndCreatedAtBefore(event.assessment.uuid, event.createdAt)
+          .findAllForPointInTime(event.assessment.uuid, event.createdAt)
           .plus(event)
           .sortedBy { it.createdAt }
           .fold(state) { acc: State, event -> execute(event, acc) }

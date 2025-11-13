@@ -71,7 +71,7 @@ class StateService(
       assessment: AssessmentEntity,
       pointInTime: LocalDateTime,
     ): AggregateState<A> = eventService
-      .findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, pointInTime)
+      .findAllForPointInTime(assessment.uuid, pointInTime)
       .sortedBy { it.createdAt }
       .ifEmpty { null }
       ?.run(eventBus::handle)

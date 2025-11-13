@@ -74,7 +74,7 @@ class AggregateServiceTest {
 
     @Test
     fun `it returns an empty aggregate when passed no events`() {
-      every { eventService.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns emptyList()
+      every { eventService.findAllForPointInTime(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns emptyList()
       val result = service.createAggregate(assessment, AssessmentVersionAggregate::class)
 
       assertThat(result.data.numberOfEventsApplied).isEqualTo(0)
@@ -84,7 +84,7 @@ class AggregateServiceTest {
 
     @Test
     fun `it finds an aggregate`() {
-      every { eventService.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns events
+      every { eventService.findAllForPointInTime(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns events
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
@@ -110,7 +110,7 @@ class AggregateServiceTest {
 
     @Test
     fun `it creates an aggregate`() {
-      every { eventService.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns events
+      every { eventService.findAllForPointInTime(assessment.uuid, LocalDateTime.parse("2025-01-01T12:00:00")) } returns events
       every {
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.uuid,
@@ -259,7 +259,7 @@ class AggregateServiceTest {
       } returns null
 
       every {
-        eventService.findAllByAssessmentUuid(assessment.uuid)
+        eventService.findAll(assessment.uuid)
       } returns listOf(
         EventEntity(
           user = user,
