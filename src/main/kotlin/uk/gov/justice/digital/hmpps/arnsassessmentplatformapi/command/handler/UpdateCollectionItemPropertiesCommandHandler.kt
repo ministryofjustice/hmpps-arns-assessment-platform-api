@@ -27,7 +27,7 @@ class UpdateCollectionItemPropertiesCommandHandler(
           collectionItemUuid = collectionItemUuid,
           added = added,
           removed = removed,
-          timeline = timeline?.into(),
+          timeline = timeline,
         ),
       )
     }

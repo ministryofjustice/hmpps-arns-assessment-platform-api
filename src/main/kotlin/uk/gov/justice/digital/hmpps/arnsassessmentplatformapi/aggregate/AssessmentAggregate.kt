@@ -13,7 +13,7 @@ typealias Properties = MutableMap<String, List<String>>
 typealias Collections = MutableList<Collection>
 typealias FormVersion = String
 
-class AssessmentAggregate() : Aggregate<AssessmentAggregate> {
+class AssessmentAggregate : Aggregate<AssessmentAggregate> {
   lateinit var formVersion: FormVersion
 
   val properties: Properties = mutableMapOf()

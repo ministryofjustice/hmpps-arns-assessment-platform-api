@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -23,7 +24,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.Aggreg
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
-import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertIs
 
@@ -191,7 +191,7 @@ class AssessmentControllerTest(
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
           assessment.assessmentUuid,
           AssessmentAggregate::class.simpleName!!,
-          LocalDateTime.now(),
+          Clock.now(),
         ).let { assertThat(it).isNotNull() }
       }
     }

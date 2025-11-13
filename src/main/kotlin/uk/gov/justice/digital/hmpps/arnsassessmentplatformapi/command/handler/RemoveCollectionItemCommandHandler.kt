@@ -25,7 +25,7 @@ class RemoveCollectionItemCommandHandler(
         assessment = assessmentService.findByUuid(assessmentUuid),
         data = CollectionItemRemovedEvent(
           collectionItemUuid = collectionItemUuid,
-          timeline = timeline?.into(),
+          timeline = timeline,
         ),
       )
     }

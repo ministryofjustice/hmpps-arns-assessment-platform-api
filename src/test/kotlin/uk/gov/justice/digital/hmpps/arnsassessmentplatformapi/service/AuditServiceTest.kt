@@ -20,11 +20,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Requestabl
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
-import java.time.LocalDateTime
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
@@ -130,7 +130,7 @@ class AuditServiceTest {
     @JvmStatic
     fun provideAuditable(): Stream<Any> = Stream.of(
       UpdateAssessmentPropertiesCommand(user, assessmentUuid, "TEST_STATUS"), // RequestableCommand
-      AssessmentTimelineQuery(user, assessmentUuid, LocalDateTime.now()), // RequestableQuery
+      AssessmentTimelineQuery(user, assessmentUuid, Clock.now()), // RequestableQuery
     )
   }
 }

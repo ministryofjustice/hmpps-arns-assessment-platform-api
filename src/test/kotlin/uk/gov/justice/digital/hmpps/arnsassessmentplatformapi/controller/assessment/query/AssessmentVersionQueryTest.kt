@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
@@ -279,7 +280,7 @@ class AssessmentVersionQueryTest(
     val persistedAggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessment.uuid,
       AssessmentAggregate::class.simpleName!!,
-      LocalDateTime.now(),
+      Clock.now(),
     )
 
     assertThat(persistedAggregate).isNull()
