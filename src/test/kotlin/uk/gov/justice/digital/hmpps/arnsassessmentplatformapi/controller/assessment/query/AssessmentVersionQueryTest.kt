@@ -43,14 +43,16 @@ class AssessmentVersionQueryTest(
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = AssessmentCreatedEvent(
+          formVersion = "1",
           properties = emptyMap(),
+          timeline = null,
         ),
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-        data = FormVersionUpdatedEvent("1"),
+        data = FormVersionUpdatedEvent(version = "1", timeline = null),
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
@@ -59,16 +61,16 @@ class AssessmentVersionQueryTest(
         data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
+          timeline = null,
         ),
       ),
     ).run(eventRepository::saveAll)
 
-    val aggregateData = AssessmentAggregate(
-      answers = mutableMapOf("foo" to listOf("foo_value")),
-      deletedAnswers = mutableMapOf(),
-      collaborators = mutableSetOf(User("FOO_USER", "Foo User")),
-      formVersion = "1",
-    )
+    val aggregateData = AssessmentAggregate().apply {
+      answers.put("foo", listOf("foo_value"))
+      collaborators.add(User("FOO_USER", "Foo User"))
+      formVersion = "1"
+    }
 
     AggregateEntity(
       assessment = assessment,
@@ -117,14 +119,16 @@ class AssessmentVersionQueryTest(
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = AssessmentCreatedEvent(
+          formVersion = "1",
           properties = mapOf(),
+          timeline = null,
         ),
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-        data = FormVersionUpdatedEvent("1"),
+        data = FormVersionUpdatedEvent(version = "1", timeline = null),
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
@@ -133,6 +137,7 @@ class AssessmentVersionQueryTest(
         data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
+          timeline = null,
         ),
       ),
       EventEntity(
@@ -142,23 +147,22 @@ class AssessmentVersionQueryTest(
         data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("updated_foo_value")),
           removed = emptyList(),
+          timeline = null,
         ),
       ),
     ).run(eventRepository::saveAll)
 
-    val firstAggregateData = AssessmentAggregate(
-      answers = mutableMapOf("foo" to listOf("foo_value")),
-      deletedAnswers = mutableMapOf(),
-      collaborators = mutableSetOf(User("FOO_USER", "Foo User")),
-      formVersion = "1",
-    )
+    val firstAggregateData = AssessmentAggregate().apply {
+      answers.put("foo", listOf("foo_value"))
+      collaborators.add(User("FOO_USER", "Foo User"))
+      formVersion = "1"
+    }
 
-    val secondAggregateData = AssessmentAggregate(
-      answers = mutableMapOf("foo" to listOf("updated_foo_value")),
-      deletedAnswers = mutableMapOf(),
-      collaborators = mutableSetOf(User("FOO_USER", "Foo User")),
-      formVersion = "1",
-    )
+    val secondAggregateData = AssessmentAggregate().apply {
+      answers.put("foo", listOf("updated_foo_value"))
+      collaborators.add(User("FOO_USER", "Foo User"))
+      formVersion = "1"
+    }
 
     listOf(
       AggregateEntity(
@@ -214,14 +218,16 @@ class AssessmentVersionQueryTest(
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = AssessmentCreatedEvent(
+          formVersion = "1",
           properties = mapOf(),
+          timeline = null,
         ),
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-        data = FormVersionUpdatedEvent("1"),
+        data = FormVersionUpdatedEvent(version = "1", timeline = null),
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
@@ -230,6 +236,7 @@ class AssessmentVersionQueryTest(
         data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("foo_value")),
           removed = emptyList(),
+          timeline = null,
         ),
       ),
       EventEntity(
@@ -239,6 +246,7 @@ class AssessmentVersionQueryTest(
         data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to listOf("updated_foo_value")),
           removed = emptyList(),
+          timeline = null,
         ),
       ),
     ).run(eventRepository::saveAll)
@@ -266,12 +274,11 @@ class AssessmentVersionQueryTest(
     assertThat(response?.queries[0]?.request).isEqualTo(request.queries[0])
     val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
 
-    val expectedAggregate = AssessmentAggregate(
-      answers = mutableMapOf("foo" to listOf("updated_foo_value")),
-      deletedAnswers = mutableMapOf(),
-      collaborators = mutableSetOf(User("FOO_USER", "Foo User")),
-      formVersion = "1",
-    )
+    val expectedAggregate = AssessmentAggregate().apply {
+      answers.put("foo", listOf("updated_foo_value"))
+      collaborators.add(User("FOO_USER", "Foo User"))
+      formVersion = "1"
+    }
 
     assertThat(result.answers).isEqualTo(expectedAggregate.answers)
     assertThat(result.collaborators).isEqualTo(expectedAggregate.collaborators)

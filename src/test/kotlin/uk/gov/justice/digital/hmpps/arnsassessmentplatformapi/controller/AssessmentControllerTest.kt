@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
@@ -35,9 +34,6 @@ class AssessmentControllerTest(
 ) : IntegrationTestBase() {
   @Autowired
   private lateinit var commandBus: CommandBus
-
-  @Autowired
-  private lateinit var eventBus: EventBus
 
   @Nested
   inner class Command {
@@ -204,7 +200,7 @@ class AssessmentControllerTest(
       @Test
       fun `it allows access with ROLE_AAP__FRONTEND_RW`() {
         val request = CommandsRequest(
-          commands = listOf(CreateAssessmentCommand(User("test-user", "Test User"))),
+          commands = listOf(CreateAssessmentCommand(formVersion = "1", user = User("test-user", "Test User"))),
         )
 
         webTestClient.post().uri("/command")
@@ -218,7 +214,7 @@ class AssessmentControllerTest(
       @Test
       fun `it denies access with no roles`() {
         val request = CommandsRequest(
-          commands = listOf(CreateAssessmentCommand(User("test-user", "Test User"))),
+          commands = listOf(CreateAssessmentCommand(formVersion = "1", user = User("test-user", "Test User"))),
         )
 
         webTestClient.post().uri("/command")
@@ -234,14 +230,13 @@ class AssessmentControllerTest(
     inner class QueryEndpoint {
       @Test
       fun `it allows access with ROLE_AAP__FRONTEND_RW`() {
-        val assessment = CreateAssessmentCommand(User("test-user", "Test User"))
+        val assessment = CreateAssessmentCommand(formVersion = "1", user = User("test-user", "Test User"))
 
         val httpRequest = MockHttpServletRequest()
         RequestContextHolder.setRequestAttributes(ServletRequestAttributes(httpRequest))
 
         try {
           commandBus.dispatch(assessment)
-          eventBus.commit()
         } finally {
           RequestContextHolder.resetRequestAttributes()
         }

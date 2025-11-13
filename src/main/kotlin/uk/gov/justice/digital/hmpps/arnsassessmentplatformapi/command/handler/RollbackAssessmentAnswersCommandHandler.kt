@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollBackAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -12,12 +11,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventServi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 
 @Component
-class RollbackAnswersCommandHandler(
+class RollbackAssessmentAnswersCommandHandler(
   private val assessmentService: AssessmentService,
-  private val stateService: StateService,
   private val eventBus: EventBus,
-  private val clock: Clock,
   private val eventService: EventService,
+  private val stateService: StateService,
 ) : CommandHandler<RollBackAssessmentAnswersCommand> {
   override val type = RollBackAssessmentAnswersCommand::class
   override fun handle(command: RollBackAssessmentAnswersCommand): CommandSuccessCommandResult {

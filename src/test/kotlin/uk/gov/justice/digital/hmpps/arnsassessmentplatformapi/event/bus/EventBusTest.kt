@@ -1,143 +1,77 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus
 
+import io.mockk.clearAllMocks
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.verify
-import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateType
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateTypeRegistry
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import java.time.LocalDateTime
+import kotlin.reflect.KClass
 
 class EventBusTest {
-  val stateService: StateService = mockk()
-  val eventService: EventService = mockk()
-  val aggregateTypeRegistry: AggregateTypeRegistry = mockk()
-
-  val user = User("FOO_USER", "Foo User")
+  val stateService = mockk<StateService>()
+  val eventService = mockk<EventService>()
+  val stateProvider = mockk<StateService.StateForType<AssessmentAggregate>>()
+  val state: AggregateState<AssessmentAggregate> = mockk()
   val assessment = AssessmentEntity()
-
-  val aggregate = mockk<AssessmentVersionAggregate>()
-  val aggregateType = mockk<AggregateType>()
-  val aggregateName = AssessmentVersionAggregate::class
-
-  val event = EventEntity(
-    user = user,
-    assessment = assessment,
-    data = AssessmentCreatedEvent(),
-  )
 
   @BeforeEach
   fun setUp() {
-    every {
-      stateService.processEvents(
-        assessment,
-        aggregateName,
-        any<List<EventEntity>>(),
-      )
-    } returns AggregateEntity(
-      assessment = assessment,
-      data = aggregate,
-    )
-
-    every { eventService.saveAll(any()) } just runs
-    every { aggregateTypeRegistry.getAggregates() } returns mapOf(
-      AssessmentVersionAggregate::class to aggregateType,
-    )
+    clearAllMocks()
   }
 
   @Test
-  fun `it adds events to the queue`() {
-    val queue = mutableListOf<EventEntity>()
-    val eventBus = EventBus(
-      queue = queue,
-      stateService = stateService,
-      eventService = eventService,
-      aggregateTypeRegistry = aggregateTypeRegistry,
-    )
-
+  fun `calls the handler for a given event`() {
     val event = EventEntity(
-      user = user,
+      user = User(),
       assessment = assessment,
-      data = AssessmentCreatedEvent(),
+      createdAt = LocalDateTime.now().minusDays(1),
+      data = AssessmentCreatedEvent(
+        formVersion = "1",
+        properties = emptyMap(),
+        timeline = null,
+      ),
     )
 
-    eventBus.add(event)
+    val handler1 = mockk<EventHandler<AssessmentCreatedEvent, AggregateState<out Aggregate<*>>>>()
+    val handler2 = mockk<EventHandler<AssessmentCreatedEvent, AggregateState<out Aggregate<*>>>>()
 
-    Assertions.assertThat(queue.size).isEqualTo(1)
-    Assertions.assertThat(queue).contains(event)
-  }
+    every { handler1.handle(any<EventEntity<AssessmentCreatedEvent>>(), state) } returns state
+    every { handler1.stateType } returns AssessmentState::class
 
-  @Test
-  fun `it commits events in the queue`() {
-    val queue = mutableListOf<EventEntity>()
+    every { handler2.handle(any<EventEntity<AssessmentCreatedEvent>>(), state) } returns state
+    every { handler2.stateType } returns AssessmentState::class
+
+    every { stateProvider.fetchLatestStateBefore(assessment, event.createdAt) } returns state
+
+    every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
+
+    val registry: EventHandlerRegistry = mockk()
+    every { registry.getHandlersFor(any<KClass<AssessmentCreatedEvent>>()) } returns listOf(handler1, handler2)
+
     val eventBus = EventBus(
-      queue = queue,
       stateService = stateService,
       eventService = eventService,
-      aggregateTypeRegistry = aggregateTypeRegistry,
+      registry = registry,
     )
 
-    every { aggregateType.createsOn } returns emptySet()
-    every { aggregateType.updatesOn } returns emptySet()
+    eventBus.handle(event)
 
-    eventBus.add(event)
-    eventBus.commit()
-
-    verify(exactly = 0) { stateService.processEvents(any(), any(), any()) }
-    verify(exactly = 1) { eventService.saveAll(queue) }
-    Assertions.assertThat(queue).withFailMessage("should flush the queue").isEmpty()
-  }
-
-  @Test
-  fun `it will update an aggregate configured for the event`() {
-    val queue = mutableListOf<EventEntity>()
-    val eventBus = EventBus(
-      queue = queue,
-      stateService = stateService,
-      eventService = eventService,
-      aggregateTypeRegistry = aggregateTypeRegistry,
-    )
-
-    every { aggregateType.createsOn } returns emptySet()
-    every { aggregateType.updatesOn } returns setOf(AssessmentCreatedEvent::class)
-
-    eventBus.add(event)
-    eventBus.commit()
-
-    verify(exactly = 1) { stateService.processEvents(assessment, aggregateName, listOf(event)) }
-    verify(exactly = 1) { eventService.saveAll(queue) }
-    Assertions.assertThat(queue).withFailMessage("should flush the queue").isEmpty()
-  }
-
-  @Test
-  fun `it will create an aggregate configured for the event`() {
-    val queue = mutableListOf<EventEntity>()
-    val eventBus = EventBus(
-      queue = queue,
-      stateService = stateService,
-      eventService = eventService,
-      aggregateTypeRegistry = aggregateTypeRegistry,
-    )
-
-    every { aggregateType.createsOn } returns setOf(AssessmentCreatedEvent::class)
-    every { aggregateType.updatesOn } returns emptySet()
-
-    eventBus.add(event)
-    eventBus.commit()
-
-    verify(exactly = 1) { stateService.processEvents(assessment, aggregateName, listOf(event)) }
-    verify(exactly = 1) { eventService.saveAll(queue) }
-    Assertions.assertThat(queue).withFailMessage("should flush the queue").isEmpty()
+    verify(exactly = 1) { registry.getHandlersFor(AssessmentCreatedEvent::class) }
+    verify(exactly = 1) { handler1.handle(event, state) }
+    verify(exactly = 1) { handler2.handle(event, state) }
+    verify(exactly = 1) { stateProvider.fetchLatestStateBefore(assessment, event.createdAt) }
+    verify(exactly = 2) { stateService.stateForType(AssessmentAggregate::class) }
   }
 }

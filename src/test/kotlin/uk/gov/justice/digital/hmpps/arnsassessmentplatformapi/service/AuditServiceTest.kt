@@ -129,7 +129,13 @@ class AuditServiceTest {
 
     @JvmStatic
     fun provideAuditable(): Stream<Any> = Stream.of(
-      UpdateAssessmentPropertiesCommand(user, assessmentUuid, "TEST_STATUS"), // RequestableCommand
+      UpdateAssessmentPropertiesCommand(
+        user = user,
+        assessmentUuid = assessmentUuid,
+        added = mapOf("STATUS" to listOf("TEST_STATUS")),
+        removed = emptyList(),
+        timeline = null,
+      ),
       AssessmentTimelineQuery(user, assessmentUuid, Clock.now()), // RequestableQuery
     )
   }

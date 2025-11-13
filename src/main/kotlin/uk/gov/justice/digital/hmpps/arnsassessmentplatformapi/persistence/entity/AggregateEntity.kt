@@ -13,7 +13,6 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.Type
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -48,11 +47,6 @@ class AggregateEntity<T : Aggregate<T>>(
   @Column(name = "data", nullable = false)
   val data: T,
 ) {
-  fun apply(event: EventEntity<Event>) {
-    eventsTo = event.createdAt
-    updatedAt = Clock.now()
-  }
-
   fun clone() = AggregateEntity(
     eventsFrom = this.eventsFrom,
     eventsTo = this.eventsTo,

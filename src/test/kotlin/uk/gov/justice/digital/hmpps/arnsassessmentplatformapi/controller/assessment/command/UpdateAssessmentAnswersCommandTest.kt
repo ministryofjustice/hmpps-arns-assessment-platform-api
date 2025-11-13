@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
-class UpdateAnswersCommandTest(
+class UpdateAssessmentAnswersCommandTest(
   @Autowired
   val assessmentRepository: AssessmentRepository,
   @Autowired
@@ -51,7 +51,9 @@ class UpdateAnswersCommandTest(
       updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
-      data = AssessmentAggregate(),
+      data = AssessmentAggregate().apply {
+        formVersion = "1"
+      },
     )
     aggregateRepository.save(aggregateEntity)
 
@@ -64,7 +66,9 @@ class UpdateAnswersCommandTest(
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(
+            formVersion = "1",
             properties = emptyMap(),
+            timeline = null,
           ),
         ),
         EventEntity(
@@ -77,6 +81,7 @@ class UpdateAnswersCommandTest(
               "bar" to listOf("bar_value"),
             ),
             removed = emptyList(),
+            timeline = null,
           ),
         ),
       ),

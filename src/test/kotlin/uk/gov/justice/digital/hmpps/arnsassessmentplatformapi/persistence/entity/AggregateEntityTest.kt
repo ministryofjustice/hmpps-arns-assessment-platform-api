@@ -1,63 +1,38 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentVersionAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import java.time.LocalDateTime
 import kotlin.test.Test
-import kotlin.test.assertIs
-import kotlin.text.get
 
 class AggregateEntityTest {
   @Test
-  fun `test it works`() {
-    val assessment = AssessmentEntity(createdAt = LocalDateTime.parse("2025-08-08T12:00:00"))
-    val data = AssessmentVersionAggregate()
+  fun `aggregate entity is cloned`() {
+    val assessment = AssessmentEntity()
 
-    val firstEvent = EventEntity(
+    val dataAggregate: AssessmentAggregate = mockk()
+    val clonedAggregate: AssessmentAggregate = mockk()
+
+    every { dataAggregate.clone() } returns clonedAggregate
+
+    val aggregate = AggregateEntity(
       assessment = assessment,
-      createdAt = LocalDateTime.parse("2025-08-08T12:00:00"),
-      user = User(
-        id = "foo-user",
-        name = "Foo User",
-      ),
-      data = AssessmentAnswersUpdatedEvent(
-        added = mapOf("foo" to listOf("Original answer for foo")),
-        removed = emptyList(),
-      ),
+      eventsFrom = LocalDateTime.now().minusDays(1),
+      eventsTo = LocalDateTime.now(),
+      data = dataAggregate,
     )
 
-    val secondEvent = EventEntity(
-      assessment = assessment,
-      createdAt = LocalDateTime.parse("2025-08-08T13:30:00"),
-      user = User(
-        id = "foo-user",
-        name = "Foo User",
-      ),
-      data = AssessmentAnswersUpdatedEvent(
-        added = mapOf("foo" to listOf("Updated value for foo")),
-        removed = emptyList(),
-      ),
-    )
+    val clone = aggregate.clone()
 
-    val aggregate = AggregateEntity.init(
-      assessment,
-      data,
-    )
+    assertThat(clone.uuid).isNotEqualTo(aggregate.uuid)
+    assertThat(clone.assessment).isEqualTo(aggregate.assessment)
+    assertThat(clone.eventsFrom).isEqualTo(aggregate.eventsFrom)
+    assertThat(clone.eventsTo).isEqualTo(aggregate.eventsTo)
+    assertThat(clone.data).isEqualTo(clonedAggregate)
 
-    aggregate.apply(firstEvent)
-
-    val originalData = assertIs<AssessmentVersionAggregate>(aggregate.data)
-    assertThat(originalData.getAnswers()["foo"]).isEqualTo(listOf("Original answer for foo"))
-    assertThat(aggregate.eventsFrom).isEqualTo(assessment.createdAt)
-    assertThat(aggregate.eventsTo).isEqualTo(firstEvent.createdAt)
-
-    aggregate.apply(secondEvent)
-
-    val firstUpdate = assertIs<AssessmentVersionAggregate>(aggregate.data)
-    assertThat(firstUpdate.getAnswers()["foo"]).isEqualTo(listOf("Updated value for foo"))
-    assertThat(aggregate.eventsFrom).isEqualTo(assessment.createdAt)
-    assertThat(aggregate.eventsTo).isEqualTo(secondEvent.createdAt)
+    verify(exactly = 1) { dataAggregate.clone() }
   }
 }
