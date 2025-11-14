@@ -35,7 +35,8 @@ class AssessmentAggregate : Aggregate<AssessmentAggregate> {
   }
 
   fun getCollection(id: UUID) = collections.firstOrNull { it.uuid == id }
-    ?: collections.firstNotNullOfOrNull { collection -> collection.items.firstNotNullOfOrNull { it.findCollection(id) } } ?: throw Error("Collection ID $id does not exist")
+    ?: collections.firstNotNullOfOrNull { collection -> collection.items.firstNotNullOfOrNull { it.findCollection(id) } }
+    ?: throw Error("Collection ID $id does not exist")
 
   fun getCollectionItem(id: UUID) = collections.firstNotNullOfOrNull { it.findItem(id) } ?: throw Error("Collection item ID $id does not exist")
 }
