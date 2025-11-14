@@ -3,6 +3,10 @@ services:
     ports:
       - "5432:5432"
 
+  localstack:
+    ports:
+      - "4566:4566"
+
   auth:
     ports:
       - "8090:8080"
