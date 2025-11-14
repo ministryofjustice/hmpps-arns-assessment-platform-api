@@ -4,10 +4,9 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAddedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import java.time.Clock
-import java.time.LocalDateTime
 
 @Component
 class CollectionItemAddedEventHandler(
@@ -39,14 +38,13 @@ class CollectionItemAddedEventHandler(
     } ?: collection.items.add(collectionItem)
 
     aggregate.data.apply {
-      updatedAt = event.createdAt
       collaborators.add(event.user)
-      event.data.timeline?.run(timeline::add)
+      event.data.timeline?.item(event)?.run(timeline::add)
     }
 
     aggregate.apply {
       eventsTo = event.createdAt
-      updatedAt = LocalDateTime.now(clock)
+      updatedAt = clock.now()
       numberOfEventsApplied += 1
     }
 

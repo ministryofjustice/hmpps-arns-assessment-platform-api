@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -21,5 +22,5 @@ class AssessmentEntity(
   val uuid: UUID = UUID.randomUUID(),
 
   @Column(name = "created_at")
-  val createdAt: LocalDateTime = LocalDateTime.now(),
+  val createdAt: LocalDateTime = Clock.now(),
 )

@@ -11,8 +11,8 @@ import java.util.UUID
 class EventService(
   private val eventRepository: EventRepository,
 ) {
-  fun findAllByAssessmentUuid(uuid: UUID) = eventRepository.findAllByAssessmentUuid(uuid)
-  fun findAllByAssessmentUuidAndCreatedAtBefore(uuid: UUID, pointInTime: LocalDateTime) = eventRepository.findAllByAssessmentUuidAndCreatedAtBefore(uuid, pointInTime)
+  fun findAll(assessmentUuid: UUID) = eventRepository.findAllByAssessmentUuid(assessmentUuid)
+  fun findAllForPointInTime(assessmentUuid: UUID, pointInTime: LocalDateTime) = eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessmentUuid, pointInTime)
 
   fun <E : Event> save(event: EventEntity<E>): EventEntity<E> = eventRepository.save(event)
 }

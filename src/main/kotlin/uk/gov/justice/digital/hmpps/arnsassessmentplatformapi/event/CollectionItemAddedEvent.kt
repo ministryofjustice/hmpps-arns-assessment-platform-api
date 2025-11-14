@@ -1,6 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import java.util.UUID
 
 data class CollectionItemAddedEvent(
@@ -9,5 +9,5 @@ data class CollectionItemAddedEvent(
   val answers: Map<String, List<String>>,
   val properties: Map<String, List<String>>,
   val index: Int?,
-  override val timeline: TimelineItem?,
+  override val timeline: Timeline?,
 ) : Event

@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 
 data class FormVersionUpdatedEvent(
   val version: String,
-  override val timeline: TimelineItem?,
+  override val timeline: Timeline?,
 ) : Event

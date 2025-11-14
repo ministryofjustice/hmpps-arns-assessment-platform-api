@@ -3,9 +3,9 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.reques
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidQueryException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
-import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,7 +16,7 @@ class QueriesRequestTest {
     val query = AssessmentTimelineQuery(
       user = User("FOO_USER", "Foo User"),
       assessmentUuid = UUID.randomUUID(),
-      timestamp = LocalDateTime.now(),
+      timestamp = Clock.now(),
     )
 
     val request = QueriesRequest(

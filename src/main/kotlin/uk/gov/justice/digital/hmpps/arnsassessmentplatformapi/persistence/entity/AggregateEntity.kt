@@ -12,7 +12,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.Type
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -28,13 +28,13 @@ class AggregateEntity<T : Aggregate<T>>(
   val uuid: UUID = UUID.randomUUID(),
 
   @Column(name = "updated_at")
-  var updatedAt: LocalDateTime = LocalDateTime.now(),
+  var updatedAt: LocalDateTime = Clock.now(),
 
   @Column(name = "events_from")
-  val eventsFrom: LocalDateTime = LocalDateTime.now(),
+  val eventsFrom: LocalDateTime = Clock.now(),
 
   @Column(name = "events_to")
-  var eventsTo: LocalDateTime = LocalDateTime.now(),
+  var eventsTo: LocalDateTime = Clock.now(),
 
   @Column(name = "events_applied", nullable = false)
   var numberOfEventsApplied: Long = 0,
@@ -47,11 +47,6 @@ class AggregateEntity<T : Aggregate<T>>(
   @Column(name = "data", nullable = false)
   val data: T,
 ) {
-  fun apply(event: EventEntity<Event>) {
-    eventsTo = event.createdAt
-    updatedAt = LocalDateTime.now()
-  }
-
   fun clone() = AggregateEntity(
     eventsFrom = this.eventsFrom,
     eventsTo = this.eventsTo,

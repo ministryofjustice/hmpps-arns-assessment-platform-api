@@ -6,8 +6,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Collecti
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.FormVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Properties
 import java.time.LocalDateTime
+import java.util.UUID
 
 data class AssessmentVersionQueryResult(
+  val assessmentUuid: UUID,
+  val aggregateUuid: UUID,
   val formVersion: FormVersion,
   val createdAt: LocalDateTime,
   val updatedAt: LocalDateTime,

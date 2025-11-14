@@ -24,3 +24,10 @@ app:
   services:
     hmpps-auth:
       url: ${hmpps-auth.url:http://localhost:9090/auth}
+
+hmpps.sqs:
+  provider: localstack
+  useWebToken: false
+  queues:
+    audit:
+      queueName: audit-queue

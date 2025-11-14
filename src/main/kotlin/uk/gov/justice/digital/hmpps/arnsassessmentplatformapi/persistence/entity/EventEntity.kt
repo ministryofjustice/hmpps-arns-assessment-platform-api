@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.Type
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import java.time.LocalDateTime
 import java.util.UUID
@@ -28,7 +29,7 @@ class EventEntity<E : Event>(
   var uuid: UUID = UUID.randomUUID(),
 
   @Column(name = "created_at", nullable = false)
-  val createdAt: LocalDateTime = LocalDateTime.now(),
+  val createdAt: LocalDateTime = Clock.now(),
 
   @Type(JsonType::class)
   @Column(name = "user_details", nullable = false)

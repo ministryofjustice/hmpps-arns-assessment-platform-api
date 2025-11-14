@@ -23,7 +23,7 @@ class CreateCollectionCommandHandler(
       EventEntity(
         user = user,
         assessment = assessmentService.findByUuid(assessmentUuid),
-        data = CollectionCreatedEvent(collectionUuid, name, parentCollectionItemUuid, timeline?.into()),
+        data = CollectionCreatedEvent(collectionUuid, name, parentCollectionItemUuid, timeline),
       )
     }
 
