@@ -22,8 +22,8 @@ class CollectionItemPropertiesUpdatedEventHandler(
 
     aggregate.data.getCollectionItem(event.data.collectionItemUuid).run {
       updatedAt = event.createdAt
-      event.data.added.forEach { answers.put(it.key, it.value) }
-      event.data.removed.forEach { answers.remove(it) }
+      event.data.added.forEach { properties.put(it.key, it.value) }
+      event.data.removed.forEach { properties.remove(it) }
     }
 
     aggregate.data.apply {
