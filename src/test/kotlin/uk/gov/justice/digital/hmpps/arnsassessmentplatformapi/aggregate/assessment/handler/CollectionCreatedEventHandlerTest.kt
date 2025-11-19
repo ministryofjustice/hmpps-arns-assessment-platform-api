@@ -10,13 +10,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import java.time.LocalDateTime
 import java.util.UUID
 
-class CollectionCreatedEventHandlerTest : AbstractEventHandlerTest<CollectionCreatedEvent, AssessmentState>() {
+class CollectionCreatedEventHandlerTest : AbstractEventHandlerTest<CollectionCreatedEvent>() {
   override val handler = CollectionCreatedEventHandler::class
   override val eventType = CollectionCreatedEvent::class
-  val aggregateUuid: UUID = UUID.randomUUID()
 
   override val scenarios = listOf(
-    Scenario.Executes<CollectionCreatedEvent, AssessmentState>("handles the event").apply {
+    Scenario.Executes<CollectionCreatedEvent>("handles the event").apply {
       val newTopLevelCollectionEvent = eventEntityFor(
         CollectionCreatedEvent(
           collectionUuid = UUID.randomUUID(),
@@ -135,7 +134,7 @@ class CollectionCreatedEventHandlerTest : AbstractEventHandlerTest<CollectionCre
         )
       }
     },
-    Scenario.Executes<CollectionCreatedEvent, AssessmentState>("handles when no timeline provided").apply {
+    Scenario.Executes<CollectionCreatedEvent>("handles when no timeline provided").apply {
       events = listOf(
         eventEntityFor(
           CollectionCreatedEvent(

@@ -9,13 +9,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import java.time.LocalDateTime
 import java.util.UUID
 
-class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<CollectionItemReorderedEvent, AssessmentState>() {
+class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<CollectionItemReorderedEvent>() {
   override val handler = CollectionItemReorderedEventHandler::class
   override val eventType = CollectionItemReorderedEvent::class
-  val aggregateUuid: UUID = UUID.randomUUID()
 
   override val scenarios = listOf(
-    Scenario.Executes<CollectionItemReorderedEvent, AssessmentState>("handles the event").apply {
+    Scenario.Executes<CollectionItemReorderedEvent>("handles the event").apply {
       val collectionUuid: UUID = UUID.randomUUID()
       val firstCollectionItemUuid: UUID = UUID.randomUUID()
       val secondCollectionItemUuid: UUID = UUID.randomUUID()
@@ -124,7 +123,7 @@ class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<Collect
         )
       }
     },
-    Scenario.Executes<CollectionItemReorderedEvent, AssessmentState>("handles when no timeline provided").apply {
+    Scenario.Executes<CollectionItemReorderedEvent>("handles when no timeline provided").apply {
       val collectionUuid: UUID = UUID.randomUUID()
       val firstCollectionItemUuid: UUID = UUID.randomUUID()
       val secondCollectionItemUuid: UUID = UUID.randomUUID()
@@ -224,7 +223,7 @@ class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<Collect
         )
       }
     },
-    Scenario.Throws<CollectionItemReorderedEvent, AssessmentState, Error>("throws when collection does not exist")
+    Scenario.Throws<CollectionItemReorderedEvent, Error>("throws when collection does not exist")
       .apply {
         events = listOf(
           eventEntityFor(

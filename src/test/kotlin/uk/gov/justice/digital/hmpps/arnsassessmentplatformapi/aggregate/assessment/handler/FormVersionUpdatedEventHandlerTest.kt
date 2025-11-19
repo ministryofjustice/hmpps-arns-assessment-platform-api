@@ -6,15 +6,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
-import java.util.UUID
 
-class FormVersionUpdatedEventHandlerTest : AbstractEventHandlerTest<FormVersionUpdatedEvent, AssessmentState>() {
+class FormVersionUpdatedEventHandlerTest : AbstractEventHandlerTest<FormVersionUpdatedEvent>() {
   override val handler = FormVersionUpdatedEventHandler::class
   override val eventType = FormVersionUpdatedEvent::class
-  val aggregateUuid: UUID = UUID.randomUUID()
 
   override val scenarios = listOf(
-    Scenario.Executes<FormVersionUpdatedEvent, AssessmentState>("handles the event").apply {
+    Scenario.Executes<FormVersionUpdatedEvent>("handles the event").apply {
       events = listOf(
         eventEntityFor(
           FormVersionUpdatedEvent(
@@ -61,7 +59,7 @@ class FormVersionUpdatedEventHandlerTest : AbstractEventHandlerTest<FormVersionU
         )
       }
     },
-    Scenario.Executes<FormVersionUpdatedEvent, AssessmentState>("handles when no timeline provided").apply {
+    Scenario.Executes<FormVersionUpdatedEvent>("handles when no timeline provided").apply {
       events = listOf(
         eventEntityFor(
           FormVersionUpdatedEvent(

@@ -6,15 +6,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
-import java.util.UUID
 
-class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<AssessmentPropertiesUpdatedEvent, AssessmentState>() {
+class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<AssessmentPropertiesUpdatedEvent>() {
   override val handler = AssessmentPropertiesUpdatedEventHandler::class
   override val eventType = AssessmentPropertiesUpdatedEvent::class
-  val aggregateUuid: UUID = UUID.randomUUID()
 
   override val scenarios = listOf(
-    Scenario.Executes<AssessmentPropertiesUpdatedEvent, AssessmentState>("handles the event").apply {
+    Scenario.Executes<AssessmentPropertiesUpdatedEvent>("handles the event").apply {
       events = listOf(
         eventEntityFor(
           AssessmentPropertiesUpdatedEvent(
@@ -59,7 +57,7 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
         )
       }
     },
-    Scenario.Executes<AssessmentPropertiesUpdatedEvent, AssessmentState>("handles when no timeline provided").apply {
+    Scenario.Executes<AssessmentPropertiesUpdatedEvent>("handles when no timeline provided").apply {
       events = listOf(
         eventEntityFor(
           AssessmentPropertiesUpdatedEvent(
@@ -103,7 +101,7 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
         )
       }
     },
-    Scenario.Throws<AssessmentPropertiesUpdatedEvent, AssessmentState, Error>("throws when the property to remove does no exist").apply {
+    Scenario.Throws<AssessmentPropertiesUpdatedEvent, Error>("throws when the property to remove does no exist").apply {
       events = listOf(
         eventEntityFor(
           AssessmentPropertiesUpdatedEvent(

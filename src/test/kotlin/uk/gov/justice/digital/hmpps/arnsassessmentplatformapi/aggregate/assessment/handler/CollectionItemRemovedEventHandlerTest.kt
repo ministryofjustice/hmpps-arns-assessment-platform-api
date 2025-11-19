@@ -9,13 +9,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import java.time.LocalDateTime
 import java.util.UUID
 
-class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<CollectionItemRemovedEvent, AssessmentState>() {
+class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<CollectionItemRemovedEvent>() {
   override val handler = CollectionItemRemovedEventHandler::class
   override val eventType = CollectionItemRemovedEvent::class
-  val aggregateUuid: UUID = UUID.randomUUID()
 
   override val scenarios = listOf(
-    Scenario.Executes<CollectionItemRemovedEvent, AssessmentState>("handles the event").apply {
+    Scenario.Executes<CollectionItemRemovedEvent>("handles the event").apply {
       val collectionUuid: UUID = UUID.randomUUID()
       val collectionItemUuid: UUID = UUID.randomUUID()
       val collectionItemRemovedEvent = eventEntityFor(
@@ -97,7 +96,7 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
         )
       }
     },
-    Scenario.Executes<CollectionItemRemovedEvent, AssessmentState>("handles when no timeline provided").apply {
+    Scenario.Executes<CollectionItemRemovedEvent>("handles when no timeline provided").apply {
       val collectionUuid: UUID = UUID.randomUUID()
       val collectionItemUuid: UUID = UUID.randomUUID()
       val collectionItemRemovedEvent = eventEntityFor(
@@ -170,7 +169,7 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
         )
       }
     },
-    Scenario.Throws<CollectionItemRemovedEvent, AssessmentState, Error>("throws when collection does not exist").apply {
+    Scenario.Throws<CollectionItemRemovedEvent, Error>("throws when collection does not exist").apply {
       events = listOf(
         eventEntityFor(
           CollectionItemRemovedEvent(

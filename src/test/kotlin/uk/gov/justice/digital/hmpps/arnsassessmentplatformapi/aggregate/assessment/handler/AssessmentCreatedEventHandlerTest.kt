@@ -6,15 +6,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
-import java.util.UUID
 
-class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCreatedEvent, AssessmentState>() {
+class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCreatedEvent>() {
   override val handler = AssessmentCreatedEventHandler::class
   override val eventType = AssessmentCreatedEvent::class
-  val aggregateUuid: UUID = UUID.randomUUID()
 
   override val scenarios = listOf(
-    Scenario.Executes<AssessmentCreatedEvent, AssessmentState>("handles the event").apply {
+    Scenario.Executes<AssessmentCreatedEvent>("handles the event").apply {
       events = listOf(
         eventEntityFor(
           AssessmentCreatedEvent(
@@ -58,7 +56,7 @@ class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCre
         )
       }
     },
-    Scenario.Executes<AssessmentCreatedEvent, AssessmentState>("handles when no timeline provided").apply {
+    Scenario.Executes<AssessmentCreatedEvent>("handles when no timeline provided").apply {
       events = listOf(
         eventEntityFor(
           AssessmentCreatedEvent(
