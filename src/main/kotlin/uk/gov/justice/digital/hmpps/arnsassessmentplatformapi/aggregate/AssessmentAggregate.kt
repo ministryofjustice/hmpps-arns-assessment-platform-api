@@ -26,6 +26,7 @@ class AssessmentAggregate : Aggregate<AssessmentAggregate> {
 
   override fun clone() = AssessmentAggregate().also { clone ->
     clone.properties.putAll(properties)
+    clone.deletedProperties.putAll(deletedProperties)
     clone.answers.putAll(answers)
     clone.deletedAnswers.putAll(deletedAnswers)
     clone.collections.addAll(collections)
