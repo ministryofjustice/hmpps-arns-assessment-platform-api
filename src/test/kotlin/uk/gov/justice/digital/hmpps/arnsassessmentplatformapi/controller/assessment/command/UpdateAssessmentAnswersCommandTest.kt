@@ -53,6 +53,10 @@ class UpdateAssessmentAnswersCommandTest(
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
       data = AssessmentAggregate().apply {
         formVersion = "1"
+        answers.putAll(mapOf(
+          "foo" to listOf("foo_value"),
+          "bar" to listOf("bar_value"),
+        ))
       },
     )
     aggregateRepository.save(aggregateEntity)
