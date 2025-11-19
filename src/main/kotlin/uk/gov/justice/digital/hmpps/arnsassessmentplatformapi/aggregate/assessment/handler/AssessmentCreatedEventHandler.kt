@@ -22,7 +22,7 @@ class AssessmentCreatedEventHandler(
     state.get().data.apply {
       formVersion = event.data.formVersion
       collaborators.add(event.user)
-      event.data.timeline?.item(event)?.run(timeline::add)
+      event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
     state.get().apply {

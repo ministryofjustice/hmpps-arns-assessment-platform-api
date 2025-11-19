@@ -22,7 +22,7 @@ class AssessmentPropertiesUpdatedEventHandler(
     updateProperties(state, event.data)
     state.get().data.apply {
       collaborators.add(event.user)
-      event.data.timeline?.item(event)?.run(timeline::add)
+      event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
     state.get().apply {
@@ -36,17 +36,20 @@ class AssessmentPropertiesUpdatedEventHandler(
 
   private fun updateProperties(state: AssessmentState, event: AssessmentPropertiesUpdatedEvent) {
     with(state.get().data) {
-      event.added.entries.map {
+      event.added.entries.forEach {
         properties.put(it.key, it.value)
         deletedProperties.remove(it.key)
       }
-      event.removed.map { fieldCode ->
-        properties[fieldCode]?.let { value ->
+      event.removed.forEach { fieldCode ->
+        val removedValue = properties[fieldCode]
+        if (removedValue != null) {
           properties.remove(fieldCode)
           deletedProperties.put(
             fieldCode,
-            value,
+            removedValue,
           )
+        } else {
+          throw Error("Property not found")
         }
       }
     }

@@ -10,50 +10,124 @@ import java.util.UUID
 
 class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<AssessmentPropertiesUpdatedEvent, AssessmentState>() {
   override val handler = AssessmentPropertiesUpdatedEventHandler::class
-
+  override val eventType = AssessmentPropertiesUpdatedEvent::class
   val aggregateUuid: UUID = UUID.randomUUID()
 
-  override val events = listOf(
-    eventEntityFor(
-      AssessmentPropertiesUpdatedEvent(
-        added = mapOf("foo" to listOf("foo_value")),
-        removed = listOf("bar"),
-        timeline = timeline,
-      ),
-    ),
+  override val scenarios = listOf(
+    Scenario.Executes<AssessmentPropertiesUpdatedEvent, AssessmentState>("handles the event").apply {
+      events = listOf(
+        eventEntityFor(
+          AssessmentPropertiesUpdatedEvent(
+            added = mapOf("foo" to listOf("foo_value")),
+            removed = listOf("bar"),
+            timeline = timeline,
+          ),
+        ),
+      )
+
+      initialState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+              properties.put("bar", listOf("value_to_remove"))
+            },
+            assessment = assessment,
+          ),
+        )
+      }
+
+      expectedState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            eventsTo = events.last().createdAt,
+            numberOfEventsApplied = 1,
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+              collaborators.add(user)
+              events.forEach { it.data.added.forEach { (key, value) -> properties.put(key, value) } }
+              events.flatMap { it.data.removed }.forEach { deletedProperties.put(it, listOf("value_to_remove")) }
+              timeline.add(TimelineItem("test", LocalDateTime.parse("2025-01-01T12:00:00"), mapOf("foo" to listOf("bar"))))
+            },
+          ),
+        )
+      }
+    },
+    Scenario.Executes<AssessmentPropertiesUpdatedEvent, AssessmentState>("handles when no timeline provided").apply {
+      events = listOf(
+        eventEntityFor(
+          AssessmentPropertiesUpdatedEvent(
+            added = mapOf("foo" to listOf("foo_value")),
+            removed = listOf("bar"),
+            timeline = null,
+          ),
+        ),
+      )
+
+      initialState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+              properties.put("bar", listOf("value_to_remove"))
+            },
+            assessment = assessment,
+          ),
+        )
+      }
+
+      expectedState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            eventsTo = events.last().createdAt,
+            numberOfEventsApplied = 1,
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+              collaborators.add(user)
+              events.forEach { it.data.added.forEach { (key, value) -> properties.put(key, value) } }
+              events.flatMap { it.data.removed }.forEach { deletedProperties.put(it, listOf("value_to_remove")) }
+            },
+          ),
+        )
+      }
+    },
+    Scenario.Throws<AssessmentPropertiesUpdatedEvent, AssessmentState, Error>("throws when the property to remove does no exist").apply {
+      events = listOf(
+        eventEntityFor(
+          AssessmentPropertiesUpdatedEvent(
+            added = mapOf(),
+            removed = listOf("bar"),
+            timeline = null,
+          ),
+        ),
+      )
+
+      initialState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+            },
+            assessment = assessment,
+          ),
+        )
+      }
+
+      expectedException = Error::class
+    },
   )
-
-  override val initialState = AssessmentState().also { state ->
-    state.aggregates.add(
-      AggregateEntity(
-        uuid = aggregateUuid,
-        eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-        data = AssessmentAggregate().apply {
-          formVersion = "1"
-          properties.put("bar", listOf("value_to_remove"))
-        },
-        assessment = assessment,
-      ),
-    )
-  }
-
-  override val expectedState = AssessmentState().also { state ->
-    state.aggregates.add(
-      AggregateEntity(
-        uuid = aggregateUuid,
-        updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-        eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-        eventsTo = events.last().createdAt,
-        numberOfEventsApplied = 1,
-        assessment = assessment,
-        data = AssessmentAggregate().apply {
-          formVersion = "1"
-          collaborators.add(user)
-          events.forEach { it.data.added.forEach { (key, value) -> properties.put(key, value) } }
-          events.flatMap { it.data.removed }.forEach { deletedProperties.put(it, listOf("value_to_remove")) }
-          timeline.add(TimelineItem("test", LocalDateTime.parse("2025-01-01T12:00:00"), mapOf("foo" to listOf("bar"))))
-        },
-      ),
-    )
-  }
 }

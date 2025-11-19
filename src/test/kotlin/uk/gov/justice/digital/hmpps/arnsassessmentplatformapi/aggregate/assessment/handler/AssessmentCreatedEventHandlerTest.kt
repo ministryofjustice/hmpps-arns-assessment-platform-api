@@ -10,45 +10,90 @@ import java.util.UUID
 
 class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCreatedEvent, AssessmentState>() {
   override val handler = AssessmentCreatedEventHandler::class
-
+  override val eventType = AssessmentCreatedEvent::class
   val aggregateUuid: UUID = UUID.randomUUID()
 
-  override val events = listOf(
-    eventEntityFor(
-      AssessmentCreatedEvent(
-        formVersion = "1",
-        properties = mutableMapOf(),
-        timeline = timeline,
-      ),
-    ),
+  override val scenarios = listOf(
+    Scenario.Executes<AssessmentCreatedEvent, AssessmentState>("handles the event").apply {
+      events = listOf(
+        eventEntityFor(
+          AssessmentCreatedEvent(
+            formVersion = "1",
+            properties = mutableMapOf(),
+            timeline = timeline,
+          ),
+        ),
+      )
+      initialState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            data = AssessmentAggregate(),
+            assessment = assessment,
+          ),
+        )
+      }
+      expectedState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            eventsTo = events.last().createdAt,
+            numberOfEventsApplied = 1,
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = events.last().data.formVersion
+              collaborators.add(user)
+              timeline.add(
+                TimelineItem(
+                  "test",
+                  LocalDateTime.parse("2025-01-01T12:00:00"),
+                  mapOf("foo" to listOf("bar")),
+                ),
+              )
+            },
+          ),
+        )
+      }
+    },
+    Scenario.Executes<AssessmentCreatedEvent, AssessmentState>("handles when no timeline provided").apply {
+      events = listOf(
+        eventEntityFor(
+          AssessmentCreatedEvent(
+            formVersion = "1",
+            properties = mutableMapOf(),
+            timeline = null,
+          ),
+        ),
+      )
+      initialState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            data = AssessmentAggregate(),
+            assessment = assessment,
+          ),
+        )
+      }
+      expectedState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            eventsTo = events.last().createdAt,
+            numberOfEventsApplied = 1,
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = events.last().data.formVersion
+              collaborators.add(user)
+            },
+          ),
+        )
+      }
+    },
   )
-
-  override val initialState = AssessmentState().also { state ->
-    state.aggregates.add(
-      AggregateEntity(
-        uuid = aggregateUuid,
-        eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-        data = AssessmentAggregate(),
-        assessment = assessment,
-      ),
-    )
-  }
-
-  override val expectedState = AssessmentState().also { state ->
-    state.aggregates.add(
-      AggregateEntity(
-        uuid = aggregateUuid,
-        updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-        eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-        eventsTo = events.last().createdAt,
-        numberOfEventsApplied = 1,
-        assessment = assessment,
-        data = AssessmentAggregate().apply {
-          formVersion = events.last().data.formVersion
-          collaborators.add(user)
-          timeline.add(TimelineItem("test", LocalDateTime.parse("2025-01-01T12:00:00"), mapOf("foo" to listOf("bar"))))
-        },
-      ),
-    )
-  }
 }

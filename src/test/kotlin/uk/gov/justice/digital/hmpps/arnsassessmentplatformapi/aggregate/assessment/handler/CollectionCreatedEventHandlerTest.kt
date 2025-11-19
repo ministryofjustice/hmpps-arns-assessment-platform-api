@@ -12,123 +12,181 @@ import java.util.UUID
 
 class CollectionCreatedEventHandlerTest : AbstractEventHandlerTest<CollectionCreatedEvent, AssessmentState>() {
   override val handler = CollectionCreatedEventHandler::class
-
+  override val eventType = CollectionCreatedEvent::class
   val aggregateUuid: UUID = UUID.randomUUID()
-  val newTopLevelCollectionEvent = eventEntityFor(
-    CollectionCreatedEvent(
-      collectionUuid = UUID.randomUUID(),
-      name = "NEW_TOP_LEVEL_COLLECTION",
-      parentCollectionItemUuid = null,
-      timeline = timeline,
-    ),
-  )
-  val newChildCollectionEvent = eventEntityFor(
-    CollectionCreatedEvent(
-      collectionUuid = UUID.randomUUID(),
-      name = "CHILD_LEVEL_COLLECTION",
-      parentCollectionItemUuid = UUID.randomUUID(),
-      timeline = timeline,
-    ),
-  )
 
-  override val events = listOf(newTopLevelCollectionEvent, newChildCollectionEvent)
+  override val scenarios = listOf(
+    Scenario.Executes<CollectionCreatedEvent, AssessmentState>("handles the event").apply {
+      val newTopLevelCollectionEvent = eventEntityFor(
+        CollectionCreatedEvent(
+          collectionUuid = UUID.randomUUID(),
+          name = "NEW_TOP_LEVEL_COLLECTION",
+          parentCollectionItemUuid = null,
+          timeline = timeline,
+        ),
+      )
+      val newChildCollectionEvent = eventEntityFor(
+        CollectionCreatedEvent(
+          collectionUuid = UUID.randomUUID(),
+          name = "CHILD_LEVEL_COLLECTION",
+          parentCollectionItemUuid = UUID.randomUUID(),
+          timeline = timeline,
+        ),
+      )
 
-  override val initialState = AssessmentState().also { state ->
-    state.aggregates.add(
-      AggregateEntity(
-        uuid = aggregateUuid,
-        eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-        assessment = assessment,
-        data = AssessmentAggregate().apply {
-          formVersion = "1"
-          collections.addAll(
-            listOf(
-              Collection(
-                uuid = UUID.randomUUID(),
-                createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                name = "TOP_LEVEL_COLLECTION",
-                items = mutableListOf(
-                  CollectionItem(
-                    uuid = newChildCollectionEvent.data.parentCollectionItemUuid!!,
+      events = listOf(newTopLevelCollectionEvent, newChildCollectionEvent)
+
+      initialState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+              collections.addAll(
+                listOf(
+                  Collection(
+                    uuid = UUID.randomUUID(),
                     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                    answers = mutableMapOf(),
-                    properties = mutableMapOf(),
-                    collections = mutableListOf(),
-                  ),
-                ),
-              ),
-            ),
-          )
-        },
-      ),
-    )
-  }
-
-  override val expectedState = AssessmentState().also { state ->
-    state.aggregates.add(
-      AggregateEntity(
-        uuid = aggregateUuid,
-        updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-        eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-        eventsTo = events.last().createdAt,
-        numberOfEventsApplied = 2,
-        assessment = assessment,
-        data = AssessmentAggregate().apply {
-          formVersion = "1"
-          collaborators.add(user)
-          collections.addAll(
-            listOf(
-              Collection(
-                uuid = initialState.aggregates.first().data.collections.first().uuid,
-                createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                name = "TOP_LEVEL_COLLECTION",
-                items = mutableListOf(
-                  CollectionItem(
-                    uuid = newChildCollectionEvent.data.parentCollectionItemUuid!!,
-                    createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                    updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                    answers = mutableMapOf(),
-                    properties = mutableMapOf(),
-                    collections = mutableListOf(
-                      Collection(
-                        uuid = newChildCollectionEvent.data.collectionUuid,
+                    name = "TOP_LEVEL_COLLECTION",
+                    items = mutableListOf(
+                      CollectionItem(
+                        uuid = newChildCollectionEvent.data.parentCollectionItemUuid!!,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        name = "CHILD_LEVEL_COLLECTION",
-                        items = mutableListOf(),
+                        answers = mutableMapOf(),
+                        properties = mutableMapOf(),
+                        collections = mutableListOf(),
                       ),
                     ),
                   ),
                 ),
-              ),
-              Collection(
-                uuid = newTopLevelCollectionEvent.data.collectionUuid,
-                createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                name = "NEW_TOP_LEVEL_COLLECTION",
-                items = mutableListOf(),
-              ),
-            ),
-          )
-          timeline.addAll(
-            listOf(
-              TimelineItem(
-                "test",
-                LocalDateTime.parse("2025-01-01T12:00:00"),
-                mapOf("foo" to listOf("bar")),
-              ),
-              TimelineItem(
-                "test",
-                LocalDateTime.parse("2025-01-01T12:00:00"),
-                mapOf("foo" to listOf("bar")),
-              ),
-            ),
-          )
-        },
-      ),
-    )
-  }
+              )
+            },
+          ),
+        )
+      }
+
+      expectedState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            eventsTo = events.last().createdAt,
+            numberOfEventsApplied = 2,
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+              collaborators.add(user)
+              collections.addAll(
+                listOf(
+                  Collection(
+                    uuid = initialState.aggregates.first().data.collections.first().uuid,
+                    createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                    updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                    name = "TOP_LEVEL_COLLECTION",
+                    items = mutableListOf(
+                      CollectionItem(
+                        uuid = newChildCollectionEvent.data.parentCollectionItemUuid!!,
+                        createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                        updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                        answers = mutableMapOf(),
+                        properties = mutableMapOf(),
+                        collections = mutableListOf(
+                          Collection(
+                            uuid = newChildCollectionEvent.data.collectionUuid,
+                            createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                            updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                            name = "CHILD_LEVEL_COLLECTION",
+                            items = mutableListOf(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Collection(
+                    uuid = newTopLevelCollectionEvent.data.collectionUuid,
+                    createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                    updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                    name = "NEW_TOP_LEVEL_COLLECTION",
+                    items = mutableListOf(),
+                  ),
+                ),
+              )
+              timeline.addAll(
+                listOf(
+                  TimelineItem(
+                    "test",
+                    LocalDateTime.parse("2025-01-01T12:00:00"),
+                    mapOf("foo" to listOf("bar")),
+                  ),
+                  TimelineItem(
+                    "test",
+                    LocalDateTime.parse("2025-01-01T12:00:00"),
+                    mapOf("foo" to listOf("bar")),
+                  ),
+                ),
+              )
+            },
+          ),
+        )
+      }
+    },
+    Scenario.Executes<CollectionCreatedEvent, AssessmentState>("handles when no timeline provided").apply {
+      events = listOf(
+        eventEntityFor(
+          CollectionCreatedEvent(
+            collectionUuid = UUID.randomUUID(),
+            name = "NEW_TOP_LEVEL_COLLECTION",
+            parentCollectionItemUuid = null,
+            timeline = null,
+          ),
+        ),
+      )
+
+      initialState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+            },
+          ),
+        )
+      }
+
+      expectedState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            eventsTo = events.last().createdAt,
+            numberOfEventsApplied = 1,
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+              collaborators.add(user)
+              collections.addAll(
+                listOf(
+                  Collection(
+                    uuid = events.first().data.collectionUuid,
+                    createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                    updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                    name = "NEW_TOP_LEVEL_COLLECTION",
+                    items = mutableListOf(),
+                  ),
+                ),
+              )
+            },
+          ),
+        )
+      }
+    },
+  )
 }

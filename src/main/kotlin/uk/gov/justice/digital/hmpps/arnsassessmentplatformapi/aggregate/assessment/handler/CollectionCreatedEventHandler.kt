@@ -31,14 +31,16 @@ class CollectionCreatedEventHandler(
 
     val aggregate = state.get()
 
-    val collections = event.data.parentCollectionItemUuid?.let {
-      aggregate.data.getCollectionItem(it).collections
-    } ?: aggregate.data.collections
+    val collections = if (event.data.parentCollectionItemUuid != null) {
+      aggregate.data.getCollectionItem(event.data.parentCollectionItemUuid).collections
+    } else {
+      aggregate.data.collections
+    }
 
     collections.add(collection)
     aggregate.data.apply {
       collaborators.add(event.user)
-      event.data.timeline?.item(event)?.run(timeline::add)
+      event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
     aggregate.apply {

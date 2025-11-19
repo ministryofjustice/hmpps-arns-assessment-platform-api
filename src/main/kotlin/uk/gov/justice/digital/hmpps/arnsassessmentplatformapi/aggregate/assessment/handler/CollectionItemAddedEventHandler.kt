@@ -33,13 +33,15 @@ class CollectionItemAddedEventHandler(
     val aggregate = state.get()
     val collection = aggregate.data.getCollection(event.data.collectionUuid)
 
-    event.data.index?.let { index ->
-      collection.items.add(index, collectionItem)
-    } ?: collection.items.add(collectionItem)
+    if (event.data.index != null) {
+      collection.items.add(event.data.index, collectionItem)
+    } else {
+      collection.items.add(collectionItem)
+    }
 
     aggregate.data.apply {
       collaborators.add(event.user)
-      event.data.timeline?.item(event)?.run(timeline::add)
+      event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
     aggregate.apply {

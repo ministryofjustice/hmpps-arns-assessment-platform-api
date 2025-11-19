@@ -11,86 +11,189 @@ import java.util.UUID
 
 class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<CollectionItemRemovedEvent, AssessmentState>() {
   override val handler = CollectionItemRemovedEventHandler::class
-
+  override val eventType = CollectionItemRemovedEvent::class
   val aggregateUuid: UUID = UUID.randomUUID()
-  val collectionUuid: UUID = UUID.randomUUID()
-  val collectionItemUuid: UUID = UUID.randomUUID()
-  val collectionItemRemovedEvent = eventEntityFor(
-    CollectionItemRemovedEvent(
-      collectionItemUuid = collectionItemUuid,
-      timeline = timeline,
-    ),
-  )
 
-  override val events = listOf(collectionItemRemovedEvent)
+  override val scenarios = listOf(
+    Scenario.Executes<CollectionItemRemovedEvent, AssessmentState>("handles the event").apply {
+      val collectionUuid: UUID = UUID.randomUUID()
+      val collectionItemUuid: UUID = UUID.randomUUID()
+      val collectionItemRemovedEvent = eventEntityFor(
+        CollectionItemRemovedEvent(
+          collectionItemUuid = collectionItemUuid,
+          timeline = timeline,
+        ),
+      )
 
-  override val initialState = AssessmentState().also { state ->
-    state.aggregates.add(
-      AggregateEntity(
-        uuid = aggregateUuid,
-        eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-        assessment = assessment,
-        data = AssessmentAggregate().apply {
-          formVersion = "1"
-          collections.addAll(
-            listOf(
-              uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection(
-                uuid = collectionUuid,
-                createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                name = "TOP_LEVEL_COLLECTION",
-                items = mutableListOf(
-                  CollectionItem(
-                    uuid = collectionItemUuid,
+      events = listOf(collectionItemRemovedEvent)
+
+      initialState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+              collections.addAll(
+                listOf(
+                  uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection(
+                    uuid = collectionUuid,
                     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                    answers = mutableMapOf("baz" to listOf("baz_value")),
-                    properties = mutableMapOf("bar" to listOf("bar_value")),
-                    collections = mutableListOf(),
+                    name = "TOP_LEVEL_COLLECTION",
+                    items = mutableListOf(
+                      CollectionItem(
+                        uuid = collectionItemUuid,
+                        createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                        updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                        answers = mutableMapOf("baz" to listOf("baz_value")),
+                        properties = mutableMapOf("bar" to listOf("bar_value")),
+                        collections = mutableListOf(),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          )
-        },
-      ),
-    )
-  }
+              )
+            },
+          ),
+        )
+      }
 
-  override val expectedState = AssessmentState().also { state ->
-    state.aggregates.add(
-      AggregateEntity(
-        uuid = aggregateUuid,
-        updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-        eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-        eventsTo = events.last().createdAt,
-        numberOfEventsApplied = 1,
-        assessment = assessment,
-        data = AssessmentAggregate().apply {
-          formVersion = "1"
-          collaborators.add(user)
-          collections.addAll(
-            listOf(
-              uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection(
-                uuid = collectionUuid,
-                createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                name = "TOP_LEVEL_COLLECTION",
-                items = mutableListOf(),
-              ),
-            ),
-          )
-          timeline.addAll(
-            listOf(
-              TimelineItem(
-                "test",
-                LocalDateTime.parse("2025-01-01T12:00:00"),
-                mapOf("foo" to listOf("bar")),
-              ),
-            ),
-          )
-        },
-      ),
-    )
-  }
+      expectedState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            eventsTo = events.last().createdAt,
+            numberOfEventsApplied = 1,
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+              collaborators.add(user)
+              collections.addAll(
+                listOf(
+                  uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection(
+                    uuid = collectionUuid,
+                    createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                    updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                    name = "TOP_LEVEL_COLLECTION",
+                    items = mutableListOf(),
+                  ),
+                ),
+              )
+              timeline.addAll(
+                listOf(
+                  TimelineItem(
+                    "test",
+                    LocalDateTime.parse("2025-01-01T12:00:00"),
+                    mapOf("foo" to listOf("bar")),
+                  ),
+                ),
+              )
+            },
+          ),
+        )
+      }
+    },
+    Scenario.Executes<CollectionItemRemovedEvent, AssessmentState>("handles when no timeline provided").apply {
+      val collectionUuid: UUID = UUID.randomUUID()
+      val collectionItemUuid: UUID = UUID.randomUUID()
+      val collectionItemRemovedEvent = eventEntityFor(
+        CollectionItemRemovedEvent(
+          collectionItemUuid = collectionItemUuid,
+          timeline = null,
+        ),
+      )
+
+      events = listOf(collectionItemRemovedEvent)
+
+      initialState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+              collections.addAll(
+                listOf(
+                  uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection(
+                    uuid = collectionUuid,
+                    createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                    updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                    name = "TOP_LEVEL_COLLECTION",
+                    items = mutableListOf(
+                      CollectionItem(
+                        uuid = collectionItemUuid,
+                        createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                        updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                        answers = mutableMapOf("baz" to listOf("baz_value")),
+                        properties = mutableMapOf("bar" to listOf("bar_value")),
+                        collections = mutableListOf(),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            },
+          ),
+        )
+      }
+
+      expectedState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            eventsTo = events.last().createdAt,
+            numberOfEventsApplied = 1,
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+              collaborators.add(user)
+              collections.addAll(
+                listOf(
+                  uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection(
+                    uuid = collectionUuid,
+                    createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                    updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+                    name = "TOP_LEVEL_COLLECTION",
+                    items = mutableListOf(),
+                  ),
+                ),
+              )
+            },
+          ),
+        )
+      }
+    },
+    Scenario.Throws<CollectionItemRemovedEvent, AssessmentState, Error>("throws when collection does not exist").apply {
+      events = listOf(
+        eventEntityFor(
+          CollectionItemRemovedEvent(
+            collectionItemUuid = UUID.randomUUID(),
+            timeline = null,
+          ),
+        ),
+      )
+
+      initialState = AssessmentState().also { state ->
+        state.aggregates.add(
+          AggregateEntity(
+            uuid = aggregateUuid,
+            eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            assessment = assessment,
+            data = AssessmentAggregate().apply {
+              formVersion = "1"
+            },
+          ),
+        )
+      }
+
+      expectedException = Error::class
+    },
+  )
 }

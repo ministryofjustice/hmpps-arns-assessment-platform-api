@@ -22,7 +22,7 @@ class AssessmentAnswersUpdatedEventHandler(
     updateAnswers(state, event.data.added, event.data.removed)
     state.get().data.apply {
       collaborators.add(event.user)
-      event.data.timeline?.item(event)?.run(timeline::add)
+      event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
     state.get().apply {
@@ -37,17 +37,20 @@ class AssessmentAnswersUpdatedEventHandler(
   companion object {
     fun updateAnswers(state: AssessmentState, added: Map<String, List<String>>, removed: List<String>) {
       with(state.get().data) {
-        added.entries.map {
+        added.entries.forEach {
           answers.put(it.key, it.value)
           deletedAnswers.remove(it.key)
         }
-        removed.map { fieldCode ->
-          answers[fieldCode]?.let { value ->
+        removed.forEach { fieldCode ->
+          val removedValue = answers[fieldCode]
+          if (removedValue != null) {
             answers.remove(fieldCode)
             deletedAnswers.put(
               fieldCode,
-              value,
+              removedValue,
             )
+          } else {
+            throw Error("Answer not found")
           }
         }
       }
