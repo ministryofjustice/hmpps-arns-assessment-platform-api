@@ -17,7 +17,7 @@ data class Collection(
     items.any { item -> item.collections.any { it.removeItem(id) } }
 
   fun reorderItem(id: UUID, targetIndex: Int): Boolean = items.indexOfFirst { it.uuid == id }.takeIf { it != -1 }?.let {
-    items.add(targetIndex.coerceIn(0, items.size), items.removeAt(it))
+    items.add(targetIndex.coerceIn(0, items.size - 1), items.removeAt(it))
     true
   } ?: items.any { item -> item.collections.any { it.reorderItem(id, targetIndex) } }
 }

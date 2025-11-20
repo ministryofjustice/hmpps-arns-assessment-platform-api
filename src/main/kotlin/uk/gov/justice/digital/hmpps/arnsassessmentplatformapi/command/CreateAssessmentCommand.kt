@@ -9,7 +9,7 @@ data class CreateAssessmentCommand(
   override val user: User,
   val formVersion: FormVersion,
   val properties: Map<String, List<String>> = emptyMap(),
-  override val timeline: CommandTimeline? = null,
+  override val timeline: Timeline? = null,
 ) : RequestableCommand {
   @JsonIgnore
   override val assessmentUuid: UUID = UUID.randomUUID()

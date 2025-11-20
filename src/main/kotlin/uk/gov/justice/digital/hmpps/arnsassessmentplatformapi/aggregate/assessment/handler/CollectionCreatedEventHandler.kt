@@ -4,10 +4,9 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import java.time.Clock
-import java.time.LocalDateTime
 
 @Component
 class CollectionCreatedEventHandler(
@@ -32,20 +31,21 @@ class CollectionCreatedEventHandler(
 
     val aggregate = state.get()
 
-    val collections = event.data.parentCollectionItemUuid?.let {
-      aggregate.data.getCollectionItem(it).collections
-    } ?: aggregate.data.collections
+    val collections = if (event.data.parentCollectionItemUuid != null) {
+      aggregate.data.getCollectionItem(event.data.parentCollectionItemUuid).collections
+    } else {
+      aggregate.data.collections
+    }
 
     collections.add(collection)
     aggregate.data.apply {
-      updatedAt = event.createdAt
       collaborators.add(event.user)
-      event.data.timeline?.run(timeline::add)
+      event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
     aggregate.apply {
       eventsTo = event.createdAt
-      updatedAt = LocalDateTime.now(clock)
+      updatedAt = clock.now()
       numberOfEventsApplied += 1
     }
 

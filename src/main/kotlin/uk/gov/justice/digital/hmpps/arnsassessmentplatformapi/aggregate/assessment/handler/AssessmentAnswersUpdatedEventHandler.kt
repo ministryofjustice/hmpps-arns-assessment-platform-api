@@ -3,10 +3,9 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import java.time.Clock
-import java.time.LocalDateTime
 
 @Component
 class AssessmentAnswersUpdatedEventHandler(
@@ -23,13 +22,12 @@ class AssessmentAnswersUpdatedEventHandler(
     updateAnswers(state, event.data.added, event.data.removed)
     state.get().data.apply {
       collaborators.add(event.user)
-      event.data.timeline?.run(timeline::add)
-      updatedAt = event.createdAt
+      event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
     state.get().apply {
       eventsTo = event.createdAt
-      updatedAt = LocalDateTime.now(clock)
+      updatedAt = clock.now()
       numberOfEventsApplied += 1
     }
 
@@ -39,17 +37,20 @@ class AssessmentAnswersUpdatedEventHandler(
   companion object {
     fun updateAnswers(state: AssessmentState, added: Map<String, List<String>>, removed: List<String>) {
       with(state.get().data) {
-        added.entries.map {
+        added.entries.forEach {
           answers.put(it.key, it.value)
           deletedAnswers.remove(it.key)
         }
-        removed.map { fieldCode ->
-          answers[fieldCode]?.let { value ->
+        removed.forEach { fieldCode ->
+          val removedValue = answers[fieldCode]
+          if (removedValue != null) {
             answers.remove(fieldCode)
             deletedAnswers.put(
               fieldCode,
-              value,
+              removedValue,
             )
+          } else {
+            throw Error("Answer not found")
           }
         }
       }
