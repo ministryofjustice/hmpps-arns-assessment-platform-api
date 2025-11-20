@@ -65,6 +65,6 @@ abstract class AbstractQueryHandlerTest {
 
   fun timestampProvider() = listOf(
     Arguments.of(null),
-    Arguments.of(LocalDateTime.parse("2020-06-01T10:42:43"))
+    Arguments.of(LocalDateTime.parse("2020-06-01T10:42:43")),
   )
 }

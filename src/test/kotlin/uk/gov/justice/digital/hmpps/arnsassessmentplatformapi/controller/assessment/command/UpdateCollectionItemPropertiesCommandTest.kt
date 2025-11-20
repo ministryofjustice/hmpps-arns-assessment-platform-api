@@ -50,7 +50,7 @@ class UpdateCollectionItemPropertiesCommandTest(
   }
 
   @Test
-  fun `it updates the answers in a collection item`() {
+  fun `it updates the properties in a collection item`() {
     val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
     assessmentRepository.save(assessmentEntity)
 

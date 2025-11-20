@@ -31,7 +31,7 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
             updatedAt = LocalDateTime.parse("2020-07-01T10:42:43"),
             name = "TEST_COLLECTION",
             items = mutableListOf(),
-          )
+          ),
         )
         collaborators.add(user)
       },

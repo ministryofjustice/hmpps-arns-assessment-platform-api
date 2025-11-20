@@ -43,7 +43,7 @@ class UpdateFormVersionCommandTest(
   }
 
   @Test
-  fun `it executes commands for assessments`() {
+  fun `it updates the form version for an assessment`() {
     val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
     assessmentRepository.save(assessmentEntity)
     val aggregateEntity = AggregateEntity(
