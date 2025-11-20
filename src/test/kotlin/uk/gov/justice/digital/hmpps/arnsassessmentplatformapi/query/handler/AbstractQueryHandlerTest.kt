@@ -7,6 +7,7 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.provider.Arguments
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
@@ -61,6 +62,31 @@ abstract class AbstractQueryHandlerTest {
     verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
 
     assertThat(result).isEqualTo(expectedResult)
+  }
+
+  fun testThrows(query: RequestableQuery, aggregate: AggregateEntity<AssessmentAggregate>, expectedError: Error) {
+    every { assessmentService.findByUuid(assessment.uuid) } returns assessment
+
+    val state: AssessmentState = mockk()
+    every { state.get() } returns aggregate
+    every { stateProvider.fetchOrCreateState(assessment, query.timestamp) } returns state
+    every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
+
+    val handlerInstance = handler.primaryConstructor!!.call(
+      assessmentService,
+      stateService,
+    )
+
+    assertThat(handlerInstance.type).isEqualTo(query::class)
+
+    val error = assertThrows<Error> { handlerInstance.execute(query) }
+
+    verify(exactly = 1) { assessmentService.findByUuid(assessment.uuid) }
+    verify(exactly = 1) { state.get() }
+    verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, query.timestamp) }
+    verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
+
+    assertThat(error.message).isEqualTo(expectedError.message)
   }
 
   fun timestampProvider() = listOf(

@@ -23,8 +23,14 @@ class CollectionItemQueryHandler(
 
     val collectionItem = state.get().data.getCollectionItem(query.collectionItemUuid)
 
+    val truncatedCollectionItem = when {
+      query.depth == -1 -> collectionItem
+      query.depth >= 0 -> truncateCollectionItem(collectionItem, query.depth)
+      else -> throw Error("Invalid collection item depth ${query.depth}")
+    }
+
     return CollectionItemQueryResult(
-      collectionItem = truncateCollectionItem(collectionItem, query.depth),
+      collectionItem = truncatedCollectionItem,
     )
   }
 
