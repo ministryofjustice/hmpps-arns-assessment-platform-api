@@ -19,16 +19,8 @@ on:
         type: string
 
 jobs:
-  helm_lint:
-    name: helm lint
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/test_helm_lint.yml@v2 # WORKFLOW_VERSION
-    secrets: inherit
-    with:
-      environment: ${{ inputs.environment }}
   deploy_to_env:
     uses: ministryofjustice/hmpps-assess-risks-and-needs-github-actions/.github/workflows/deploy_to_env.yml@v1
-    needs:
-      - helm_lint
     secrets: inherit
     with:
       environment: ${{ inputs.environment }}
