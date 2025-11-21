@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.CollectionItemQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.exception.CollectionDepthOutOfBoundsException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.CollectionItemQueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
@@ -26,7 +27,7 @@ class CollectionItemQueryHandler(
     val truncatedCollectionItem = when {
       query.depth == -1 -> collectionItem
       query.depth >= 0 -> truncateCollectionItem(collectionItem, query.depth)
-      else -> throw Error("Invalid collection item depth ${query.depth}")
+      else -> throw CollectionDepthOutOfBoundsException(query.depth, query.collectionItemUuid)
     }
 
     return CollectionItemQueryResult(

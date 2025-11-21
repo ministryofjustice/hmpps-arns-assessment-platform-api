@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.PropertyNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -35,21 +36,21 @@ class AssessmentPropertiesUpdatedEventHandler(
   }
 
   private fun updateProperties(state: AssessmentState, event: AssessmentPropertiesUpdatedEvent) {
-    with(state.get().data) {
+    with(state.get()) {
       event.added.entries.forEach {
-        properties.put(it.key, it.value)
-        deletedProperties.remove(it.key)
+        data.properties.put(it.key, it.value)
+        data.deletedProperties.remove(it.key)
       }
-      event.removed.forEach { fieldCode ->
-        val removedValue = properties[fieldCode]
+      event.removed.forEach { propertyName ->
+        val removedValue = data.properties[propertyName]
         if (removedValue != null) {
-          properties.remove(fieldCode)
-          deletedProperties.put(
-            fieldCode,
+          data.properties.remove(propertyName)
+          data.deletedProperties.put(
+            propertyName,
             removedValue,
           )
         } else {
-          throw Error("Property not found")
+          throw PropertyNotFoundException(propertyName, uuid)
         }
       }
     }

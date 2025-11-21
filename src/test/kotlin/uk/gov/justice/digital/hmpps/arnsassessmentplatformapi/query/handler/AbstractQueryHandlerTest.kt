@@ -11,6 +11,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.provider.Arguments
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
@@ -64,7 +65,7 @@ abstract class AbstractQueryHandlerTest {
     assertThat(result).isEqualTo(expectedResult)
   }
 
-  fun testThrows(query: RequestableQuery, aggregate: AggregateEntity<AssessmentAggregate>, expectedError: Error) {
+  fun testThrows(query: RequestableQuery, aggregate: AggregateEntity<AssessmentAggregate>, expectedError: AssessmentPlatformException) {
     every { assessmentService.findByUuid(assessment.uuid) } returns assessment
 
     val state: AssessmentState = mockk()
@@ -79,7 +80,7 @@ abstract class AbstractQueryHandlerTest {
 
     assertThat(handlerInstance.type).isEqualTo(query::class)
 
-    val error = assertThrows<Error> { handlerInstance.execute(query) }
+    val error = assertThrows<AssessmentPlatformException> { handlerInstance.execute(query) }
 
     verify(exactly = 1) { assessmentService.findByUuid(assessment.uuid) }
     verify(exactly = 1) { state.get() }

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.AnswerNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -36,21 +37,21 @@ class AssessmentAnswersUpdatedEventHandler(
 
   companion object {
     fun updateAnswers(state: AssessmentState, added: Map<String, List<String>>, removed: List<String>) {
-      with(state.get().data) {
+      with(state.get()) {
         added.entries.forEach {
-          answers.put(it.key, it.value)
-          deletedAnswers.remove(it.key)
+          data.answers.put(it.key, it.value)
+          data.deletedAnswers.remove(it.key)
         }
         removed.forEach { fieldCode ->
-          val removedValue = answers[fieldCode]
+          val removedValue = data.answers[fieldCode]
           if (removedValue != null) {
-            answers.remove(fieldCode)
-            deletedAnswers.put(
+            data.answers.remove(fieldCode)
+            data.deletedAnswers.put(
               fieldCode,
               removedValue,
             )
           } else {
-            throw Error("Answer not found")
+            throw AnswerNotFoundException(fieldCode, uuid)
           }
         }
       }
