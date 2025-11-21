@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AggregateTypeNotFoundException
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
@@ -34,7 +35,7 @@ class StateService(
   ) {
     fun createState(aggregateEntity: AggregateEntity<A>): AggregateState<A> = when (type) {
       AssessmentAggregate::class -> AssessmentState(aggregateEntity as AggregateEntity<AssessmentAggregate>) as AggregateState<A>
-      else -> throw Error("Unexpected aggregate type : $type")
+      else -> throw AggregateTypeNotFoundException(type.simpleName ?: "Unknown")
     }
 
     fun blankState(assessment: AssessmentEntity): AggregateState<A> = AggregateEntity(

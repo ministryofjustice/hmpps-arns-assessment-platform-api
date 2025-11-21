@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.AnswerNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
@@ -103,7 +104,7 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
         )
       }
     },
-    Scenario.Throws<AssessmentAnswersUpdatedEvent, Error>("throws when answer to remove does not exist").apply {
+    Scenario.Throws<AssessmentAnswersUpdatedEvent, AnswerNotFoundException>("throws when answer to remove does not exist").apply {
       events = listOf(
         eventEntityFor(
           AssessmentAnswersUpdatedEvent(
@@ -127,7 +128,7 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
         )
       }
 
-      expectedException = Error::class
+      expectedException = AnswerNotFoundException::class
     },
   )
 }

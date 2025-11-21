@@ -18,6 +18,5 @@ class AssessmentState(
       sorted.last().takeIf { it.numberOfEventsApplied < 50 }
         ?: sorted.last().clone().also { aggregates.add(it) }
     }
-
     )
 }

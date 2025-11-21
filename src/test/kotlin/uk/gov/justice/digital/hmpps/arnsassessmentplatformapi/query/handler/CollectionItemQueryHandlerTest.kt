@@ -3,10 +3,12 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.CollectionItemQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.exception.CollectionDepthOutOfBoundsException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.CollectionItemQueryResult
 import java.time.LocalDateTime
 import java.util.UUID
@@ -235,7 +237,7 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
       timestamp = timestamp,
     )
 
-    testThrows(query, aggregate, Error("Collection item ID ${query.collectionItemUuid} does not exist"))
+    testThrows(query, aggregate, CollectionItemNotFoundException(query.collectionItemUuid))
   }
 
   @ParameterizedTest
@@ -249,6 +251,6 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
       timestamp = timestamp,
     )
 
-    testThrows(query, aggregate, Error("Invalid collection item depth ${query.depth}"))
+    testThrows(query, aggregate, CollectionDepthOutOfBoundsException(query.depth, query.collectionItemUuid))
   }
 }
