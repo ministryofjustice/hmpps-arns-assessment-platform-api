@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemRemovedEvent
@@ -169,7 +170,7 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
         )
       }
     },
-    Scenario.Throws<CollectionItemRemovedEvent, Error>("throws when collection does not exist").apply {
+    Scenario.Throws<CollectionItemRemovedEvent, CollectionItemNotFoundException>("throws when collection does not exist").apply {
       events = listOf(
         eventEntityFor(
           CollectionItemRemovedEvent(
@@ -192,7 +193,7 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
         )
       }
 
-      expectedException = Error::class
+      expectedException = CollectionItemNotFoundException::class
     },
   )
 }

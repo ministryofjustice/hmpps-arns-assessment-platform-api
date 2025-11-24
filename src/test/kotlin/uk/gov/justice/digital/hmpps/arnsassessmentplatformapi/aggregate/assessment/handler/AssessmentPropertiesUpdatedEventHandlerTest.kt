@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.PropertyNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
@@ -101,7 +102,7 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
         )
       }
     },
-    Scenario.Throws<AssessmentPropertiesUpdatedEvent, Error>("throws when the property to remove does no exist").apply {
+    Scenario.Throws<AssessmentPropertiesUpdatedEvent, PropertyNotFoundException>("throws when the property to remove does no exist").apply {
       events = listOf(
         eventEntityFor(
           AssessmentPropertiesUpdatedEvent(
@@ -125,7 +126,7 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
         )
       }
 
-      expectedException = Error::class
+      expectedException = PropertyNotFoundException::class
     },
   )
 }
