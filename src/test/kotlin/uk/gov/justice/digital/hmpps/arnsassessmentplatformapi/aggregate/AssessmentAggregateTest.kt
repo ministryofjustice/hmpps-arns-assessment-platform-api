@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionItemNotFoundException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
@@ -186,11 +188,11 @@ class AssessmentAggregateTest {
         collections.add(existingCollection)
       }
 
-      val error = assertThrows(Error::class.java) {
+      val error = assertThrows(CollectionNotFoundException::class.java) {
         aggregate.getCollection(missingCollectionUuid)
       }
 
-      assertTrue(error.message!!.contains("Collection ID $missingCollectionUuid does not exist"))
+      assertTrue(error.developerMessage.contains(missingCollectionUuid.toString()))
     }
 
     @Test
@@ -200,11 +202,11 @@ class AssessmentAggregateTest {
       }
       val collectionUuid = UUID.randomUUID()
 
-      val error = assertThrows(Error::class.java) {
+      val error = assertThrows(CollectionNotFoundException::class.java) {
         aggregate.getCollection(collectionUuid)
       }
 
-      assertTrue(error.message!!.contains("Collection ID $collectionUuid does not exist"))
+      assertTrue(error.developerMessage.contains(collectionUuid.toString()))
     }
   }
 
@@ -266,11 +268,11 @@ class AssessmentAggregateTest {
         collections.add(collection)
       }
 
-      val error = assertThrows(Error::class.java) {
+      val error = assertThrows(CollectionItemNotFoundException::class.java) {
         aggregate.getCollectionItem(missingItemUuid)
       }
 
-      assertTrue(error.message!!.contains("Collection item ID $missingItemUuid does not exist"))
+      assertTrue(error.developerMessage.contains(missingItemUuid.toString()))
     }
 
     @Test
@@ -280,11 +282,11 @@ class AssessmentAggregateTest {
       }
       val itemUuid = UUID.randomUUID()
 
-      val error = assertThrows(Error::class.java) {
+      val error = assertThrows(CollectionItemNotFoundException::class.java) {
         aggregate.getCollectionItem(itemUuid)
       }
 
-      assertTrue(error.message!!.contains("Collection item ID $itemUuid does not exist"))
+      assertTrue(error.developerMessage.contains(itemUuid.toString()))
     }
   }
 }
