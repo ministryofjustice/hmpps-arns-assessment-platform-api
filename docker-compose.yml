@@ -24,7 +24,7 @@ services:
       - localstack
 
   postgres:
-    image: postgres:16
+    image: postgres:18
     user: postgres
     restart: always
     networks:
@@ -53,7 +53,7 @@ services:
       - ./docker/scripts/postgres/primary-init.sql:/docker-entrypoint-initdb.d/00_init.sql
 
   postgres_replica:
-    image: postgres:16
+    image: postgres:18
     user: postgres
     restart: always
     networks:
