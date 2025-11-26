@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 
 @Aspect
 @Component
-class ReadOnlyAspect: Ordered {
+class ReadOnlyAspect : Ordered {
 
   override fun getOrder(): Int {
     val base = Transactional::class.java.getAnnotation(Order::class.java)?.value ?: 0
