@@ -35,13 +35,13 @@ class ReadHikariProperties : HikariConfig()
 class DataSourceConfig {
 
   @Bean("writeDataSource")
-  @Primary
   fun writeDataSource(props: WriteProperties, hikariProps: WriteHikariProperties) = dataSource(props, hikariProps)
 
   @Bean("readDataSource")
   fun readDataSource(props: ReadProperties, hikariProps: ReadHikariProperties) = dataSource(props, hikariProps)
 
   @Bean
+  @Primary
   fun routingDataSource(
     @Qualifier("writeDataSource") writeDataSource: DataSource,
     @Qualifier("readDataSource") readDataSource: DataSource,
