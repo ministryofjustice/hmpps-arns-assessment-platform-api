@@ -14,7 +14,9 @@ class AssessmentState(
   }
 
   fun get(): AggregateEntity<AssessmentAggregate> = (
-    aggregates.last().takeIf { it.numberOfEventsApplied < 50 }
-      ?: aggregates.last().clone().also { aggregates.add(it) }
+    aggregates.sortedBy { it.eventsTo }.let { sorted ->
+      sorted.last().takeIf { it.numberOfEventsApplied < 50 }
+        ?: sorted.last().clone().also { aggregates.add(it) }
+    }
     )
 }

@@ -9,18 +9,14 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
-import java.time.Clock
-import java.time.LocalDateTime
 
 @Component
-class RollbackAnswersCommandHandler(
+class RollbackAssessmentAnswersCommandHandler(
   private val assessmentService: AssessmentService,
-  private val stateService: StateService,
   private val eventBus: EventBus,
-  private val clock: Clock,
   private val eventService: EventService,
+  private val stateService: StateService,
 ) : CommandHandler<RollBackAssessmentAnswersCommand> {
-  private fun now() = LocalDateTime.now(clock)
   override val type = RollBackAssessmentAnswersCommand::class
   override fun handle(command: RollBackAssessmentAnswersCommand): CommandSuccessCommandResult {
     val event = with(command) {
@@ -29,7 +25,7 @@ class RollbackAnswersCommandHandler(
         assessment = assessmentService.findByUuid(assessmentUuid),
         data = AssessmentAnswersRolledBackEvent(
           rolledBackTo = command.pointInTime,
-          timeline = timeline?.into(),
+          timeline = timeline,
         ),
       )
     }

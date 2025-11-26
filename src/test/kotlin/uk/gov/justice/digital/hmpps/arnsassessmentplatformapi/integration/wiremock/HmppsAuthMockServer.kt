@@ -11,7 +11,7 @@ import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
-import java.time.LocalDateTime
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import java.time.ZoneOffset
 
 class HmppsAuthApiExtension :
@@ -52,7 +52,7 @@ class HmppsAuthMockServer : WireMockServer(WIREMOCK_PORT) {
                 {
                   "token_type": "bearer",
                   "access_token": "ABCDE",
-                  "expires_in": ${LocalDateTime.now().plusHours(2).toEpochSecond(ZoneOffset.UTC)}
+                  "expires_in": ${Clock.now().plusHours(2).toEpochSecond(ZoneOffset.UTC)}
                 }
               """.trimIndent(),
             ),
