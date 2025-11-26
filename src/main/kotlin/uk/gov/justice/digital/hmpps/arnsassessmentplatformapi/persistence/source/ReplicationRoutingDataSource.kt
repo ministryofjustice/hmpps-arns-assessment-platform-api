@@ -3,5 +3,5 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.sourc
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource
 
 class ReplicationRoutingDataSource : AbstractRoutingDataSource() {
-  override fun determineCurrentLookupKey(): Any = DataSourceContextHolder.get()
+  public override fun determineCurrentLookupKey(): Any = DataSourceContextHolder.get()
 }
