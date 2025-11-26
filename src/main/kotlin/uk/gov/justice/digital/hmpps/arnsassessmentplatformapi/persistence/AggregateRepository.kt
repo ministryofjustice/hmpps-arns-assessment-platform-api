@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
 import java.util.UUID
@@ -41,6 +42,6 @@ interface AggregateRepository : JpaRepository<AggregateEntity<*>, Long> {
   fun findByAssessmentAndTypeOnExactDate(
     @Param("assessmentUuid") assessmentUuid: UUID,
     @Param("aggregateType") aggregateType: String,
-    @Param("beforeDate") beforeDate: LocalDateTime = LocalDateTime.now(),
+    @Param("beforeDate") beforeDate: LocalDateTime = Clock.now(),
   ): AggregateEntity<*>?
 }

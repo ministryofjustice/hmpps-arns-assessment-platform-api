@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import java.util.UUID
 
 data class CollectionItemReorderedEvent(
   val collectionItemUuid: UUID,
   val index: Int,
-  override val timeline: TimelineItem?,
+  override val timeline: Timeline?,
 ) : Event

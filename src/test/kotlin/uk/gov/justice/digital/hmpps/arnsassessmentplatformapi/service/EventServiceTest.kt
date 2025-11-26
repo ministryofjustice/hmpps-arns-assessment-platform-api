@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -26,7 +27,7 @@ class EventServiceTest {
     EventEntity(
       user = user,
       assessment = assessment,
-      data = AssessmentCreatedEvent(),
+      data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap(), timeline = null),
     ),
     EventEntity(
       user = user,
@@ -34,6 +35,7 @@ class EventServiceTest {
       data = AssessmentAnswersUpdatedEvent(
         added = mapOf("foo" to listOf("foo_value")),
         removed = emptyList(),
+        timeline = null,
       ),
     ),
   )
@@ -44,7 +46,7 @@ class EventServiceTest {
     fun `it returns all events for an assessment`() {
       every { eventRepository.findAllByAssessmentUuid(assessment.uuid) } returns events
 
-      val result = service.findAllByAssessmentUuid(assessment.uuid)
+      val result = service.findAll(assessment.uuid)
       assertThat(result).isEqualTo(events)
     }
 
@@ -52,7 +54,7 @@ class EventServiceTest {
     fun `it returns empty when no events found`() {
       every { eventRepository.findAllByAssessmentUuid(assessment.uuid) } returns emptyList()
 
-      val result = service.findAllByAssessmentUuid(assessment.uuid)
+      val result = service.findAll(assessment.uuid)
       assertThat(result).isEmpty()
     }
   }
@@ -62,18 +64,18 @@ class EventServiceTest {
     @Test
     fun `it returns all events for an assessment before a provided timestamp`() {
       val pointInTime = LocalDateTime.parse("2025-01-01T12:00:00")
-      every { eventRepository.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, pointInTime) } returns events
+      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessment.uuid, pointInTime) } returns events
 
-      val result = service.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, pointInTime)
+      val result = service.findAllForPointInTime(assessment.uuid, pointInTime)
       assertThat(result).isEqualTo(events)
     }
 
     @Test
     fun `it returns empty when no events found`() {
       val pointInTime = LocalDateTime.parse("2025-01-01T12:00:00")
-      every { eventRepository.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, pointInTime) } returns emptyList()
+      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessment.uuid, pointInTime) } returns emptyList()
 
-      val result = service.findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, pointInTime)
+      val result = service.findAllForPointInTime(assessment.uuid, pointInTime)
       assertThat(result).isEmpty()
     }
   }
@@ -82,10 +84,10 @@ class EventServiceTest {
   inner class SaveAll {
     @Test
     fun `it saves events`() {
-      every { eventRepository.saveAll(any<List<EventEntity>>()) } answers { firstArg() }
+      every { eventRepository.save(any<EventEntity<Event>>()) } answers { firstArg() }
 
-      service.saveAll(events)
-      verify(exactly = 1) { eventRepository.saveAll(events) }
+      service.save(events.first())
+      verify(exactly = 1) { eventRepository.save(events.first()) }
     }
   }
 }

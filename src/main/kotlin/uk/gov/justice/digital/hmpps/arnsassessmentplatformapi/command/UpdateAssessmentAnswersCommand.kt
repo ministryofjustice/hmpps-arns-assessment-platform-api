@@ -8,5 +8,5 @@ data class UpdateAssessmentAnswersCommand(
   override val assessmentUuid: UUID,
   val added: Map<String, List<String>>,
   val removed: List<String>,
-  override val timeline: CommandTimeline? = null,
+  override val timeline: Timeline? = null,
 ) : RequestableCommand

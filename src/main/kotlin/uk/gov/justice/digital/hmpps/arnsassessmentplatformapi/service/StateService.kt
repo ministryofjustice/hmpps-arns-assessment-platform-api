@@ -7,11 +7,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregat
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
-import java.time.Clock
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AggregateTypeNotFoundException
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
@@ -23,8 +24,6 @@ class StateService(
   @param:Lazy val eventBus: EventBus,
   private val clock: Clock,
 ) {
-  private fun now(): LocalDateTime = LocalDateTime.now(clock)
-
   fun persist(state: State) {
     aggregateRepository.saveAll(state.values.map { it.aggregates }.flatten())
   }
@@ -36,7 +35,7 @@ class StateService(
   ) {
     fun createState(aggregateEntity: AggregateEntity<A>): AggregateState<A> = when (type) {
       AssessmentAggregate::class -> AssessmentState(aggregateEntity as AggregateEntity<AssessmentAggregate>) as AggregateState<A>
-      else -> throw Error("Unexpected aggregate type : $type")
+      else -> throw AggregateTypeNotFoundException(type.simpleName ?: "Unknown")
     }
 
     fun blankState(assessment: AssessmentEntity): AggregateState<A> = AggregateEntity(
@@ -44,10 +43,10 @@ class StateService(
       data = type.createInstance(),
       eventsFrom = assessment.createdAt,
       eventsTo = assessment.createdAt,
-      updatedAt = now(),
+      updatedAt = clock.now(),
     ).run(::createState)
 
-    fun fetchLatestState(assessment: AssessmentEntity): AggregateState<A>? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, type.simpleName!!, now())
+    fun fetchLatestStateBefore(assessment: AssessmentEntity, pointInTime: LocalDateTime): AggregateState<A>? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, type.simpleName!!, pointInTime)
       ?.let { it as AggregateEntity<A> }
       ?.run(::createState)
 
@@ -59,10 +58,10 @@ class StateService(
       else -> fetchOrCreateStateForExactPointInTime(assessment, pointInTime)
     }
 
-    fun fetchOrCreateLatestState(assessment: AssessmentEntity): AggregateState<A> = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, type.simpleName!!, now())
+    fun fetchOrCreateLatestState(assessment: AssessmentEntity): AggregateState<A> = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, type.simpleName!!, clock.now())
       ?.let { it as AggregateEntity<A> }
       ?.run(::createState)
-      ?: createStateForPointInTime(assessment, now())
+      ?: createStateForPointInTime(assessment, clock.now())
 
     fun fetchOrCreateStateForExactPointInTime(assessment: AssessmentEntity, pointInTime: LocalDateTime): AggregateState<A> = aggregateRepository.findByAssessmentAndTypeOnExactDate(assessment.uuid, type.simpleName!!, pointInTime)
       ?.let { it as AggregateEntity<A> }
@@ -73,7 +72,7 @@ class StateService(
       assessment: AssessmentEntity,
       pointInTime: LocalDateTime,
     ): AggregateState<A> = eventService
-      .findAllByAssessmentUuidAndCreatedAtBefore(assessment.uuid, pointInTime)
+      .findAllForPointInTime(assessment.uuid, pointInTime)
       .sortedBy { it.createdAt }
       .ifEmpty { null }
       ?.run(eventBus::handle)
