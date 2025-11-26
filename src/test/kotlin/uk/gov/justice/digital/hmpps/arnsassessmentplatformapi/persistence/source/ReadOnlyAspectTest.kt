@@ -43,7 +43,7 @@ class ReadOnlyAspectTest {
   fun `order should be higher precedence than Transactional annotation`() {
     // this ensures the aspect executes BEFORE @Transactional advice
     val base = jakarta.transaction.Transactional::class.java.getAnnotation(
-      org.springframework.core.annotation.Order::class.java
+      org.springframework.core.annotation.Order::class.java,
     )?.value ?: 0
 
     val expected = base - 1
