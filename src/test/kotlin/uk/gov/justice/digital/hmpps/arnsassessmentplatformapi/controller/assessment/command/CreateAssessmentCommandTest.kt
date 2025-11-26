@@ -88,6 +88,8 @@ class CreateAssessmentCommandTest(
         "commands": [
           {
             "type": "CreateAssessmentCommand",
+            "formVersion": "1",
+            "properties": {},
             "user": {
               "id": "test-user",
               "name": "Test User"

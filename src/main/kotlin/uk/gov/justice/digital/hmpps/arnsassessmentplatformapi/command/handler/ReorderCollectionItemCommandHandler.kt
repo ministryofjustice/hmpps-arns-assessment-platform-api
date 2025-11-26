@@ -26,7 +26,7 @@ class ReorderCollectionItemCommandHandler(
         data = CollectionItemReorderedEvent(
           collectionItemUuid = collectionItemUuid,
           index = index,
-          timeline = timeline?.into(),
+          timeline = timeline,
         ),
       )
     }

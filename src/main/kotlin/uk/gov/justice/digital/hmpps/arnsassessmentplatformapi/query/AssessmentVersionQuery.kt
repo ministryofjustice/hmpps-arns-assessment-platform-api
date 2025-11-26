@@ -7,5 +7,5 @@ import java.util.UUID
 data class AssessmentVersionQuery(
   override val user: User,
   override val assessmentUuid: UUID,
-  val timestamp: LocalDateTime? = null,
+  override val timestamp: LocalDateTime? = null,
 ) : RequestableQuery

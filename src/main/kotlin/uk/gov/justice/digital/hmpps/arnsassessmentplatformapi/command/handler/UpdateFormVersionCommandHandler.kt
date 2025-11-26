@@ -23,7 +23,7 @@ class UpdateFormVersionCommandHandler(
       EventEntity(
         user = user,
         assessment = assessmentService.findByUuid(assessmentUuid),
-        data = FormVersionUpdatedEvent(version, timeline?.into()),
+        data = FormVersionUpdatedEvent(version, timeline),
       )
     }
 

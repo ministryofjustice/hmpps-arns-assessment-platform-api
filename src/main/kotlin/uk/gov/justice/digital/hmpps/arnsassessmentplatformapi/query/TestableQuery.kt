@@ -1,3 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query
 
-class TestableQuery : Query
+import java.time.LocalDateTime
+
+class TestableQuery(
+  override val timestamp: LocalDateTime? = null,
+) : Query

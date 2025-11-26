@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFormVersionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
@@ -42,7 +43,7 @@ class UpdateFormVersionCommandTest(
   }
 
   @Test
-  fun `it executes commands for assessments`() {
+  fun `it updates the form version for an assessment`() {
     val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
     assessmentRepository.save(assessmentEntity)
     val aggregateEntity = AggregateEntity(
@@ -50,7 +51,9 @@ class UpdateFormVersionCommandTest(
       updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
-      data = AssessmentAggregate(),
+      data = AssessmentAggregate().apply {
+        formVersion = "1"
+      },
     )
     aggregateRepository.save(aggregateEntity)
 
@@ -63,7 +66,9 @@ class UpdateFormVersionCommandTest(
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(
+            formVersion = "1",
             properties = emptyMap(),
+            timeline = null,
           ),
         ),
         EventEntity(
@@ -72,6 +77,7 @@ class UpdateFormVersionCommandTest(
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = FormVersionUpdatedEvent(
             version = "old_form_version",
+            timeline = null,
           ),
         ),
       ),
@@ -111,7 +117,7 @@ class UpdateFormVersionCommandTest(
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
-      LocalDateTime.now(),
+      Clock.now(),
     )
 
     assertThat(aggregate).isNotNull

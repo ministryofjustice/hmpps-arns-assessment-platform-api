@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollBackAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
@@ -25,7 +26,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
-class RollbackAssessmentCommandTest(
+class RollBackAssessmentAnswersCommandTest(
   @Autowired
   val assessmentRepository: AssessmentRepository,
   @Autowired
@@ -51,7 +52,9 @@ class RollbackAssessmentCommandTest(
       updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
-      data = AssessmentAggregate(),
+      data = AssessmentAggregate().apply {
+        formVersion = "1"
+      },
     )
     aggregateRepository.save(aggregateEntity)
 
@@ -64,7 +67,9 @@ class RollbackAssessmentCommandTest(
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
           data = AssessmentCreatedEvent(
+            formVersion = "1",
             properties = emptyMap(),
+            timeline = null,
           ),
         ),
         EventEntity(
@@ -76,6 +81,7 @@ class RollbackAssessmentCommandTest(
               "foo" to listOf("bar"),
             ),
             removed = emptyList(),
+            timeline = null,
           ),
         ),
         EventEntity(
@@ -87,6 +93,7 @@ class RollbackAssessmentCommandTest(
               "foo" to listOf("baz"),
             ),
             removed = emptyList(),
+            timeline = null,
           ),
         ),
         EventEntity(
@@ -98,6 +105,7 @@ class RollbackAssessmentCommandTest(
               "bar" to listOf("foo"),
             ),
             removed = emptyList(),
+            timeline = null,
           ),
         ),
       ),
@@ -136,7 +144,7 @@ class RollbackAssessmentCommandTest(
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
-      LocalDateTime.now(),
+      Clock.now(),
     )
 
     assertThat(aggregate).isNotNull
@@ -170,7 +178,7 @@ class RollbackAssessmentCommandTest(
     val aggregateAfterSecondUpdate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
-      LocalDateTime.now(),
+      Clock.now(),
     )
 
     assertThat(aggregateAfterSecondUpdate).isNotNull
