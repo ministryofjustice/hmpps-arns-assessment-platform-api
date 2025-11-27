@@ -4,16 +4,22 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFormVersionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.FormVersionUpdatedCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
@@ -53,6 +59,7 @@ class UpdateFormVersionCommandTest(
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
       data = AssessmentAggregate().apply {
         formVersion = "1"
+        answers.put("foo", listOf("bar"))
       },
     )
     aggregateRepository.save(aggregateEntity)
@@ -75,24 +82,37 @@ class UpdateFormVersionCommandTest(
           user = user,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
-          data = FormVersionUpdatedEvent(
-            version = "old_form_version",
+          data = AssessmentAnswersUpdatedEvent(
+            added = mapOf("foo" to listOf("bar")),
+            removed = listOf(),
             timeline = null,
           ),
         ),
       ),
     )
 
-    val request = CommandsRequest(
-
+    val updateCommand = UpdateFormVersionCommand(
+      user = user,
+      assessmentUuid = assessmentEntity.uuid,
+      version = "2",
       commands = listOf(
-
-        UpdateFormVersionCommand(
-          user = User("test-user", "Test User"),
+        UpdateAssessmentAnswersCommand(
+          user = user,
           assessmentUuid = assessmentEntity.uuid,
-          "updated_form_version",
+          added = mapOf("bar" to listOf("baz")),
+          removed = listOf("foo"),
+        ),
+        UpdateAssessmentPropertiesCommand(
+          user = user,
+          assessmentUuid = assessmentEntity.uuid,
+          added = mapOf("foo" to listOf("baz")),
+          removed = listOf(),
         ),
       ),
+    )
+
+    val request = CommandsRequest(
+      commands = listOf(updateCommand),
     )
 
     val response = webTestClient.post().uri("/command")
@@ -106,13 +126,24 @@ class UpdateFormVersionCommandTest(
       .responseBody
 
     assertThat(response?.commands).hasSize(1)
-    assertThat(response?.commands[0]?.request).isEqualTo(request.commands[0])
-    assertIs<CommandSuccessCommandResult>(response?.commands[0]?.result)
+    assertThat(response?.commands[0]?.request).isEqualTo(updateCommand)
+    val result = assertIs<FormVersionUpdatedCommandResult>(response?.commands[0]?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    assertThat(result.commands).hasSize(2)
+    assertThat(result.commands[0].request).isEqualTo(updateCommand.commands[0])
+    assertIs<CommandSuccessCommandResult>(result.commands[0].result)
+    assertThat(result.commands[1].request).isEqualTo(updateCommand.commands[1])
+    assertIs<CommandSuccessCommandResult>(result.commands[1].result)
 
-    assertThat(eventsForAssessment.size).isEqualTo(3)
-    assertThat(eventsForAssessment.last().data).isInstanceOf(FormVersionUpdatedEvent::class.java)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid).sortedBy { it.createdAt }
+
+    assertThat(eventsForAssessment.size).isEqualTo(5)
+    assertThat(eventsForAssessment[2].data).isInstanceOf(FormVersionUpdatedEvent::class.java)
+    assertNull(eventsForAssessment[2].parent)
+    assertThat(eventsForAssessment[3].data).isInstanceOf(AssessmentAnswersUpdatedEvent::class.java)
+    assertThat(eventsForAssessment[3].parent?.uuid).isEqualTo(eventsForAssessment[2].uuid)
+    assertThat(eventsForAssessment[4].data).isInstanceOf(AssessmentPropertiesUpdatedEvent::class.java)
+    assertThat(eventsForAssessment[4].parent?.uuid).isEqualTo(eventsForAssessment[2].uuid)
 
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
@@ -122,6 +153,8 @@ class UpdateFormVersionCommandTest(
 
     assertThat(aggregate).isNotNull
     val data = assertIs<AssessmentAggregate>(aggregate?.data)
-    assertThat(data.formVersion).isEqualTo("updated_form_version")
+    assertThat(data.formVersion).isEqualTo("2")
+    assertThat(data.answers).isEqualTo(mapOf("bar" to listOf("baz")))
+    assertThat(data.properties).isEqualTo(mapOf("foo" to listOf("baz")))
   }
 }
