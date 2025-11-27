@@ -10,5 +10,5 @@ import java.util.UUID
 interface EventRepository : JpaRepository<EventEntity<*>, Long> {
   fun findAllByAssessmentUuid(uuid: UUID): List<EventEntity<*>>
 
-  fun findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(uuid: UUID, dateTime: LocalDateTime): List<EventEntity<*>>
+  fun findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(uuid: UUID, dateTime: LocalDateTime): List<EventEntity<*>>
 }

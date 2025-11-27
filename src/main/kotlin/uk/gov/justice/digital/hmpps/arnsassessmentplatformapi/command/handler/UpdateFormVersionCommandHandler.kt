@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFormVersionCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.FormVersionUpdatedCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -16,9 +18,10 @@ class UpdateFormVersionCommandHandler(
   private val eventBus: EventBus,
   private val eventService: EventService,
   private val stateService: StateService,
+  @param:Lazy private val commandBus: CommandBus,
 ) : CommandHandler<UpdateFormVersionCommand> {
   override val type = UpdateFormVersionCommand::class
-  override fun handle(command: UpdateFormVersionCommand): CommandSuccessCommandResult {
+  override fun handle(command: UpdateFormVersionCommand): FormVersionUpdatedCommandResult {
     val event = with(command) {
       EventEntity(
         user = user,
@@ -26,10 +29,15 @@ class UpdateFormVersionCommandHandler(
         data = FormVersionUpdatedEvent(version, timeline),
       )
     }
-
     eventBus.handle(event).run(stateService::persist)
     eventService.save(event)
 
-    return CommandSuccessCommandResult()
+    eventService.setParentEvent(event)
+    val commandsResponse = commandBus.dispatch(command.commands)
+    eventService.clearParentEvent()
+
+    return FormVersionUpdatedCommandResult(
+      commands = commandsResponse.commands,
+    )
   }
 }
