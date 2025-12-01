@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
-import jakarta.transaction.Transactional
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -14,10 +13,6 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueryResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.bus.QueryBus
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
@@ -49,11 +44,10 @@ class AssessmentController(
     ],
   )
   @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW')")
-  @Transactional
   fun executeCommands(
     @RequestBody
     request: CommandsRequest,
-  ) = CommandsResponse(request.commands.map { CommandResponse(it, commandBus.dispatch(it)) })
+  ) = commandBus.dispatch(request.commands)
 
   @RequestMapping(path = ["/query"], method = [RequestMethod.POST])
   @Operation(description = "Execute queries on an assessment")
@@ -78,9 +72,8 @@ class AssessmentController(
     ],
   )
   @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW')")
-  @Transactional
   fun executeQueries(
     @RequestBody
     request: QueriesRequest,
-  ) = QueriesResponse(request.queries.map { QueryResponse(it, queryBus.dispatch(it)) })
+  ) = queryBus.dispatch(request.queries)
 }

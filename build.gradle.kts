@@ -1,4 +1,6 @@
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.0-beta"
@@ -39,6 +41,11 @@ kotlin {
 tasks {
   withType<KotlinCompile> {
     compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+  }
+  withType<BootRun> {
+    jvmArgs = listOf(
+      "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
+    )
   }
 }
 
