@@ -15,6 +15,7 @@ import org.hibernate.type.SqlTypes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -31,7 +32,7 @@ class EventEntity<E : Event>(
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "parent_uuid", referencedColumnName = "uuid")
-  var parent: EventEntity<*>? = null,
+  var parent: EventEntity<GroupEvent>? = null,
 
   @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
   val children: List<EventEntity<*>> = emptyList(),

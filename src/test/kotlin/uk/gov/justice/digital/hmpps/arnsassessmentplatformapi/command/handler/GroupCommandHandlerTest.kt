@@ -62,7 +62,7 @@ class GroupCommandHandlerTest {
         user = user,
         assessmentUuid = assessment.uuid,
         version = "1.2",
-      )
+      ),
     ),
     timeline = timeline,
   )
@@ -86,7 +86,7 @@ class GroupCommandHandlerTest {
     every { assessmentService.findByUuid(assessment.uuid) } returns assessment
 
     val handledEvent = slot<EventEntity<*>>()
-    val persistedEvent = slot<EventEntity<*>>()
+    val persistedEvent = slot<EventEntity<GroupEvent>>()
     val commandsResponse = CommandsResponse(commands = mockk())
     val state: State = mockk()
 
@@ -101,7 +101,7 @@ class GroupCommandHandlerTest {
     verify(exactly = 1) { eventBus.handle(any<EventEntity<*>>()) }
     verify(exactly = 1) { stateService.persist(state) }
     verify(exactly = 1) { eventService.save(any<EventEntity<*>>()) }
-    verify(exactly = 1) { eventService.setParentEvent(any<EventEntity<*>>()) }
+    verify(exactly = 1) { eventService.setParentEvent(any()) }
     verify(exactly = 1) { eventService.clearParentEvent() }
     verifyOrder {
       eventService.save(persistedEvent.captured)
