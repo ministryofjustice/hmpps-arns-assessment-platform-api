@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.respons
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
@@ -308,16 +309,23 @@ class AssessmentVersionQueryTest(
       ),
     )
 
-    val formVersionUpdateEvent = EventEntity(
+    val groupEvent = EventEntity(
       user = User("FOO_USER", "Foo User"),
       assessment = assessment,
       createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
-      data = FormVersionUpdatedEvent(version = "1", timeline = null),
+      data = GroupEvent(timeline = null),
     )
 
     listOf(
       assessmentCreatedEvent,
-      formVersionUpdateEvent,
+      groupEvent,
+      EventEntity(
+        user = User("FOO_USER", "Foo User"),
+        assessment = assessment,
+        createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
+        data = FormVersionUpdatedEvent(version = "2", timeline = null),
+        parent = groupEvent,
+      ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
         assessment = assessment,
@@ -327,7 +335,7 @@ class AssessmentVersionQueryTest(
           removed = emptyList(),
           timeline = null,
         ),
-        parent = formVersionUpdateEvent,
+        parent = groupEvent,
       ),
       EventEntity(
         user = User("FOO_USER", "Foo User"),
@@ -338,7 +346,7 @@ class AssessmentVersionQueryTest(
           removed = emptyList(),
           timeline = null,
         ),
-        parent = formVersionUpdateEvent,
+        parent = groupEvent,
       ),
     ).run(eventRepository::saveAll)
 
@@ -369,7 +377,7 @@ class AssessmentVersionQueryTest(
     val expectedAggregate = AssessmentAggregate().apply {
       answers.put("foo", listOf("updated_foo_value"))
       collaborators.add(User("FOO_USER", "Foo User"))
-      formVersion = "1"
+      formVersion = "2"
     }
 
     assertThat(result.answers).isEqualTo(expectedAggregate.answers)

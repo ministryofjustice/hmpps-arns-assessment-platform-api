@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
   JsonSubTypes.Type(value = CollectionItemRemovedEvent::class, name = "CollectionItemRemovedEvent"),
   JsonSubTypes.Type(value = CollectionItemReorderedEvent::class, name = "CollectionItemReorderedEvent"),
   JsonSubTypes.Type(value = FormVersionUpdatedEvent::class, name = "FormVersionUpdatedEvent"),
+  JsonSubTypes.Type(value = GroupEvent::class, name = "GroupEvent"),
 )
 sealed interface Event {
   val timeline: Timeline?
