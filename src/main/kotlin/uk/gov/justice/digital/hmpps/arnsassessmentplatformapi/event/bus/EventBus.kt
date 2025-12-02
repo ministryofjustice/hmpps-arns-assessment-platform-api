@@ -30,6 +30,7 @@ class EventBus(
         state[aggregateType] = handler.handle(event, stateForType)
       }
     }
+    event.children.sortedBy { it.createdAt }.fold(state) { acc: State, event -> execute(event, acc) }
     return state
   }
 

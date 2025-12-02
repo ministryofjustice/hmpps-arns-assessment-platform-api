@@ -41,30 +41,11 @@ class EventServiceTest {
   )
 
   @Nested
-  inner class FindAllByAssessmentUuid {
-    @Test
-    fun `it returns all events for an assessment`() {
-      every { eventRepository.findAllByAssessmentUuid(assessment.uuid) } returns events
-
-      val result = service.findAll(assessment.uuid)
-      assertThat(result).isEqualTo(events)
-    }
-
-    @Test
-    fun `it returns empty when no events found`() {
-      every { eventRepository.findAllByAssessmentUuid(assessment.uuid) } returns emptyList()
-
-      val result = service.findAll(assessment.uuid)
-      assertThat(result).isEmpty()
-    }
-  }
-
-  @Nested
   inner class FindAllByAssessmentUuidAndCreatedAtBefore {
     @Test
     fun `it returns all events for an assessment before a provided timestamp`() {
       val pointInTime = LocalDateTime.parse("2025-01-01T12:00:00")
-      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessment.uuid, pointInTime) } returns events
+      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(assessment.uuid, pointInTime) } returns events
 
       val result = service.findAllForPointInTime(assessment.uuid, pointInTime)
       assertThat(result).isEqualTo(events)
@@ -73,7 +54,7 @@ class EventServiceTest {
     @Test
     fun `it returns empty when no events found`() {
       val pointInTime = LocalDateTime.parse("2025-01-01T12:00:00")
-      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessment.uuid, pointInTime) } returns emptyList()
+      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(assessment.uuid, pointInTime) } returns emptyList()
 
       val result = service.findAllForPointInTime(assessment.uuid, pointInTime)
       assertThat(result).isEmpty()
