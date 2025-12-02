@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -17,8 +19,17 @@ import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 @ActiveProfiles("postgres", "test")
 abstract class IntegrationTestBase {
 
-  @Autowired
+  @LocalServerPort
+  private var port: Int = 0
+
   protected lateinit var webTestClient: WebTestClient
+
+  @BeforeEach
+  fun setupWebTestClient() {
+    webTestClient = WebTestClient.bindToServer()
+      .baseUrl("http://localhost:$port")
+      .build()
+  }
 
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthorisationHelper
