@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes(
   JsonSubTypes.Type(value = AssessmentAnswersRolledBackEvent::class, name = "AssessmentAnswersRolledBackEvent"),
-  JsonSubTypes.Type(value = AssessmentAnswersRolledBackEvent::class, name = "AssessmentAnswersRolledBackEvent"),
   JsonSubTypes.Type(value = AssessmentAnswersUpdatedEvent::class, name = "AssessmentAnswersUpdatedEvent"),
   JsonSubTypes.Type(value = AssessmentCreatedEvent::class, name = "AssessmentCreatedEvent"),
   JsonSubTypes.Type(value = AssessmentPropertiesUpdatedEvent::class, name = "AssessmentPropertiesUpdatedEvent"),
