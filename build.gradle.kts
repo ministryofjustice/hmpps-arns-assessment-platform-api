@@ -23,7 +23,6 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.postgresql:postgresql:42.7.8")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  implementation("io.hypersistence:hypersistence-utils-hibernate-70:3.12.0")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.0.0-beta")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
