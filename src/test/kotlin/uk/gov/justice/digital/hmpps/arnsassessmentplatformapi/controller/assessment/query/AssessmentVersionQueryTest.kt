@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.respons
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
@@ -278,6 +279,105 @@ class AssessmentVersionQueryTest(
       answers.put("foo", listOf("updated_foo_value"))
       collaborators.add(User("FOO_USER", "Foo User"))
       formVersion = "1"
+    }
+
+    assertThat(result.answers).isEqualTo(expectedAggregate.answers)
+    assertThat(result.collaborators).isEqualTo(expectedAggregate.collaborators)
+    assertThat(result.formVersion).isEqualTo(expectedAggregate.formVersion)
+
+    val persistedAggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+      assessment.uuid,
+      AssessmentAggregate::class.simpleName!!,
+      Clock.now(),
+    )
+
+    assertThat(persistedAggregate).isNull()
+  }
+
+  @Test
+  fun `events with nested child events are atomic`() {
+    val assessment: AssessmentEntity = AssessmentEntity().run(assessmentRepository::save)
+
+    val assessmentCreatedEvent = EventEntity(
+      user = User("FOO_USER", "Foo User"),
+      assessment = assessment,
+      createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+      data = AssessmentCreatedEvent(
+        formVersion = "1",
+        properties = mapOf(),
+        timeline = null,
+      ),
+    )
+
+    val groupEvent = EventEntity(
+      user = User("FOO_USER", "Foo User"),
+      assessment = assessment,
+      createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
+      data = GroupEvent(timeline = null),
+    )
+
+    listOf(
+      assessmentCreatedEvent,
+      groupEvent,
+      EventEntity(
+        user = User("FOO_USER", "Foo User"),
+        assessment = assessment,
+        createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
+        data = FormVersionUpdatedEvent(version = "2", timeline = null),
+        parent = groupEvent,
+      ),
+      EventEntity(
+        user = User("FOO_USER", "Foo User"),
+        assessment = assessment,
+        createdAt = LocalDateTime.parse("2025-01-01T12:20:00"),
+        data = AssessmentAnswersUpdatedEvent(
+          added = mapOf("foo" to listOf("foo_value")),
+          removed = emptyList(),
+          timeline = null,
+        ),
+        parent = groupEvent,
+      ),
+      EventEntity(
+        user = User("FOO_USER", "Foo User"),
+        assessment = assessment,
+        createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
+        data = AssessmentAnswersUpdatedEvent(
+          added = mapOf("foo" to listOf("updated_foo_value")),
+          removed = emptyList(),
+          timeline = null,
+        ),
+        parent = groupEvent,
+      ),
+    ).run(eventRepository::saveAll)
+
+    val request = QueriesRequest(
+      queries = listOf(
+        AssessmentVersionQuery(
+          user = User("test-user", "Test User"),
+          assessmentUuid = assessment.uuid,
+          timestamp = LocalDateTime.parse("2025-01-01T12:25:00"),
+        ),
+      ),
+    )
+
+    val response = webTestClient.post().uri("/query")
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+      .bodyValue(request)
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(QueriesResponse::class.java)
+      .returnResult()
+      .responseBody
+
+    assertThat(response?.queries).hasSize(1)
+    assertThat(response?.queries[0]?.request).isEqualTo(request.queries[0])
+    val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
+
+    val expectedAggregate = AssessmentAggregate().apply {
+      answers.put("foo", listOf("updated_foo_value"))
+      collaborators.add(User("FOO_USER", "Foo User"))
+      formVersion = "2"
     }
 
     assertThat(result.answers).isEqualTo(expectedAggregate.answers)

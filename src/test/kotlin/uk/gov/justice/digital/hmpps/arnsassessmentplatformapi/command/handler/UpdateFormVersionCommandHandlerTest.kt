@@ -9,11 +9,11 @@ class UpdateFormVersionCommandHandlerTest : AbstractCommandHandlerTest() {
   override val command = UpdateFormVersionCommand(
     user = user,
     assessmentUuid = assessment.uuid,
-    version = "1.2",
+    version = "2",
     timeline = timeline,
   )
   override val expectedEvent = FormVersionUpdatedEvent(
-    version = command.version,
+    version = "2",
     timeline = command.timeline,
   )
   override val expectedResult = CommandSuccessCommandResult()

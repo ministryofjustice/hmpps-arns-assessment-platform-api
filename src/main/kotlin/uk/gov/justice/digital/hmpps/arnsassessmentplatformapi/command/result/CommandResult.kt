@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
   JsonSubTypes.Type(value = CommandSuccessCommandResult::class, name = "CommandSuccessCommandResult"),
   JsonSubTypes.Type(value = CreateAssessmentCommandResult::class, name = "CreateAssessmentCommandResult"),
   JsonSubTypes.Type(value = CreateCollectionCommandResult::class, name = "CreateCollectionCommandResult"),
+  JsonSubTypes.Type(value = GroupCommandResult::class, name = "GroupCommandResult"),
 )
 sealed interface CommandResult {
   val success: Boolean
