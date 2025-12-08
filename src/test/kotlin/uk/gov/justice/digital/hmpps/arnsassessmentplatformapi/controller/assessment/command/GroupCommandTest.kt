@@ -8,6 +8,7 @@ import org.junit.jupiter.api.assertNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.GroupCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
@@ -61,7 +62,7 @@ class GroupCommandTest(
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
       data = AssessmentAggregate().apply {
         formVersion = "1"
-        answers.put("foo", listOf("bar"))
+        answers.put("foo", SingleValue("bar"))
       },
     )
     aggregateRepository.save(aggregateEntity)
@@ -85,7 +86,7 @@ class GroupCommandTest(
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentAnswersUpdatedEvent(
-            added = mapOf("foo" to listOf("bar")),
+            added = mapOf("foo" to SingleValue("bar")),
             removed = listOf(),
             timeline = null,
           ),
@@ -105,13 +106,13 @@ class GroupCommandTest(
         UpdateAssessmentAnswersCommand(
           user = user,
           assessmentUuid = assessmentEntity.uuid,
-          added = mapOf("bar" to listOf("baz")),
+          added = mapOf("bar" to SingleValue("baz")),
           removed = listOf("foo"),
         ),
         UpdateAssessmentPropertiesCommand(
           user = user,
           assessmentUuid = assessmentEntity.uuid,
-          added = mapOf("foo" to listOf("baz")),
+          added = mapOf("foo" to SingleValue("baz")),
           removed = listOf(),
         ),
       ),
@@ -164,7 +165,7 @@ class GroupCommandTest(
     assertThat(aggregate).isNotNull
     val data = assertIs<AssessmentAggregate>(aggregate?.data)
     assertThat(data.formVersion).isEqualTo("2")
-    assertThat(data.answers).isEqualTo(mapOf("bar" to listOf("baz")))
-    assertThat(data.properties).isEqualTo(mapOf("foo" to listOf("baz")))
+    assertThat(data.answers).isEqualTo(mapOf("bar" to SingleValue("baz")))
+    assertThat(data.properties).isEqualTo(mapOf("foo" to SingleValue("baz")))
   }
 }

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.assertNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
@@ -42,7 +43,7 @@ class CreateAssessmentCommandTest(
     val command = CreateAssessmentCommand(
       user = User("test-user", "Test User"),
       formVersion = "1",
-      properties = mapOf("prop1" to listOf("val1")),
+      properties = mapOf("prop1" to SingleValue("val1")),
     )
 
     val request = CommandsRequest(

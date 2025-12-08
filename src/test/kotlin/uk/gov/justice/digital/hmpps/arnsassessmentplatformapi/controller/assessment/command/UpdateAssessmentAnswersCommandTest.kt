@@ -7,11 +7,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.MultiValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
@@ -55,8 +56,8 @@ class UpdateAssessmentAnswersCommandTest(
         formVersion = "1"
         answers.putAll(
           mapOf(
-            "foo" to listOf("foo_value"),
-            "bar" to listOf("bar_value"),
+            "foo" to SingleValue("foo_value"),
+            "bar" to SingleValue("bar_value"),
           ),
         )
       },
@@ -83,8 +84,8 @@ class UpdateAssessmentAnswersCommandTest(
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentAnswersUpdatedEvent(
             added = mapOf(
-              "foo" to listOf("foo_value"),
-              "bar" to listOf("bar_value"),
+              "foo" to SingleValue("foo_value"),
+              "bar" to SingleValue("bar_value"),
             ),
             removed = emptyList(),
             timeline = null,
@@ -93,17 +94,25 @@ class UpdateAssessmentAnswersCommandTest(
       ),
     )
 
-    val request = CommandsRequest(
-
-      commands = listOf(
-        UpdateAssessmentAnswersCommand(
-          user = User("test-user", "Test User"),
-          assessmentUuid = assessmentEntity.uuid,
-          added = mapOf("foo" to listOf("updated_foo_value"), "baz" to listOf("baz_value")),
-          removed = listOf("bar"),
-        ),
-      ),
-    )
+    val request = """
+      {
+        "commands": [
+          {
+            "type": "UpdateAssessmentAnswersCommand",
+            "added": {
+              "foo": {"type": "Single", "value": "updated_foo_value"},
+              "baz": {"type": "Multi", "values": ["baz_value_1", "baz_value_2"]}
+            },
+            "removed": ["bar"],
+            "user": {
+              "id": "test-user",
+              "name": "Test User"
+            },
+            "assessmentUuid": "${assessmentEntity.uuid}"
+          }
+        ]
+      }
+    """.trimIndent()
 
     val response = webTestClient.post().uri("/command")
       .header(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -115,8 +124,15 @@ class UpdateAssessmentAnswersCommandTest(
       .returnResult()
       .responseBody
 
+    val expectedCommandRequest = UpdateAssessmentAnswersCommand(
+      user = User("test-user", "Test User"),
+      assessmentUuid = assessmentEntity.uuid,
+      added = mapOf("foo" to SingleValue("updated_foo_value"), "baz" to MultiValue.of("baz_value_1", "baz_value_2")),
+      removed = listOf("bar"),
+    )
+
     assertThat(response?.commands).hasSize(1)
-    assertThat(response?.commands[0]?.request).isEqualTo(request.commands[0])
+    assertThat(response?.commands[0]?.request).isEqualTo(expectedCommandRequest)
     assertIs<CommandSuccessCommandResult>(response?.commands[0]?.result)
 
     val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
@@ -132,8 +148,8 @@ class UpdateAssessmentAnswersCommandTest(
 
     assertThat(aggregate).isNotNull
     val data = assertIs<AssessmentAggregate>(aggregate?.data)
-    assertThat(data.answers["foo"]).isEqualTo(listOf("updated_foo_value"))
+    assertThat(data.answers["foo"]).isEqualTo(SingleValue("updated_foo_value"))
     assertThat(data.answers["bar"]).isNull()
-    assertThat(data.answers["baz"]).isEqualTo(listOf("baz_value"))
+    assertThat(data.answers["baz"]).isEqualTo(MultiValue.of("baz_value_1", "baz_value_2"))
   }
 }

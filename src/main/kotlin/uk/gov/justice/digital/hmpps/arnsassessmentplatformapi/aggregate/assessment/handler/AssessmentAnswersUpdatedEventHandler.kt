@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.AnswerNotFoundException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -36,7 +37,7 @@ class AssessmentAnswersUpdatedEventHandler(
   }
 
   companion object {
-    fun updateAnswers(state: AssessmentState, added: Map<String, List<String>>, removed: List<String>) {
+    fun updateAnswers(state: AssessmentState, added: Map<String, Value>, removed: List<String>) {
       with(state.get()) {
         added.entries.forEach {
           data.answers.put(it.key, it.value)

@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
@@ -76,7 +77,7 @@ class UpdateCollectionItemPropertiesCommandTest(
                 createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
                 updatedAt = LocalDateTime.parse("2025-01-01T12:10:00"),
                 answers = mutableMapOf(),
-                properties = mutableMapOf("prop" to listOf("unchanged_1")),
+                properties = mutableMapOf("prop" to SingleValue("unchanged_1")),
                 collections = mutableListOf(),
               ),
               CollectionItem(
@@ -85,8 +86,8 @@ class UpdateCollectionItemPropertiesCommandTest(
                 updatedAt = LocalDateTime.parse("2025-01-01T12:20:00"),
                 answers = mutableMapOf(),
                 properties = mutableMapOf(
-                  "prop" to listOf("unchanged_2"),
-                  "prop_to_remove" to listOf("should_not_exist"),
+                  "prop" to SingleValue("unchanged_2"),
+                  "prop_to_remove" to SingleValue("should_not_exist"),
                 ),
                 collections = mutableListOf(),
               ),
@@ -130,7 +131,7 @@ class UpdateCollectionItemPropertiesCommandTest(
             collectionUuid = collectionUuid,
             collectionItemUuid = UUID.randomUUID(),
             answers = mutableMapOf(),
-            properties = mutableMapOf("prop" to listOf("unchanged_1")),
+            properties = mutableMapOf("prop" to SingleValue("unchanged_1")),
             index = null,
             timeline = null,
           ),
@@ -144,8 +145,8 @@ class UpdateCollectionItemPropertiesCommandTest(
             collectionItemUuid = UUID.randomUUID(),
             answers = mutableMapOf(),
             properties = mutableMapOf(
-              "prop" to listOf("unchanged_2"),
-              "prop_to_remove" to listOf("should_not_exist"),
+              "prop" to SingleValue("unchanged_2"),
+              "prop_to_remove" to SingleValue("should_not_exist"),
             ),
             index = null,
             timeline = null,
@@ -160,7 +161,7 @@ class UpdateCollectionItemPropertiesCommandTest(
           user = User("test-user", "Test User"),
           assessmentUuid = assessmentEntity.uuid,
           collectionItemUuid = collectionItemToBeUpdatedUuid,
-          added = mutableMapOf("prop" to listOf("updated")),
+          added = mutableMapOf("prop" to SingleValue("updated")),
           removed = listOf("prop_to_remove"),
           timeline = null,
         ),
@@ -200,11 +201,11 @@ class UpdateCollectionItemPropertiesCommandTest(
 
     val updatedItem = collection.items.find { it.uuid == collectionItemToBeUpdatedUuid }
     assertNotNull(updatedItem)
-    assertThat(updatedItem.properties["prop"]?.first()).isEqualTo("updated")
+    assertThat(updatedItem.properties["prop"]).isEqualTo(SingleValue("updated"))
     assertNull(updatedItem.properties["prop_to_remove"])
 
     val unchangedItem = collection.items.find { it.uuid == collectionItemToBeUnchangedUuid }
     assertNotNull(unchangedItem)
-    assertThat(unchangedItem.properties["prop"]?.first()).isEqualTo("unchanged_1")
+    assertThat(unchangedItem.properties["prop"]).isEqualTo(SingleValue("unchanged_1"))
   }
 }

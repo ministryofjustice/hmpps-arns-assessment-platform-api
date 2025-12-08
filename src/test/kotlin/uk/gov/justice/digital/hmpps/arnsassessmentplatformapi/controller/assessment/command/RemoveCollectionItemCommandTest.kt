@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
@@ -73,7 +74,7 @@ class RemoveCollectionItemCommandTest(
                 uuid = collectionItemToRemoveUuid,
                 createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
                 updatedAt = LocalDateTime.parse("2025-01-01T12:10:00"),
-                answers = mutableMapOf("title" to listOf("existing_collection_1")),
+                answers = mutableMapOf("title" to SingleValue("existing_collection_1")),
                 properties = mutableMapOf(),
                 collections = mutableListOf(),
               ),
@@ -81,7 +82,7 @@ class RemoveCollectionItemCommandTest(
                 uuid = UUID.randomUUID(),
                 createdAt = LocalDateTime.parse("2025-01-01T12:20:00"),
                 updatedAt = LocalDateTime.parse("2025-01-01T12:20:00"),
-                answers = mutableMapOf("title" to listOf("existing_collection_2")),
+                answers = mutableMapOf("title" to SingleValue("existing_collection_2")),
                 properties = mutableMapOf(),
                 collections = mutableListOf(),
               ),
@@ -124,7 +125,7 @@ class RemoveCollectionItemCommandTest(
           data = CollectionItemAddedEvent(
             collectionUuid = collectionUuid,
             collectionItemUuid = UUID.randomUUID(),
-            answers = mutableMapOf("title" to listOf("existing_collection_1")),
+            answers = mutableMapOf("title" to SingleValue("existing_collection_1")),
             properties = mutableMapOf(),
             index = null,
             timeline = null,
@@ -137,7 +138,7 @@ class RemoveCollectionItemCommandTest(
           data = CollectionItemAddedEvent(
             collectionUuid = collectionUuid,
             collectionItemUuid = UUID.randomUUID(),
-            answers = mutableMapOf("title" to listOf("existing_collection_2")),
+            answers = mutableMapOf("title" to SingleValue("existing_collection_2")),
             properties = mutableMapOf(),
             index = null,
             timeline = null,
@@ -186,6 +187,6 @@ class RemoveCollectionItemCommandTest(
     val collection = data.collections.find { it.uuid == collectionUuid }
     assertNotNull(collection)
     assertThat(collection.items.size).isEqualTo(1)
-    assertThat(collection.items.first().answers["title"]?.first()).isEqualTo("existing_collection_2")
+    assertThat(collection.items.first().answers["title"]).isEqualTo(SingleValue("existing_collection_2"))
   }
 }

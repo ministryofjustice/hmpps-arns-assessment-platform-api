@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.AddCollectionItemCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
@@ -107,7 +108,7 @@ class AddCollectionItemCommandTest(
           user = User("test-user", "Test User"),
           assessmentUuid = assessmentEntity.uuid,
           collectionUuid = collectionUuid,
-          answers = mutableMapOf("title" to listOf("new_collection")),
+          answers = mutableMapOf("title" to SingleValue("new_collection")),
           properties = mutableMapOf(),
           index = null,
         ),
@@ -144,7 +145,7 @@ class AddCollectionItemCommandTest(
     val collection = data.collections.find { it.uuid == collectionUuid }
     assertNotNull(collection)
     assertThat(collection.items.size).isEqualTo(1)
-    assertThat(collection.items.first().answers["title"]?.first()).isEqualTo("new_collection")
+    assertThat(collection.items.first().answers["title"]).isEqualTo(SingleValue("new_collection"))
   }
 
   @Test
@@ -171,7 +172,7 @@ class AddCollectionItemCommandTest(
                 uuid = UUID.randomUUID(),
                 createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
                 updatedAt = LocalDateTime.parse("2025-01-01T12:10:00"),
-                answers = mutableMapOf("title" to listOf("existing_collection_1")),
+                answers = mutableMapOf("title" to SingleValue("existing_collection_1")),
                 properties = mutableMapOf(),
                 collections = mutableListOf(),
               ),
@@ -179,7 +180,7 @@ class AddCollectionItemCommandTest(
                 uuid = UUID.randomUUID(),
                 createdAt = LocalDateTime.parse("2025-01-01T12:20:00"),
                 updatedAt = LocalDateTime.parse("2025-01-01T12:20:00"),
-                answers = mutableMapOf("title" to listOf("existing_collection_2")),
+                answers = mutableMapOf("title" to SingleValue("existing_collection_2")),
                 properties = mutableMapOf(),
                 collections = mutableListOf(),
               ),
@@ -222,7 +223,7 @@ class AddCollectionItemCommandTest(
           data = CollectionItemAddedEvent(
             collectionUuid = collectionUuid,
             collectionItemUuid = UUID.randomUUID(),
-            answers = mutableMapOf("title" to listOf("existing_collection_1")),
+            answers = mutableMapOf("title" to SingleValue("existing_collection_1")),
             properties = mutableMapOf(),
             index = null,
             timeline = null,
@@ -235,7 +236,7 @@ class AddCollectionItemCommandTest(
           data = CollectionItemAddedEvent(
             collectionUuid = collectionUuid,
             collectionItemUuid = UUID.randomUUID(),
-            answers = mutableMapOf("title" to listOf("existing_collection_2")),
+            answers = mutableMapOf("title" to SingleValue("existing_collection_2")),
             properties = mutableMapOf(),
             index = null,
             timeline = null,
@@ -250,7 +251,7 @@ class AddCollectionItemCommandTest(
           user = User("test-user", "Test User"),
           assessmentUuid = assessmentEntity.uuid,
           collectionUuid = collectionUuid,
-          answers = mutableMapOf("title" to listOf("new_collection")),
+          answers = mutableMapOf("title" to SingleValue("new_collection")),
           properties = mutableMapOf(),
           index = 1,
         ),
@@ -287,6 +288,6 @@ class AddCollectionItemCommandTest(
     val collection = data.collections.find { it.uuid == collectionUuid }
     assertNotNull(collection)
     assertThat(collection.items.size).isEqualTo(3)
-    assertThat(collection.items[1].answers["title"]?.first()).isEqualTo("new_collection")
+    assertThat(collection.items[1].answers["title"]).isEqualTo(SingleValue("new_collection"))
   }
 }

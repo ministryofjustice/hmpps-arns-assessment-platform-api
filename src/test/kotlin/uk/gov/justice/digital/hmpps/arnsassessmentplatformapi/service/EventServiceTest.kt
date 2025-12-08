@@ -6,6 +6,7 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
@@ -33,7 +34,7 @@ class EventServiceTest {
       user = user,
       assessment = assessment,
       data = AssessmentAnswersUpdatedEvent(
-        added = mapOf("foo" to listOf("foo_value")),
+        added = mapOf("foo" to SingleValue("foo_value")),
         removed = emptyList(),
         timeline = null,
       ),

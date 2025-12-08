@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollBackAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
@@ -78,7 +79,7 @@ class RollBackAssessmentAnswersCommandTest(
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentAnswersUpdatedEvent(
             added = mapOf(
-              "foo" to listOf("bar"),
+              "foo" to SingleValue("bar"),
             ),
             removed = emptyList(),
             timeline = null,
@@ -90,7 +91,7 @@ class RollBackAssessmentAnswersCommandTest(
           createdAt = LocalDateTime.parse("2025-01-01T13:45:00"),
           data = AssessmentAnswersUpdatedEvent(
             added = mapOf(
-              "foo" to listOf("baz"),
+              "foo" to SingleValue("baz"),
             ),
             removed = emptyList(),
             timeline = null,
@@ -102,7 +103,7 @@ class RollBackAssessmentAnswersCommandTest(
           createdAt = LocalDateTime.parse("2025-01-02T09:30:00"),
           data = AssessmentAnswersUpdatedEvent(
             added = mapOf(
-              "bar" to listOf("foo"),
+              "bar" to SingleValue("foo"),
             ),
             removed = emptyList(),
             timeline = null,
@@ -149,7 +150,7 @@ class RollBackAssessmentAnswersCommandTest(
 
     assertThat(aggregate).isNotNull
     val data = assertIs<AssessmentAggregate>(aggregate?.data)
-    assertThat(data.answers["foo"]).isEqualTo(listOf("bar"))
+    assertThat(data.answers["foo"]).isEqualTo(SingleValue("bar"))
     assertThat(data.answers["bar"]).isNull()
 
     val secondRequest = CommandsRequest(
@@ -183,7 +184,7 @@ class RollBackAssessmentAnswersCommandTest(
 
     assertThat(aggregateAfterSecondUpdate).isNotNull
     val dataAfterSecondUpdate = assertIs<AssessmentAggregate>(aggregateAfterSecondUpdate?.data)
-    assertThat(dataAfterSecondUpdate.answers["foo"]).isEqualTo(listOf("baz"))
-    assertThat(dataAfterSecondUpdate.answers["bar"]).isEqualTo(listOf("foo"))
+    assertThat(dataAfterSecondUpdate.answers["foo"]).isEqualTo(SingleValue("baz"))
+    assertThat(dataAfterSecondUpdate.answers["bar"]).isEqualTo(SingleValue("foo"))
   }
 }

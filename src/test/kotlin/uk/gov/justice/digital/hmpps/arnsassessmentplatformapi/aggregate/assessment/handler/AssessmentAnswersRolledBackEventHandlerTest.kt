@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
@@ -67,7 +68,7 @@ class AssessmentAnswersRolledBackEventHandlerTest {
           eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
           data = AssessmentAggregate().apply {
             formVersion = "1"
-            answers.put("foo", listOf("rolled_back"))
+            answers.put("foo", SingleValue("rolled_back"))
           },
           assessment = assessment,
         ),
@@ -83,8 +84,8 @@ class AssessmentAnswersRolledBackEventHandlerTest {
             formVersion = "1"
             answers.putAll(
               mapOf(
-                "foo" to listOf("foo_current_value"),
-                "bar" to listOf("bar_current_value"),
+                "foo" to SingleValue("foo_current_value"),
+                "bar" to SingleValue("bar_current_value"),
               ),
             )
           },
@@ -104,8 +105,8 @@ class AssessmentAnswersRolledBackEventHandlerTest {
           data = AssessmentAggregate().apply {
             formVersion = "1"
             collaborators.add(user)
-            answers.put("foo", listOf("rolled_back"))
-            deletedAnswers.put("bar", listOf("bar_current_value"))
+            answers.put("foo", SingleValue("rolled_back"))
+            deletedAnswers.put("bar", SingleValue("bar_current_value"))
             timeline.add(
               TimelineItem(
                 "test",
@@ -145,7 +146,7 @@ class AssessmentAnswersRolledBackEventHandlerTest {
           eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
           data = AssessmentAggregate().apply {
             formVersion = "1"
-            answers.put("foo", listOf("rolled_back"))
+            answers.put("foo", SingleValue("rolled_back"))
           },
           assessment = assessment,
         ),
@@ -161,7 +162,7 @@ class AssessmentAnswersRolledBackEventHandlerTest {
             formVersion = "1"
             answers.putAll(
               mapOf(
-                "foo" to listOf("foo_current_value"),
+                "foo" to SingleValue("foo_current_value"),
               ),
             )
           },
@@ -181,7 +182,7 @@ class AssessmentAnswersRolledBackEventHandlerTest {
           data = AssessmentAggregate().apply {
             formVersion = "1"
             collaborators.add(user)
-            answers.put("foo", listOf("rolled_back"))
+            answers.put("foo", SingleValue("rolled_back"))
           },
         ),
       )
