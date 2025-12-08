@@ -36,7 +36,7 @@ class AssessmentAnswersUpdatedEventHandler(
   }
 
   companion object {
-    fun updateAnswers(state: AssessmentState, added: Map<String, List<String>>, removed: List<String>) {
+    fun updateAnswers(state: AssessmentState, added: Map<String, Any>, removed: List<String>) {
       with(state.get()) {
         added.entries.forEach {
           data.answers.put(it.key, it.value)

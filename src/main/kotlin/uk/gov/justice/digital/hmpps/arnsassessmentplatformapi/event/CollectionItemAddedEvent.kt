@@ -6,7 +6,7 @@ import java.util.UUID
 data class CollectionItemAddedEvent(
   val collectionItemUuid: UUID,
   val collectionUuid: UUID,
-  val answers: Map<String, List<String>>,
+  val answers: Map<String, Any>,
   val properties: Map<String, List<String>>,
   val index: Int?,
   override val timeline: Timeline?,

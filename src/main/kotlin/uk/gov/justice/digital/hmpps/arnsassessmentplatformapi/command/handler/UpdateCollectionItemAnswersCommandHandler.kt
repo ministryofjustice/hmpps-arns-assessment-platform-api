@@ -18,7 +18,10 @@ class UpdateCollectionItemAnswersCommandHandler(
   private val stateService: StateService,
 ) : CommandHandler<UpdateCollectionItemAnswersCommand> {
   override val type = UpdateCollectionItemAnswersCommand::class
+
   override fun handle(command: UpdateCollectionItemAnswersCommand): CommandSuccessCommandResult {
+    UpdateAssessmentAnswersCommandHandler.validateAnswers(command.added)
+
     val event = with(command) {
       EventEntity(
         user = user,

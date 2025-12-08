@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result
 
+import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Answers
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Collaborators
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Collections
@@ -14,6 +15,7 @@ data class AssessmentVersionQueryResult(
   val formVersion: FormVersion,
   val createdAt: LocalDateTime,
   val updatedAt: LocalDateTime,
+  @Schema(ref = "#/components/schemas/Answers")
   val answers: Answers,
   val properties: Properties,
   val collections: Collections,

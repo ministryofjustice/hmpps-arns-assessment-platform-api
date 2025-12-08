@@ -18,7 +18,10 @@ class UpdateAssessmentAnswersCommandHandler(
   private val stateService: StateService,
 ) : CommandHandler<UpdateAssessmentAnswersCommand> {
   override val type = UpdateAssessmentAnswersCommand::class
+
   override fun handle(command: UpdateAssessmentAnswersCommand): CommandSuccessCommandResult {
+    validateAnswers(command.added)
+
     val event = with(command) {
       EventEntity(
         user = user,
@@ -35,5 +38,21 @@ class UpdateAssessmentAnswersCommandHandler(
     eventService.save(event)
 
     return CommandSuccessCommandResult()
+  }
+
+  companion object {
+    fun validateAnswers(added: Map<String, Any>) {
+      added.forEach { (key, value) ->
+        when (value) {
+          is String -> Unit
+          is List<*> -> {
+            if (!value.all { it is String }) {
+              throw IllegalArgumentException("Answer '$key' must be a String or List<String>")
+            }
+          }
+          else -> throw IllegalArgumentException("Answer '$key' must be a String or List<String>")
+        }
+      }
+    }
   }
 }

@@ -10,7 +10,7 @@ import kotlin.collections.mutableListOf
 
 typealias Timeline = MutableList<TimelineItem>
 typealias Collaborators = MutableSet<User>
-typealias Answers = MutableMap<String, List<String>>
+typealias Answers = MutableMap<String, Any>
 typealias Properties = MutableMap<String, List<String>>
 typealias Collections = MutableList<Collection>
 typealias FormVersion = String

@@ -200,11 +200,11 @@ class UpdateCollectionItemAnswersCommandTest(
 
     val updatedItem = collection.items.find { it.uuid == collectionItemToBeUpdatedUuid }
     assertNotNull(updatedItem)
-    assertThat(updatedItem.answers["title"]?.first()).isEqualTo("updated")
+    assertThat((updatedItem.answers["title"] as? List<*>)?.first()).isEqualTo("updated")
     assertNull(updatedItem.answers["to_be_removed"])
 
     val unchangedItem = collection.items.find { it.uuid == collectionItemToBeUnchangedUuid }
     assertNotNull(unchangedItem)
-    assertThat(unchangedItem.answers["title"]?.first()).isEqualTo("unchanged_1")
+    assertThat((unchangedItem.answers["title"] as? List<*>)?.first()).isEqualTo("unchanged_1")
   }
 }

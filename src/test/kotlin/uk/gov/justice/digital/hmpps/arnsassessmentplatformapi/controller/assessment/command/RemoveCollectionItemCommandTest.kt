@@ -186,6 +186,6 @@ class RemoveCollectionItemCommandTest(
     val collection = data.collections.find { it.uuid == collectionUuid }
     assertNotNull(collection)
     assertThat(collection.items.size).isEqualTo(1)
-    assertThat(collection.items.first().answers["title"]?.first()).isEqualTo("existing_collection_2")
+    assertThat((collection.items.first().answers["title"] as? List<*>)?.first()).isEqualTo("existing_collection_2")
   }
 }

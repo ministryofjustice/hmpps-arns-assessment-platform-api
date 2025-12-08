@@ -144,7 +144,7 @@ class AddCollectionItemCommandTest(
     val collection = data.collections.find { it.uuid == collectionUuid }
     assertNotNull(collection)
     assertThat(collection.items.size).isEqualTo(1)
-    assertThat(collection.items.first().answers["title"]?.first()).isEqualTo("new_collection")
+    assertThat((collection.items.first().answers["title"] as? List<*>)?.first()).isEqualTo("new_collection")
   }
 
   @Test
@@ -287,6 +287,6 @@ class AddCollectionItemCommandTest(
     val collection = data.collections.find { it.uuid == collectionUuid }
     assertNotNull(collection)
     assertThat(collection.items.size).isEqualTo(3)
-    assertThat(collection.items[1].answers["title"]?.first()).isEqualTo("new_collection")
+    assertThat((collection.items[1].answers["title"] as? List<*>)?.first()).isEqualTo("new_collection")
   }
 }
