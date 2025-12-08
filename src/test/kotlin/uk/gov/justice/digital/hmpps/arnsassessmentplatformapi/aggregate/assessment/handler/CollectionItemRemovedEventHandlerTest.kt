@@ -4,6 +4,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemRemovedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
@@ -47,8 +48,8 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
                         uuid = collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("baz" to listOf("baz_value")),
-                        properties = mutableMapOf("bar" to listOf("bar_value")),
+                        answers = mutableMapOf("baz" to SingleValue("baz_value")),
+                        properties = mutableMapOf("bar" to SingleValue("bar_value")),
                         collections = mutableListOf(),
                       ),
                     ),
@@ -129,8 +130,8 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
                         uuid = collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("baz" to listOf("baz_value")),
-                        properties = mutableMapOf("bar" to listOf("bar_value")),
+                        answers = mutableMapOf("baz" to SingleValue("baz_value")),
+                        properties = mutableMapOf("bar" to SingleValue("bar_value")),
                         collections = mutableListOf(),
                       ),
                     ),

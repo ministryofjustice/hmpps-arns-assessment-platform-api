@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
@@ -55,8 +56,8 @@ class UpdateAssessmentPropertiesCommandTest(
         formVersion = "1"
         properties.putAll(
           mapOf(
-            "foo" to listOf("foo_value"),
-            "bar" to listOf("bar_value"),
+            "foo" to SingleValue("foo_value"),
+            "bar" to SingleValue("bar_value"),
           ),
         )
       },
@@ -83,8 +84,8 @@ class UpdateAssessmentPropertiesCommandTest(
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentPropertiesUpdatedEvent(
             added = mapOf(
-              "foo" to listOf("foo_value"),
-              "bar" to listOf("bar_value"),
+              "foo" to SingleValue("foo_value"),
+              "bar" to SingleValue("bar_value"),
             ),
             removed = emptyList(),
             timeline = null,
@@ -98,7 +99,7 @@ class UpdateAssessmentPropertiesCommandTest(
         UpdateAssessmentPropertiesCommand(
           user = User("test-user", "Test User"),
           assessmentUuid = assessmentEntity.uuid,
-          added = mapOf("foo" to listOf("updated_foo_value"), "baz" to listOf("baz_value")),
+          added = mapOf("foo" to SingleValue("updated_foo_value"), "baz" to SingleValue("baz_value")),
           removed = listOf("bar"),
         ),
       ),
@@ -131,8 +132,8 @@ class UpdateAssessmentPropertiesCommandTest(
 
     assertThat(aggregate).isNotNull
     val data = assertIs<AssessmentAggregate>(aggregate?.data)
-    assertThat(data.properties["foo"]).isEqualTo(listOf("updated_foo_value"))
+    assertThat(data.properties["foo"]).isEqualTo(SingleValue("updated_foo_value"))
     assertThat(data.properties["bar"]).isNull()
-    assertThat(data.properties["baz"]).isEqualTo(listOf("baz_value"))
+    assertThat(data.properties["baz"]).isEqualTo(SingleValue("baz_value"))
   }
 }

@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.CollectionItemQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.exception.CollectionDepthOutOfBoundsException
@@ -30,7 +31,7 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
           uuid = uuid[1],
           createdAt = now,
           updatedAt = now,
-          answers = mutableMapOf("foo" to listOf("bar")),
+          answers = mutableMapOf("foo" to SingleValue("bar")),
           properties = mutableMapOf(),
           collections = mutableListOf(),
         ),
@@ -38,7 +39,7 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
           uuid = uuid[2],
           createdAt = now,
           updatedAt = now,
-          answers = mutableMapOf("bar" to listOf("baz")),
+          answers = mutableMapOf("bar" to SingleValue("baz")),
           properties = mutableMapOf(),
           collections = mutableListOf(
             Collection(
@@ -51,7 +52,7 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
                   uuid = uuid[4],
                   createdAt = now,
                   updatedAt = now,
-                  answers = mutableMapOf("baz" to listOf("foo")),
+                  answers = mutableMapOf("baz" to SingleValue("foo")),
                   properties = mutableMapOf(),
                   collections = mutableListOf(),
                 ),
@@ -78,7 +79,7 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
           uuid = uuid[7],
           createdAt = now,
           updatedAt = now,
-          answers = mutableMapOf("foo" to listOf("baz")),
+          answers = mutableMapOf("foo" to SingleValue("baz")),
           properties = mutableMapOf(),
           collections = mutableListOf(),
         ),
@@ -128,7 +129,7 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
         uuid = uuid[2],
         createdAt = now,
         updatedAt = now,
-        answers = mutableMapOf("bar" to listOf("baz")),
+        answers = mutableMapOf("bar" to SingleValue("baz")),
         properties = mutableMapOf(),
         collections = mutableListOf(
           Collection(
@@ -168,7 +169,7 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
         uuid = uuid[2],
         createdAt = now,
         updatedAt = now,
-        answers = mutableMapOf("bar" to listOf("baz")),
+        answers = mutableMapOf("bar" to SingleValue("baz")),
         properties = mutableMapOf(),
         collections = mutableListOf(
           Collection(
@@ -181,7 +182,7 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
                 uuid = uuid[4],
                 createdAt = now,
                 updatedAt = now,
-                answers = mutableMapOf("baz" to listOf("foo")),
+                answers = mutableMapOf("baz" to SingleValue("foo")),
                 properties = mutableMapOf(),
                 collections = mutableListOf(),
               ),
@@ -217,7 +218,7 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
         uuid = uuid[4],
         createdAt = now,
         updatedAt = now,
-        answers = mutableMapOf("baz" to listOf("foo")),
+        answers = mutableMapOf("baz" to SingleValue("foo")),
         properties = mutableMapOf(),
         collections = mutableListOf(),
       ),

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
@@ -21,7 +22,7 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
       val collectionItemAnswersUpdatedEvent = eventEntityFor(
         CollectionItemAnswersUpdatedEvent(
           collectionItemUuid = collectionItemUuid,
-          added = mapOf("foo" to listOf("foo_value")),
+          added = mapOf("foo" to SingleValue("foo_value")),
           removed = listOf("bar"),
           timeline = timeline,
         ),
@@ -49,8 +50,8 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
                         uuid = collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("bar" to listOf("bar_value")),
-                        properties = mutableMapOf("baz" to listOf("baz_value")),
+                        answers = mutableMapOf("bar" to SingleValue("bar_value")),
+                        properties = mutableMapOf("baz" to SingleValue("baz_value")),
                         collections = mutableListOf(),
                       ),
                     ),
@@ -86,8 +87,8 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
                         uuid = collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("foo" to listOf("foo_value")),
-                        properties = mutableMapOf("baz" to listOf("baz_value")),
+                        answers = mutableMapOf("foo" to SingleValue("foo_value")),
+                        properties = mutableMapOf("baz" to SingleValue("baz_value")),
                         collections = mutableListOf(),
                       ),
                     ),
@@ -115,7 +116,7 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
       val collectionItemAnswersUpdatedEvent = eventEntityFor(
         CollectionItemAnswersUpdatedEvent(
           collectionItemUuid = collectionItemUuid,
-          added = mapOf("foo" to listOf("foo_value")),
+          added = mapOf("foo" to SingleValue("foo_value")),
           removed = listOf("bar"),
           timeline = null,
         ),
@@ -143,8 +144,8 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
                         uuid = collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("bar" to listOf("bar_value")),
-                        properties = mutableMapOf("baz" to listOf("baz_value")),
+                        answers = mutableMapOf("bar" to SingleValue("bar_value")),
+                        properties = mutableMapOf("baz" to SingleValue("baz_value")),
                         collections = mutableListOf(),
                       ),
                     ),
@@ -180,8 +181,8 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
                         uuid = collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("foo" to listOf("foo_value")),
-                        properties = mutableMapOf("baz" to listOf("baz_value")),
+                        answers = mutableMapOf("foo" to SingleValue("foo_value")),
+                        properties = mutableMapOf("baz" to SingleValue("baz_value")),
                         collections = mutableListOf(),
                       ),
                     ),

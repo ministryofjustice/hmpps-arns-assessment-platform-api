@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAddedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
@@ -23,8 +24,8 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
           CollectionItemAddedEvent(
             collectionUuid = collectionUuid,
             collectionItemUuid = collectionItemUuid,
-            answers = mapOf("foo" to listOf("first_foo")),
-            properties = mapOf("bar" to listOf("first_bar")),
+            answers = mapOf("foo" to SingleValue("first_foo")),
+            properties = mapOf("bar" to SingleValue("first_bar")),
             index = 0,
             timeline = timeline,
           ),
@@ -33,8 +34,8 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
           CollectionItemAddedEvent(
             collectionUuid = collectionUuid,
             collectionItemUuid = collectionItemUuid,
-            answers = mapOf("foo" to listOf("second_foo")),
-            properties = mapOf("bar" to listOf("second_bar")),
+            answers = mapOf("foo" to SingleValue("second_foo")),
+            properties = mapOf("bar" to SingleValue("second_bar")),
             index = null,
             timeline = timeline,
           ),
@@ -61,8 +62,8 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
                         uuid = collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("foo" to listOf("existing_foo")),
-                        properties = mutableMapOf("bar" to listOf("existing_bar")),
+                        answers = mutableMapOf("foo" to SingleValue("existing_foo")),
+                        properties = mutableMapOf("bar" to SingleValue("existing_bar")),
                         collections = mutableListOf(),
                       ),
                     ),
@@ -98,24 +99,24 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
                         uuid = collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("foo" to listOf("first_foo")),
-                        properties = mutableMapOf("bar" to listOf("first_bar")),
+                        answers = mutableMapOf("foo" to SingleValue("first_foo")),
+                        properties = mutableMapOf("bar" to SingleValue("first_bar")),
                         collections = mutableListOf(),
                       ),
                       CollectionItem(
                         uuid = collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("foo" to listOf("existing_foo")),
-                        properties = mutableMapOf("bar" to listOf("existing_bar")),
+                        answers = mutableMapOf("foo" to SingleValue("existing_foo")),
+                        properties = mutableMapOf("bar" to SingleValue("existing_bar")),
                         collections = mutableListOf(),
                       ),
                       CollectionItem(
                         uuid = collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("foo" to listOf("second_foo")),
-                        properties = mutableMapOf("bar" to listOf("second_bar")),
+                        answers = mutableMapOf("foo" to SingleValue("second_foo")),
+                        properties = mutableMapOf("bar" to SingleValue("second_bar")),
                         collections = mutableListOf(),
                       ),
                     ),
@@ -148,8 +149,8 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
         CollectionItemAddedEvent(
           collectionUuid = collectionUuid,
           collectionItemUuid = collectionItemUuid,
-          answers = mapOf("foo" to listOf("foo_value")),
-          properties = mapOf("bar" to listOf("bar_value")),
+          answers = mapOf("foo" to SingleValue("foo_value")),
+          properties = mapOf("bar" to SingleValue("bar_value")),
           index = 0,
           timeline = null,
         ),
@@ -205,8 +206,8 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
                         uuid = collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("foo" to listOf("foo_value")),
-                        properties = mutableMapOf("bar" to listOf("bar_value")),
+                        answers = mutableMapOf("foo" to SingleValue("foo_value")),
+                        properties = mutableMapOf("bar" to SingleValue("bar_value")),
                         collections = mutableListOf(),
                       ),
                     ),

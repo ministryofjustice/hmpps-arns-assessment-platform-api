@@ -11,6 +11,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
@@ -40,7 +41,7 @@ class CreateAssessmentCommandHandlerTest {
   val command = CreateAssessmentCommand(
     user = User("FOO_USER", "Foo User"),
     formVersion = "1",
-    properties = mapOf("foo" to listOf("bar")),
+    properties = mapOf("foo" to SingleValue("bar")),
     timeline = Timeline(
       type = "test",
       data = mapOf("bar" to listOf("baz")),

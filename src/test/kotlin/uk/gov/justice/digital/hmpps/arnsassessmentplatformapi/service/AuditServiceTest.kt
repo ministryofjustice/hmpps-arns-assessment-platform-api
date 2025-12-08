@@ -16,6 +16,7 @@ import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest
 import software.amazon.awssdk.services.sqs.model.SendMessageResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
@@ -132,7 +133,7 @@ class AuditServiceTest {
       UpdateAssessmentPropertiesCommand(
         user = user,
         assessmentUuid = assessmentUuid,
-        added = mapOf("STATUS" to listOf("TEST_STATUS")),
+        added = mapOf("STATUS" to SingleValue("TEST_STATUS")),
         removed = emptyList(),
         timeline = null,
       ),

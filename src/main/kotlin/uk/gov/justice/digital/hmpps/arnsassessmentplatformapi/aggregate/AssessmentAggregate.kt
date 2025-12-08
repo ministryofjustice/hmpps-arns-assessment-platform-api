@@ -4,14 +4,15 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import java.util.UUID
 import kotlin.collections.mutableListOf
 
 typealias Timeline = MutableList<TimelineItem>
 typealias Collaborators = MutableSet<User>
-typealias Answers = MutableMap<String, List<String>>
-typealias Properties = MutableMap<String, List<String>>
+typealias Answers = MutableMap<String, Value>
+typealias Properties = MutableMap<String, Value>
 typealias Collections = MutableList<Collection>
 typealias FormVersion = String
 

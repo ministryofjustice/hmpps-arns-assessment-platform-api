@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
@@ -60,7 +61,7 @@ class AssessmentVersionQueryTest(
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
         data = AssessmentAnswersUpdatedEvent(
-          added = mapOf("foo" to listOf("foo_value")),
+          added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
           timeline = null,
         ),
@@ -68,7 +69,7 @@ class AssessmentVersionQueryTest(
     ).run(eventRepository::saveAll)
 
     val aggregateData = AssessmentAggregate().apply {
-      answers.put("foo", listOf("foo_value"))
+      answers.put("foo", SingleValue("foo_value"))
       collaborators.add(User("FOO_USER", "Foo User"))
       formVersion = "1"
     }
@@ -136,7 +137,7 @@ class AssessmentVersionQueryTest(
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
         data = AssessmentAnswersUpdatedEvent(
-          added = mapOf("foo" to listOf("foo_value")),
+          added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
           timeline = null,
         ),
@@ -146,7 +147,7 @@ class AssessmentVersionQueryTest(
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
         data = AssessmentAnswersUpdatedEvent(
-          added = mapOf("foo" to listOf("updated_foo_value")),
+          added = mapOf("foo" to SingleValue("updated_foo_value")),
           removed = emptyList(),
           timeline = null,
         ),
@@ -154,13 +155,13 @@ class AssessmentVersionQueryTest(
     ).run(eventRepository::saveAll)
 
     val firstAggregateData = AssessmentAggregate().apply {
-      answers.put("foo", listOf("foo_value"))
+      answers.put("foo", SingleValue("foo_value"))
       collaborators.add(User("FOO_USER", "Foo User"))
       formVersion = "1"
     }
 
     val secondAggregateData = AssessmentAggregate().apply {
-      answers.put("foo", listOf("updated_foo_value"))
+      answers.put("foo", SingleValue("updated_foo_value"))
       collaborators.add(User("FOO_USER", "Foo User"))
       formVersion = "1"
     }
@@ -235,7 +236,7 @@ class AssessmentVersionQueryTest(
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
         data = AssessmentAnswersUpdatedEvent(
-          added = mapOf("foo" to listOf("foo_value")),
+          added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
           timeline = null,
         ),
@@ -245,7 +246,7 @@ class AssessmentVersionQueryTest(
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
         data = AssessmentAnswersUpdatedEvent(
-          added = mapOf("foo" to listOf("updated_foo_value")),
+          added = mapOf("foo" to SingleValue("updated_foo_value")),
           removed = emptyList(),
           timeline = null,
         ),
@@ -276,7 +277,7 @@ class AssessmentVersionQueryTest(
     val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
 
     val expectedAggregate = AssessmentAggregate().apply {
-      answers.put("foo", listOf("updated_foo_value"))
+      answers.put("foo", SingleValue("updated_foo_value"))
       collaborators.add(User("FOO_USER", "Foo User"))
       formVersion = "1"
     }
@@ -331,7 +332,7 @@ class AssessmentVersionQueryTest(
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:20:00"),
         data = AssessmentAnswersUpdatedEvent(
-          added = mapOf("foo" to listOf("foo_value")),
+          added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
           timeline = null,
         ),
@@ -342,7 +343,7 @@ class AssessmentVersionQueryTest(
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
         data = AssessmentAnswersUpdatedEvent(
-          added = mapOf("foo" to listOf("updated_foo_value")),
+          added = mapOf("foo" to SingleValue("updated_foo_value")),
           removed = emptyList(),
           timeline = null,
         ),
@@ -375,7 +376,7 @@ class AssessmentVersionQueryTest(
     val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
 
     val expectedAggregate = AssessmentAggregate().apply {
-      answers.put("foo", listOf("updated_foo_value"))
+      answers.put("foo", SingleValue("updated_foo_value"))
       collaborators.add(User("FOO_USER", "Foo User"))
       formVersion = "2"
     }

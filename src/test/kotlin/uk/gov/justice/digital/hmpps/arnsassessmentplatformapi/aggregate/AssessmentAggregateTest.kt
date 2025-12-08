@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import java.time.LocalDateTime
@@ -46,11 +47,11 @@ class AssessmentAggregateTest {
   private fun populatedAggregate(): AssessmentAggregate = AssessmentAggregate().apply {
     formVersion = "v1"
 
-    properties["p1"] = listOf("v1")
-    deletedProperties["dp1"] = listOf("dv1")
+    properties["p1"] = SingleValue("v1")
+    deletedProperties["dp1"] = SingleValue("dv1")
 
-    answers["a1"] = listOf("answer1")
-    deletedAnswers["da1"] = listOf("deletedAnswer1")
+    answers["a1"] = SingleValue("answer1")
+    deletedAnswers["da1"] = SingleValue("deletedAnswer1")
 
     val collection1 = creatCollection()
     val collection2 = creatCollection()
@@ -96,7 +97,7 @@ class AssessmentAggregateTest {
       assertNotSame(aggregate.timeline, clone.timeline)
 
       // modifying clone's top-level containers does not affect original container sizes
-      clone.properties["p2"] = listOf("v2")
+      clone.properties["p2"] = SingleValue("v2")
       clone.collections.clear()
       clone.collaborators.clear()
       clone.timeline.clear()

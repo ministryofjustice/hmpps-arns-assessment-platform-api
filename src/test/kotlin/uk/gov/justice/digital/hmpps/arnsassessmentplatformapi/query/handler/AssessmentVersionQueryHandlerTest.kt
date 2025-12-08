@@ -4,6 +4,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
@@ -22,8 +23,8 @@ class AssessmentVersionQueryHandlerTest : AbstractQueryHandlerTest() {
       eventsTo = LocalDateTime.parse("2020-07-01T10:42:43"),
       data = AssessmentAggregate().apply {
         formVersion = "1"
-        answers.put("foo", listOf("foo"))
-        properties.put("bar", listOf("bar"))
+        answers.put("foo", SingleValue("foo"))
+        properties.put("bar", SingleValue("bar"))
         collections.add(
           Collection(
             uuid = UUID.randomUUID(),

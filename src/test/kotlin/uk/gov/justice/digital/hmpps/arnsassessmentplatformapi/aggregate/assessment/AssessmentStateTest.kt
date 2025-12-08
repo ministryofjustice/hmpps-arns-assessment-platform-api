@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import java.time.LocalDateTime
@@ -66,7 +67,7 @@ class AssessmentStateTest {
         assessment = assessment,
         data = AssessmentAggregate().apply {
           formVersion = "1"
-          answers.put("foo", listOf(UUID.randomUUID().toString()))
+          answers.put("foo", SingleValue(UUID.randomUUID().toString()))
         },
       )
       val state = AssessmentState(

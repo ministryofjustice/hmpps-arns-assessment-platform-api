@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAnswersUpdatedEvent
@@ -11,7 +12,7 @@ class UpdateCollectionItemAnswersCommandHandlerTest : AbstractCommandHandlerTest
     user = user,
     assessmentUuid = assessment.uuid,
     collectionItemUuid = UUID.randomUUID(),
-    added = mapOf("foo" to listOf("foo_value")),
+    added = mapOf("foo" to SingleValue("foo_value")),
     removed = listOf("bar"),
     timeline = timeline,
   )
