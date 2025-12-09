@@ -22,12 +22,12 @@ class AssessmentAnswersUpdatedEventHandler(
     state: AssessmentState,
   ): AssessmentState {
     updateAnswers(state, event.data.added, event.data.removed)
-    state.get().data.apply {
+    state.getForUpdate().data.apply {
       collaborators.add(event.user)
       event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
-    state.get().apply {
+    state.getForUpdate().apply {
       eventsTo = event.createdAt
       updatedAt = clock.now()
       numberOfEventsApplied += 1
@@ -38,7 +38,7 @@ class AssessmentAnswersUpdatedEventHandler(
 
   companion object {
     fun updateAnswers(state: AssessmentState, added: Map<String, Value>, removed: List<String>) {
-      with(state.get()) {
+      with(state.getForUpdate()) {
         added.entries.forEach {
           data.answers.put(it.key, it.value)
           data.deletedAnswers.remove(it.key)

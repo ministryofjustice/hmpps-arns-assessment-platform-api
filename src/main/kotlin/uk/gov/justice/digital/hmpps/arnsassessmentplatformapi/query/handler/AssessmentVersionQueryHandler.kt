@@ -20,7 +20,7 @@ class AssessmentVersionQueryHandler(
     val state = stateService.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
 
-    val aggregate = state.get()
+    val aggregate = state.getLatest()
     val data = aggregate.data
 
     return AssessmentVersionQueryResult(

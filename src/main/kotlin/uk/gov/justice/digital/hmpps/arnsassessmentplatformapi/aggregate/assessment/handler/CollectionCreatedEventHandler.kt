@@ -29,7 +29,7 @@ class CollectionCreatedEventHandler(
       )
     }
 
-    val aggregate = state.get()
+    val aggregate = state.getForUpdate()
 
     val collections = if (event.data.parentCollectionItemUuid != null) {
       aggregate.data.getCollectionItem(event.data.parentCollectionItemUuid).collections

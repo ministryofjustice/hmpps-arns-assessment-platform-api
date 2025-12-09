@@ -18,7 +18,7 @@ class FormVersionUpdatedEventHandler(
     event: EventEntity<FormVersionUpdatedEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    val aggregate = state.get()
+    val aggregate = state.getForUpdate()
 
     aggregate.data.apply {
       formVersion = event.data.version

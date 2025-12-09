@@ -23,7 +23,7 @@ class AssessmentAnswersRolledBackEventHandler(
     event: EventEntity<AssessmentAnswersRolledBackEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    val aggregate = state.get()
+    val aggregate = state.getForUpdate()
 
     val previousState = stateService.stateForType(AssessmentAggregate::class).fetchOrCreateStateForExactPointInTime(
       event.assessment,
@@ -31,7 +31,7 @@ class AssessmentAnswersRolledBackEventHandler(
     ) as AssessmentState
 
     val currentAnswers = aggregate.data.answers
-    val previousAnswers = previousState.get().data.answers
+    val previousAnswers = previousState.getForUpdate().data.answers
 
     val answersAdded = buildMap {
       for ((key, oldValue) in previousAnswers) {

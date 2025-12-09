@@ -22,7 +22,7 @@ class CollectionQueryHandler(
     val state = stateService.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
 
-    val collection = state.get().data.getCollection(query.collectionUuid)
+    val collection = state.getLatest().data.getCollection(query.collectionUuid)
 
     val truncatedCollection = when {
       query.depth == -1 -> collection
