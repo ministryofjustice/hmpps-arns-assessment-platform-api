@@ -15,8 +15,8 @@ class AssessmentState(
 
   fun getLatest() = aggregates.sortedWith(
     compareBy<AggregateEntity<AssessmentAggregate>> { it.eventsTo }
-      .thenByDescending { it.numberOfEventsApplied }
+      .thenByDescending { it.numberOfEventsApplied },
   ).last()
 
-  fun getForUpdate() = (getLatest().takeIf { it.numberOfEventsApplied < 50 } ?: getLatest().clone().also { aggregates.add(it) })
+  fun getForUpdate() = getLatest().takeIf { it.numberOfEventsApplied < 50 } ?: getLatest().clone().also { aggregates.add(it) }
 }
