@@ -18,7 +18,7 @@ class CollectionItemAnswersUpdatedEventHandler(
     event: EventEntity<CollectionItemAnswersUpdatedEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    val aggregate = state.get()
+    val aggregate = state.getForUpdate()
 
     aggregate.data.getCollectionItem(event.data.collectionItemUuid).run {
       updatedAt = event.createdAt

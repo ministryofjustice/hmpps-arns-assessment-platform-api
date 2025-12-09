@@ -18,7 +18,7 @@ class GroupEventHandler(
     event: EventEntity<GroupEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    val aggregate = state.get()
+    val aggregate = state.getForUpdate()
 
     aggregate.data.apply {
       collaborators.add(event.user)

@@ -41,8 +41,14 @@ class AssessmentStateTest {
           ),
           AggregateEntity(
             eventsTo = LocalDateTime.parse("2025-01-01T12:15:00"),
+            numberOfEventsApplied = 50,
+            assessment = assessment,
+            data = AssessmentAggregate(),
+          ),
+          AggregateEntity(
+            eventsTo = LocalDateTime.parse("2025-01-01T12:15:00"),
             uuid = latestAggregateUuid,
-            numberOfEventsApplied = 3,
+            numberOfEventsApplied = 0,
             assessment = assessment,
             data = AssessmentAggregate(),
           ),
@@ -55,7 +61,7 @@ class AssessmentStateTest {
         ),
       )
 
-      val latest = state.get()
+      val latest = state.getLatest()
       assertThat(latest.uuid).isEqualTo(latestAggregateUuid)
     }
 
@@ -74,10 +80,31 @@ class AssessmentStateTest {
         aggregates = mutableListOf(latestAggregate),
       )
 
-      val latest = state.get()
+      val latest = state.getForUpdate()
       assertThat(latest.uuid).isNotEqualTo(latestAggregate.uuid)
       assertThat(latest.data).usingRecursiveComparison().isEqualTo(latestAggregate.data)
       assertThat(state.aggregates.size).isEqualTo(2)
+    }
+
+    @Test
+    fun `does not clone the latest aggregate if the number of events applied has reached the threshold but the aggregate is not fetched for update`() {
+      val latestAggregate = AggregateEntity(
+        eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
+        numberOfEventsApplied = 50,
+        assessment = assessment,
+        data = AssessmentAggregate().apply {
+          formVersion = "1"
+          answers.put("foo", SingleValue(UUID.randomUUID().toString()))
+        },
+      )
+      val state = AssessmentState(
+        aggregates = mutableListOf(latestAggregate),
+      )
+
+      val latest = state.getLatest()
+      assertThat(latest.uuid).isEqualTo(latestAggregate.uuid)
+      assertThat(latest.data).usingRecursiveComparison().isEqualTo(latestAggregate.data)
+      assertThat(state.aggregates.size).isEqualTo(1)
     }
   }
 }

@@ -20,7 +20,7 @@ class AssessmentTimelineQueryHandler(
     val state = stateService.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
 
-    val timeline = state.get().data.timeline
+    val timeline = state.getLatest().data.timeline
     val filtered = query.timelineTypes?.let { types -> timeline.filter { it.type in types } } ?: timeline
 
     return AssessmentTimelineQueryResult(filtered.toMutableList())

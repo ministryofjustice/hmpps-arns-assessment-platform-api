@@ -1,0 +1,91 @@
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.scenarios
+
+import org.springframework.http.HttpHeaders
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
+import java.lang.Thread.sleep
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotEquals
+
+class AggregateCreationTest: IntegrationTestBase() {
+  val user = User("test-user", "Test User")
+
+  private fun command(vararg cmd: RequestableCommand) =
+    webTestClient.post().uri("/command")
+      .header(HttpHeaders.CONTENT_TYPE, "application/json")
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+      .bodyValue(CommandsRequest(cmd.toList()))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(CommandsResponse::class.java)
+      .returnResult()
+      .responseBody!!
+
+  private fun query(vararg query: RequestableQuery) =
+    webTestClient.post().uri("/query")
+      .header(HttpHeaders.CONTENT_TYPE, "application/json")
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+      .bodyValue(QueriesRequest(query.toList()))
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(QueriesResponse::class.java)
+      .returnResult()
+      .responseBody!!
+
+  @Test
+  fun `new aggregate is created for point-in-time`() {
+    val assessmentUuid = assertIs<CreateAssessmentCommandResult>(
+      command(CreateAssessmentCommand(user = user, formVersion = "1")).commands[0].result
+    ).assessmentUuid
+
+    val pointsInTime = mutableMapOf(
+      "event-1" to assertIs<AssessmentVersionQueryResult>(
+        query(AssessmentVersionQuery(user = user, assessmentUuid = assessmentUuid)).queries[0].result
+      )
+    )
+
+    for (i in 2..51) {
+      command(UpdateAssessmentAnswersCommand(
+        user = user,
+        assessmentUuid = assessmentUuid,
+        added = mapOf("event-$i" to SingleValue("answer-$i")),
+        removed = emptyList(),
+      ))
+
+      pointsInTime["event-$i"] = assertIs<AssessmentVersionQueryResult>(
+        query(AssessmentVersionQuery(user = user, assessmentUuid = assessmentUuid)).queries[0].result
+      ).also {
+        assertEquals(i - 1, it.answers.size)
+        assertEquals(SingleValue("answer-$i"), it.answers["event-$i"])
+      }
+    }
+
+    for (i in 2..50) {
+      assertEquals(pointsInTime["event-1"]!!.aggregateUuid, pointsInTime["event-$i"]!!.aggregateUuid, "Same aggregate for event $i")
+    }
+
+    assertNotEquals(pointsInTime["event-1"]!!.aggregateUuid, pointsInTime["event-51"]!!.aggregateUuid, "New aggregate for event 51")
+
+    val recreated = assertIs<AssessmentVersionQueryResult>(
+      query(AssessmentVersionQuery(user = user, assessmentUuid = assessmentUuid, timestamp = pointsInTime["event-49"]!!.updatedAt)).queries[0].result
+    )
+
+    for (i in 1..51) {
+      assertNotEquals(recreated.aggregateUuid, pointsInTime["event-$i"]!!.aggregateUuid, "Aggregate for point in time [49] - different from previous aggregate for event $i")
+    }
+  }
+}
