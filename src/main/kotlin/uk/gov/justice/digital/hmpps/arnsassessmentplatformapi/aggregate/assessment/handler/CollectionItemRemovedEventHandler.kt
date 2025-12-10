@@ -19,7 +19,7 @@ class CollectionItemRemovedEventHandler(
     event: EventEntity<CollectionItemRemovedEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    val aggregate = state.getForUpdate()
+    val aggregate = state.getForWrite()
 
     if (!aggregate.data.collections.any { collection -> collection.removeItem(event.data.collectionItemUuid) }) {
       throw CollectionItemNotFoundException(event.data.collectionItemUuid)

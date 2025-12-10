@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.provider.Arguments
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
@@ -44,7 +44,7 @@ abstract class AbstractQueryHandlerTest {
     every { assessmentService.findByUuid(assessment.uuid) } returns assessment
 
     val state: AssessmentState = mockk()
-    every { state.getLatest() } returns aggregate
+    every { state.getForRead() } returns aggregate
     every { stateProvider.fetchOrCreateState(assessment, query.timestamp) } returns state
     every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
 
@@ -58,7 +58,7 @@ abstract class AbstractQueryHandlerTest {
     val result = handlerInstance.execute(query)
 
     verify(exactly = 1) { assessmentService.findByUuid(assessment.uuid) }
-    verify(exactly = 1) { state.getLatest() }
+    verify(exactly = 1) { state.getForRead() }
     verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, query.timestamp) }
     verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
 
@@ -69,7 +69,7 @@ abstract class AbstractQueryHandlerTest {
     every { assessmentService.findByUuid(assessment.uuid) } returns assessment
 
     val state: AssessmentState = mockk()
-    every { state.getLatest() } returns aggregate
+    every { state.getForRead() } returns aggregate
     every { stateProvider.fetchOrCreateState(assessment, query.timestamp) } returns state
     every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
 
@@ -83,7 +83,7 @@ abstract class AbstractQueryHandlerTest {
     val error = assertThrows<AssessmentPlatformException> { handlerInstance.execute(query) }
 
     verify(exactly = 1) { assessmentService.findByUuid(assessment.uuid) }
-    verify(exactly = 1) { state.getLatest() }
+    verify(exactly = 1) { state.getForRead() }
     verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, query.timestamp) }
     verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
 

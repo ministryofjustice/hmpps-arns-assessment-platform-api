@@ -30,7 +30,7 @@ class CollectionItemAddedEventHandler(
       )
     }
 
-    val aggregate = state.getForUpdate()
+    val aggregate = state.getForWrite()
     val collection = aggregate.data.getCollection(event.data.collectionUuid)
 
     if (event.data.index != null) {

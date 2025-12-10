@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Timeline
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.TimelineView
 
 data class AssessmentTimelineQueryResult(
-  val timeline: Timeline,
+  val timeline: TimelineView,
 ) : QueryResult
