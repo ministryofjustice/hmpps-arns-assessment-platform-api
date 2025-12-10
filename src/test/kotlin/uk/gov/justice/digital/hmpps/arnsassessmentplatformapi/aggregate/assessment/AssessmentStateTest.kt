@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
@@ -61,7 +60,7 @@ class AssessmentStateTest {
         ),
       )
 
-      val latest = state.getLatest()
+      val latest = state.getForRead()
       assertThat(latest.uuid).isEqualTo(latestAggregateUuid)
     }
 
@@ -80,7 +79,7 @@ class AssessmentStateTest {
         aggregates = mutableListOf(latestAggregate),
       )
 
-      val latest = state.getForUpdate()
+      val latest = state.getForWrite()
       assertThat(latest.uuid).isNotEqualTo(latestAggregate.uuid)
       assertThat(latest.data).usingRecursiveComparison().isEqualTo(latestAggregate.data)
       assertThat(state.aggregates.size).isEqualTo(2)
@@ -101,7 +100,7 @@ class AssessmentStateTest {
         aggregates = mutableListOf(latestAggregate),
       )
 
-      val latest = state.getLatest()
+      val latest = state.getForRead()
       assertThat(latest.uuid).isEqualTo(latestAggregate.uuid)
       assertThat(latest.data).usingRecursiveComparison().isEqualTo(latestAggregate.data)
       assertThat(state.aggregates.size).isEqualTo(1)

@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.CollectionItemQuery
@@ -22,7 +22,7 @@ class CollectionItemQueryHandler(
     val state = stateService.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
 
-    val collectionItem = state.getLatest().data.getCollectionItem(query.collectionItemUuid)
+    val collectionItem = state.getForRead().data.getCollectionItem(query.collectionItemUuid)
 
     val truncatedCollectionItem = when {
       query.depth == -1 -> collectionItem

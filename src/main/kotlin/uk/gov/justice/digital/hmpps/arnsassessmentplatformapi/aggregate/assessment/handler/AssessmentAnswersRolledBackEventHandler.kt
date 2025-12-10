@@ -2,7 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
@@ -23,7 +23,7 @@ class AssessmentAnswersRolledBackEventHandler(
     event: EventEntity<AssessmentAnswersRolledBackEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    val aggregate = state.getForUpdate()
+    val aggregate = state.getForWrite()
 
     val previousState = stateService.stateForType(AssessmentAggregate::class).fetchOrCreateStateForExactPointInTime(
       event.assessment,
@@ -31,7 +31,7 @@ class AssessmentAnswersRolledBackEventHandler(
     ) as AssessmentState
 
     val currentAnswers = aggregate.data.answers
-    val previousAnswers = previousState.getForUpdate().data.answers
+    val previousAnswers = previousState.getForWrite().data.answers
 
     val answersAdded = buildMap {
       for ((key, oldValue) in previousAnswers) {

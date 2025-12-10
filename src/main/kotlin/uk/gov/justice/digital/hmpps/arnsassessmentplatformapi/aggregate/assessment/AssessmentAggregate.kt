@@ -1,5 +1,6 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment
 
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
@@ -16,16 +17,18 @@ typealias Properties = MutableMap<String, Value>
 typealias Collections = MutableList<Collection>
 typealias FormVersion = String
 
-class AssessmentAggregate : Aggregate<AssessmentAggregate> {
-  lateinit var formVersion: FormVersion
+class AssessmentAggregate :
+  Aggregate<AssessmentAggregate>,
+  AssessmentAggregateView {
+  override lateinit var formVersion: FormVersion
 
-  val properties: Properties = mutableMapOf()
-  val deletedProperties: Properties = mutableMapOf()
-  val answers: Answers = mutableMapOf()
-  val deletedAnswers: Answers = mutableMapOf()
-  val collections: Collections = mutableListOf()
-  val collaborators: Collaborators = mutableSetOf()
-  val timeline: Timeline = mutableListOf()
+  override val properties: Properties = mutableMapOf()
+  override val deletedProperties: Properties = mutableMapOf()
+  override val answers: Answers = mutableMapOf()
+  override val deletedAnswers: Answers = mutableMapOf()
+  override val collections: Collections = mutableListOf()
+  override val collaborators: Collaborators = mutableSetOf()
+  override val timeline: Timeline = mutableListOf()
 
   override fun clone() = AssessmentAggregate().also { clone ->
     clone.properties.putAll(properties)
@@ -38,11 +41,11 @@ class AssessmentAggregate : Aggregate<AssessmentAggregate> {
     clone.formVersion = formVersion
   }
 
-  fun getCollection(collectionUuid: UUID) = collections.firstOrNull { it.uuid == collectionUuid }
+  override fun getCollection(collectionUuid: UUID) = collections.firstOrNull { it.uuid == collectionUuid }
     ?: collections.firstNotNullOfOrNull { collection -> collection.items.firstNotNullOfOrNull { it.findCollection(collectionUuid) } }
     ?: throw CollectionNotFoundException(collectionUuid)
 
-  fun getCollectionItem(collectionItemUuid: UUID) = collections.firstNotNullOfOrNull { it.findItem(collectionItemUuid) } ?: throw CollectionItemNotFoundException(
+  override fun getCollectionItem(collectionItemUuid: UUID) = collections.firstNotNullOfOrNull { it.findItem(collectionItemUuid) } ?: throw CollectionItemNotFoundException(
     collectionItemUuid,
   )
 }

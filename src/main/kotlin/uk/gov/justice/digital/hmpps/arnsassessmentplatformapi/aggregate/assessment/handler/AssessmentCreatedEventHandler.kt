@@ -19,13 +19,13 @@ class AssessmentCreatedEventHandler(
     state: AssessmentState,
   ): AssessmentState {
     updateProperties(state, event.data)
-    state.getForUpdate().data.apply {
+    state.getForWrite().data.apply {
       formVersion = event.data.formVersion
       collaborators.add(event.user)
       event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
-    state.getForUpdate().apply {
+    state.getForWrite().apply {
       eventsTo = event.createdAt
       updatedAt = clock.now()
       numberOfEventsApplied += 1
@@ -35,6 +35,6 @@ class AssessmentCreatedEventHandler(
   }
 
   private fun updateProperties(state: AssessmentState, event: AssessmentCreatedEvent) {
-    state.getForUpdate().data.properties.putAll(event.properties)
+    state.getForWrite().data.properties.putAll(event.properties)
   }
 }

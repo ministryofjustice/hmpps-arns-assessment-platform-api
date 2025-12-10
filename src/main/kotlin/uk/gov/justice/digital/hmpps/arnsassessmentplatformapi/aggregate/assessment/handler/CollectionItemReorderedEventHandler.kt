@@ -19,7 +19,7 @@ class CollectionItemReorderedEventHandler(
     event: EventEntity<CollectionItemReorderedEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    val aggregate = state.getForUpdate()
+    val aggregate = state.getForWrite()
 
     if (!aggregate.data.collections.any { collection -> collection.reorderItem(event.data.collectionItemUuid, event.data.index) }) {
       throw CollectionItemNotFoundException(event.data.collectionItemUuid)

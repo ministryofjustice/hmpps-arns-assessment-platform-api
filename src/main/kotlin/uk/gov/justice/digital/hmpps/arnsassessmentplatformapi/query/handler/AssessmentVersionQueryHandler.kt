@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
@@ -20,7 +20,7 @@ class AssessmentVersionQueryHandler(
     val state = stateService.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
 
-    val aggregate = state.getLatest()
+    val aggregate = state.getForRead()
     val data = aggregate.data
 
     return AssessmentVersionQueryResult(

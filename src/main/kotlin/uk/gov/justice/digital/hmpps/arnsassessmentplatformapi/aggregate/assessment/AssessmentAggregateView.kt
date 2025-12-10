@@ -1,0 +1,30 @@
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment
+
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateView
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Value
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import java.util.UUID
+
+typealias TimelineView = List<TimelineItem>
+typealias CollaboratorsView = Set<User>
+typealias AnswersView = Map<String, Value>
+typealias PropertiesView = Map<String, Value>
+typealias CollectionsView = List<Collection>
+typealias FormVersionView = String
+
+interface AssessmentAggregateView : AggregateView {
+  val formVersion: FormVersionView
+  val properties: PropertiesView
+  val deletedProperties: PropertiesView
+  val answers: AnswersView
+  val deletedAnswers: AnswersView
+  val collections: CollectionsView
+  val collaborators: CollaboratorsView
+  val timeline: TimelineView
+
+  fun getCollection(collectionUuid: UUID): Collection
+  fun getCollectionItem(collectionItemUuid: UUID): CollectionItem
+}

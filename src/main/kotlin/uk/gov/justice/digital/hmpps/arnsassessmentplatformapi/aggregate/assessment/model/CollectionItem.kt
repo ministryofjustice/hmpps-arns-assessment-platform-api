@@ -1,18 +1,31 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Answers
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Properties
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.Answers
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AnswersView
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.Properties
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.PropertiesView
 import java.time.LocalDateTime
 import java.util.UUID
 
+interface CollectionItemView {
+  val uuid: UUID
+  val createdAt: LocalDateTime
+  val updatedAt: LocalDateTime
+  val answers: AnswersView
+  val properties: PropertiesView
+  val collections: List<CollectionView>
+
+  fun findCollection(id: UUID): Collection?
+}
+
 data class CollectionItem(
-  val uuid: UUID,
-  val createdAt: LocalDateTime,
-  var updatedAt: LocalDateTime,
-  val answers: Answers,
-  val properties: Properties,
-  val collections: MutableList<Collection>,
-) {
-  fun findCollection(id: UUID): Collection? = collections.firstOrNull { it.uuid == id }
+  override val uuid: UUID,
+  override val createdAt: LocalDateTime,
+  override var updatedAt: LocalDateTime,
+  override val answers: Answers,
+  override val properties: Properties,
+  override val collections: MutableList<Collection>,
+) : CollectionItemView {
+  override fun findCollection(id: UUID): Collection? = collections.firstOrNull { it.uuid == id }
     ?: collections.firstNotNullOfOrNull { collection -> collection.items.firstNotNullOfOrNull { it.findCollection(id) } }
 }

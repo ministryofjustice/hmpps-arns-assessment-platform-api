@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.FormVersion
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.FormVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import java.util.UUID

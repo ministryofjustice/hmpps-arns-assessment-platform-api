@@ -1,7 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.handler
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
@@ -40,7 +41,7 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
               formVersion = "1"
               collections.addAll(
                 listOf(
-                  uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection(
+                  Collection(
                     uuid = collectionUuid,
                     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -77,7 +78,7 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
               collaborators.add(user)
               collections.addAll(
                 listOf(
-                  uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection(
+                  Collection(
                     uuid = collectionUuid,
                     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -134,7 +135,7 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
               formVersion = "1"
               collections.addAll(
                 listOf(
-                  uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection(
+                  Collection(
                     uuid = collectionUuid,
                     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -171,7 +172,7 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
               collaborators.add(user)
               collections.addAll(
                 listOf(
-                  uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection(
+                  Collection(
                     uuid = collectionUuid,
                     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),

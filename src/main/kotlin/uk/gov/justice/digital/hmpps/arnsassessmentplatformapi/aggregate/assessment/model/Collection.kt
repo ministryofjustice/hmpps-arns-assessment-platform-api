@@ -3,14 +3,24 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import java.time.LocalDateTime
 import java.util.UUID
 
+interface CollectionView {
+  val uuid: UUID
+  val createdAt: LocalDateTime
+  val updatedAt: LocalDateTime
+  val name: String
+  val items: List<CollectionItemView>
+
+  fun findItem(id: UUID): CollectionItem?
+}
+
 data class Collection(
-  val uuid: UUID,
-  val createdAt: LocalDateTime,
-  var updatedAt: LocalDateTime,
-  val name: String,
-  val items: MutableList<CollectionItem>,
-) {
-  fun findItem(id: UUID): CollectionItem? = items.firstOrNull { it.uuid == id }
+  override val uuid: UUID,
+  override val createdAt: LocalDateTime,
+  override var updatedAt: LocalDateTime,
+  override val name: String,
+  override val items: MutableList<CollectionItem>,
+) : CollectionView {
+  override fun findItem(id: UUID): CollectionItem? = items.firstOrNull { it.uuid == id }
     ?: items.firstNotNullOfOrNull { item -> item.collections.firstNotNullOfOrNull { it.findItem(id) } }
 
   fun removeItem(id: UUID): Boolean = items.removeIf { it.uuid == id } ||
