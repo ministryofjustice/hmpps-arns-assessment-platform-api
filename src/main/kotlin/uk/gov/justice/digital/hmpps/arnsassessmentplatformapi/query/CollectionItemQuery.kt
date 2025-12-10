@@ -6,7 +6,7 @@ import java.util.UUID
 
 data class CollectionItemQuery(
   override val user: User,
-  override val assessmentUuid: UUID,
+  override val assessmentIdentifier: AssessmentIdentifier,
   override val timestamp: LocalDateTime? = null,
   val collectionItemUuid: UUID,
   val depth: Int = 0,

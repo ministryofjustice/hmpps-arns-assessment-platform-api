@@ -51,7 +51,7 @@ class AggregateCreationTest : IntegrationTestBase() {
 
     val pointsInTime = mutableMapOf(
       "event-1" to assertIs<AssessmentVersionQueryResult>(
-        query(AssessmentVersionQuery(user = user, assessmentUuid = assessmentUuid)).queries[0].result,
+        query(AssessmentVersionQuery(user = user, assessmentIdentifier = assessmentUuid)).queries[0].result,
       ),
     )
 
@@ -66,7 +66,7 @@ class AggregateCreationTest : IntegrationTestBase() {
       )
 
       pointsInTime["event-$i"] = assertIs<AssessmentVersionQueryResult>(
-        query(AssessmentVersionQuery(user = user, assessmentUuid = assessmentUuid)).queries[0].result,
+        query(AssessmentVersionQuery(user = user, assessmentIdentifier = assessmentUuid)).queries[0].result,
       ).also {
         assertEquals(i - 1, it.answers.size)
         assertEquals(SingleValue("answer-$i"), it.answers["event-$i"])
@@ -80,7 +80,7 @@ class AggregateCreationTest : IntegrationTestBase() {
     assertNotEquals(pointsInTime["event-1"]!!.aggregateUuid, pointsInTime["event-51"]!!.aggregateUuid, "New aggregate for event 51")
 
     val recreated = assertIs<AssessmentVersionQueryResult>(
-      query(AssessmentVersionQuery(user = user, assessmentUuid = assessmentUuid, timestamp = pointsInTime["event-49"]!!.updatedAt)).queries[0].result,
+      query(AssessmentVersionQuery(user = user, assessmentIdentifier = assessmentUuid, timestamp = pointsInTime["event-49"]!!.updatedAt)).queries[0].result,
     )
 
     for (i in 1..51) {

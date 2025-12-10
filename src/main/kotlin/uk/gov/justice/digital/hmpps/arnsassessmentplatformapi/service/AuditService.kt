@@ -53,6 +53,6 @@ class AuditService(
     who = query.user.id,
     what = query::class.simpleName ?: "Unknown",
     service = serviceName,
-    details = json(mapOf("assessmentUuid" to query.assessmentUuid)),
+    details = json(mapOf("assessmentUuid" to query.assessmentIdentifier)),
   ).run(::sendEvent)
 }

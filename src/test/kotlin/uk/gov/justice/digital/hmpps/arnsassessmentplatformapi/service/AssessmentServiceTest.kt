@@ -25,7 +25,7 @@ class AssessmentServiceTest {
 
       every { assessmentRepository.findByUuid(assessment.uuid) } returns assessment
 
-      val result = service.findByUuid(assessment.uuid)
+      val result = service.findBy(assessment.uuid)
 
       assertThat(result).isEqualTo(assessment)
     }
@@ -35,7 +35,7 @@ class AssessmentServiceTest {
       every { assessmentRepository.findByUuid(any<UUID>()) } returns null
 
       assertThrows<AssessmentNotFoundException> {
-        service.findByUuid(UUID.randomUUID())
+        service.findBy(UUID.randomUUID())
       }
     }
   }

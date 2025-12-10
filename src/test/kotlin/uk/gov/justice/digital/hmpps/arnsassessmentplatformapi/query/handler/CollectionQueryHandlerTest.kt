@@ -100,7 +100,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns the collection data for depth=-1 and a point in time`(timestamp: LocalDateTime?) {
     val query = CollectionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = assessment.uuid,
       collectionUuid = uuid[0],
       depth = -1,
       timestamp = timestamp,
@@ -118,7 +118,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns the collection data for depth=0 and a point in time`(timestamp: LocalDateTime?) {
     val query = CollectionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = assessment.uuid,
       collectionUuid = uuid[0],
       depth = 0,
       timestamp = timestamp,
@@ -159,7 +159,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns the collection data for depth=1 and a point in time`(timestamp: LocalDateTime?) {
     val query = CollectionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = assessment.uuid,
       collectionUuid = uuid[0],
       depth = 1,
       timestamp = timestamp,
@@ -224,7 +224,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `finds a deeply nested collection and returns its data for depth=0 and a point in time`(timestamp: LocalDateTime?) {
     val query = CollectionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = assessment.uuid,
       collectionUuid = uuid[5],
       depth = 0,
       timestamp = timestamp,
@@ -248,7 +248,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `throws when the collection does not exist for a point in time`(timestamp: LocalDateTime?) {
     val query = CollectionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = assessment.uuid,
       collectionUuid = UUID.randomUUID(),
       depth = 0,
       timestamp = timestamp,
@@ -262,7 +262,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `throws when the requested depth is invalid`(timestamp: LocalDateTime?) {
     val query = CollectionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = assessment.uuid,
       collectionUuid = uuid[0],
       depth = -2,
       timestamp = timestamp,

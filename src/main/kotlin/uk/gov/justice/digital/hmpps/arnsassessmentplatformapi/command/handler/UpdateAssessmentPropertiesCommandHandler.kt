@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
@@ -22,7 +23,7 @@ class UpdateAssessmentPropertiesCommandHandler(
     val event = with(command) {
       EventEntity(
         user = user,
-        assessment = assessmentService.findByUuid(assessmentUuid),
+        assessment = assessmentService.findBy(UuidIdentifier(assessmentUuid)),
         data = AssessmentPropertiesUpdatedEvent(added, removed, timeline),
       )
     }

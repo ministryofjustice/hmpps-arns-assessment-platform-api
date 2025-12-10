@@ -15,7 +15,7 @@ class AssessmentVersionQueryHandler(
 ) : QueryHandler<AssessmentVersionQuery> {
   override val type = AssessmentVersionQuery::class
   override fun handle(query: AssessmentVersionQuery): AssessmentVersionQueryResult {
-    val assessment = assessmentService.findByUuid(query.assessmentUuid)
+    val assessment = assessmentService.findBy(query.assessmentIdentifier)
 
     val state = stateService.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState

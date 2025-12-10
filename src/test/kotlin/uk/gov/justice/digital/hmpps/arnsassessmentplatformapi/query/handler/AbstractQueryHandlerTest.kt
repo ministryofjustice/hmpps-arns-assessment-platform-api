@@ -41,7 +41,7 @@ abstract class AbstractQueryHandlerTest {
   }
 
   fun test(query: RequestableQuery, aggregate: AggregateEntity<AssessmentAggregate>, expectedResult: QueryResult) {
-    every { assessmentService.findByUuid(assessment.uuid) } returns assessment
+    every { assessmentService.findBy(assessment.uuid) } returns assessment
 
     val state: AssessmentState = mockk()
     every { state.getForRead() } returns aggregate
@@ -57,7 +57,7 @@ abstract class AbstractQueryHandlerTest {
 
     val result = handlerInstance.execute(query)
 
-    verify(exactly = 1) { assessmentService.findByUuid(assessment.uuid) }
+    verify(exactly = 1) { assessmentService.findBy(assessment.uuid) }
     verify(exactly = 1) { state.getForRead() }
     verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, query.timestamp) }
     verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
@@ -66,7 +66,7 @@ abstract class AbstractQueryHandlerTest {
   }
 
   fun testThrows(query: RequestableQuery, aggregate: AggregateEntity<AssessmentAggregate>, expectedError: AssessmentPlatformException) {
-    every { assessmentService.findByUuid(assessment.uuid) } returns assessment
+    every { assessmentService.findBy(assessment.uuid) } returns assessment
 
     val state: AssessmentState = mockk()
     every { state.getForRead() } returns aggregate
@@ -82,7 +82,7 @@ abstract class AbstractQueryHandlerTest {
 
     val error = assertThrows<AssessmentPlatformException> { handlerInstance.execute(query) }
 
-    verify(exactly = 1) { assessmentService.findByUuid(assessment.uuid) }
+    verify(exactly = 1) { assessmentService.findBy(assessment.uuid) }
     verify(exactly = 1) { state.getForRead() }
     verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, query.timestamp) }
     verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }

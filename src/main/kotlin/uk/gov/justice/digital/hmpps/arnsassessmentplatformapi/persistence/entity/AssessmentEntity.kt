@@ -1,13 +1,13 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import java.time.LocalDateTime
@@ -27,7 +27,9 @@ class AssessmentEntity(
   @Column(name = "created_at")
   val createdAt: LocalDateTime = Clock.now(),
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "person_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
-  val person: PersonEntity,
+  @Column(name = "assessment_type", nullable = false)
+  val assessmentType: String? = null,
+
+  @OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL])
+  val identifiers: MutableList<AssessmentIdentifierEntity> = mutableListOf(),
 )

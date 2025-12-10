@@ -40,7 +40,7 @@ class AssessmentVersionQueryHandlerTest : AbstractQueryHandlerTest() {
 
     val query = AssessmentVersionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = assessment.uuid,
       timestamp = timestamp,
     )
 

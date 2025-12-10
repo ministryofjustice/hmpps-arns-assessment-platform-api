@@ -87,7 +87,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentUuid = assessment.uuid,
+          assessmentIdentifier = assessment.uuid,
         ),
       ),
     )
@@ -185,7 +185,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentUuid = assessment.uuid,
+          assessmentIdentifier = assessment.uuid,
           timestamp = LocalDateTime.parse("2025-01-01T12:15:00"),
         ),
       ),
@@ -257,7 +257,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentUuid = assessment.uuid,
+          assessmentIdentifier = assessment.uuid,
         ),
       ),
     )
@@ -355,7 +355,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentUuid = assessment.uuid,
+          assessmentIdentifier = assessment.uuid,
           timestamp = LocalDateTime.parse("2025-01-01T12:25:00"),
         ),
       ),
@@ -400,7 +400,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentUuid = UUID.randomUUID(),
+          assessmentIdentifier = UUID.randomUUID(),
         ),
       ),
     )

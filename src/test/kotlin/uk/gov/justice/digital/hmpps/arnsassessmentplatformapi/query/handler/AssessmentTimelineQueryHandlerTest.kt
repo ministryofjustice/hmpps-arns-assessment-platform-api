@@ -50,7 +50,7 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns unfiltered timeline data for a point in time`(timestamp: LocalDateTime?) {
     val query = AssessmentTimelineQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = assessment.uuid,
       timestamp = timestamp,
     )
 
@@ -66,7 +66,7 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns filtered timeline data for a single timeline type and a point in time`(timestamp: LocalDateTime?) {
     val query = AssessmentTimelineQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = assessment.uuid,
       timestamp = timestamp,
       timelineTypes = listOf("FOO"),
     )
@@ -94,7 +94,7 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns filtered timeline data for multiple timeline types and a point in time`(timestamp: LocalDateTime?) {
     val query = AssessmentTimelineQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = assessment.uuid,
       timestamp = timestamp,
       timelineTypes = listOf("BAR", "BAZ"),
     )
@@ -122,7 +122,7 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns empty timeline data for a non-existent timeline type and a point in time`(timestamp: LocalDateTime?) {
     val query = AssessmentTimelineQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = assessment.uuid,
       timestamp = timestamp,
       timelineTypes = listOf("TEST"),
     )

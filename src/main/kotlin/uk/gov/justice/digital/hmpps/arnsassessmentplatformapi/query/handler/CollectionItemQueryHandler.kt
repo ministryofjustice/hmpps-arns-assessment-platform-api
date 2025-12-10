@@ -17,7 +17,7 @@ class CollectionItemQueryHandler(
 ) : QueryHandler<CollectionItemQuery> {
   override val type = CollectionItemQuery::class
   override fun handle(query: CollectionItemQuery): CollectionItemQueryResult {
-    val assessment = assessmentService.findByUuid(query.assessmentUuid)
+    val assessment = assessmentService.findBy(query.assessmentIdentifier)
 
     val state = stateService.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
