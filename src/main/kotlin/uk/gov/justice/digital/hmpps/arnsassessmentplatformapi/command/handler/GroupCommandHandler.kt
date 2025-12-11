@@ -25,7 +25,7 @@ class GroupCommandHandler(
     val event = with(command) {
       EventEntity(
         user = user,
-        assessment = assessmentService.findByUuid(assessmentUuid),
+        assessment = assessmentService.findBy(assessmentUuid),
         data = GroupEvent(timeline),
       )
     }

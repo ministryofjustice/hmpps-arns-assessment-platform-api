@@ -27,7 +27,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
 abstract class AbstractCommandHandlerTest {
-  val assessment = AssessmentEntity()
+  val assessment = AssessmentEntity(type = "TEST")
   val assessmentService: AssessmentService = mockk()
   val eventBus: EventBus = mockk()
   val eventService: EventService = mockk()
@@ -60,7 +60,7 @@ abstract class AbstractCommandHandlerTest {
 
   @Test
   fun `it handles the command`() {
-    every { assessmentService.findByUuid(assessment.uuid) } returns assessment
+    every { assessmentService.findBy(assessment.uuid) } returns assessment
 
     val handledEvent = slot<EventEntity<out Event>>()
     val persistedEvent = slot<EventEntity<out Event>>()
@@ -72,7 +72,7 @@ abstract class AbstractCommandHandlerTest {
 
     val result = getHandler().execute(command)
 
-    verify(exactly = 1) { assessmentService.findByUuid(assessment.uuid) }
+    verify(exactly = 1) { assessmentService.findBy(assessment.uuid) }
     verify(exactly = 1) { eventBus.handle(any<EventEntity<out Event>>()) }
     verify(exactly = 1) { stateService.persist(state) }
     verify(exactly = 1) { eventService.save(any<EventEntity<out Event>>()) }

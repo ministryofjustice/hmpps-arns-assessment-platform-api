@@ -22,7 +22,7 @@ class AddCollectionItemCommandHandler(
     val event = with(command) {
       EventEntity(
         user = user,
-        assessment = assessmentService.findByUuid(assessmentUuid),
+        assessment = assessmentService.findBy(assessmentUuid),
         data = CollectionItemAddedEvent(collectionItemUuid, collectionUuid, answers, properties, index, timeline),
       )
     }

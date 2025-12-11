@@ -30,7 +30,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventServi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 
 class GroupCommandHandlerTest {
-  val assessment = AssessmentEntity()
+  val assessment = AssessmentEntity(type = "TEST")
   val assessmentService: AssessmentService = mockk()
   val eventBus: EventBus = mockk()
   val eventService: EventService = mockk(relaxed = true)
@@ -83,7 +83,7 @@ class GroupCommandHandlerTest {
 
   @Test
   fun `it handles the command`() {
-    every { assessmentService.findByUuid(assessment.uuid) } returns assessment
+    every { assessmentService.findBy(assessment.uuid) } returns assessment
 
     val handledEvent = slot<EventEntity<*>>()
     val persistedEvent = slot<EventEntity<GroupEvent>>()
@@ -97,7 +97,7 @@ class GroupCommandHandlerTest {
 
     val result = handler.execute(command)
 
-    verify(exactly = 1) { assessmentService.findByUuid(assessment.uuid) }
+    verify(exactly = 1) { assessmentService.findBy(assessment.uuid) }
     verify(exactly = 1) { eventBus.handle(any<EventEntity<*>>()) }
     verify(exactly = 1) { stateService.persist(state) }
     verify(exactly = 1) { eventService.save(any<EventEntity<*>>()) }

@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import java.util.UUID
@@ -108,11 +109,16 @@ class AuditServiceTest {
 
     assertEquals(queueUrl, request.queueUrl())
     assertTrue(request.messageBody().contains("serialized event"))
-    assertEquals(mapOf("assessmentUuid" to assessmentUuid), capturedEventDetails.captured)
     assertEquals("serialized event details", capturedEvent.captured.details)
     assertEquals(serviceName, capturedEvent.captured.service)
     assertEquals(user.id, capturedEvent.captured.who)
     assertEquals(auditable::class.simpleName, capturedEvent.captured.what)
+
+    when (auditable) {
+      is RequestableCommand -> assertEquals(mapOf("assessmentUuid" to assessmentUuid), capturedEventDetails.captured)
+      is RequestableQuery -> assertEquals(mapOf("assessmentIdentifier" to UuidIdentifier(assessmentUuid)), capturedEventDetails.captured)
+      else -> fail("Unexpected auditable type $auditable")
+    }
   }
 
   @Test
@@ -137,7 +143,7 @@ class AuditServiceTest {
         removed = emptyList(),
         timeline = null,
       ),
-      AssessmentTimelineQuery(user, assessmentUuid, Clock.now()), // RequestableQuery
+      AssessmentTimelineQuery(user, UuidIdentifier(assessmentUuid), Clock.now()), // RequestableQuery
     )
   }
 }

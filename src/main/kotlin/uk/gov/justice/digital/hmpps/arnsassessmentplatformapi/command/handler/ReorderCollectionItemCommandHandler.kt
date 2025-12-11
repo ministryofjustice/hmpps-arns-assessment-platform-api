@@ -22,7 +22,7 @@ class ReorderCollectionItemCommandHandler(
     val event = with(command) {
       EventEntity(
         user = user,
-        assessment = assessmentService.findByUuid(assessmentUuid),
+        assessment = assessmentService.findBy(assessmentUuid),
         data = CollectionItemReorderedEvent(
           collectionItemUuid = collectionItemUuid,
           index = index,

@@ -16,7 +16,7 @@ import kotlin.jvm.java
 class AuditService(
   private val hmppsQueueService: HmppsQueueService,
   private val objectMapper: ObjectMapper,
-  @Value("\${spring.application.name}")
+  @param:Value("\${spring.application.name}")
   private val serviceName: String,
 ) {
   private val auditQueue by lazy {
@@ -53,6 +53,6 @@ class AuditService(
     who = query.user.id,
     what = query::class.simpleName ?: "Unknown",
     service = serviceName,
-    details = json(mapOf("assessmentUuid" to query.assessmentUuid)),
+    details = json(mapOf("assessmentIdentifier" to query.assessmentIdentifier)),
   ).run(::sendEvent)
 }

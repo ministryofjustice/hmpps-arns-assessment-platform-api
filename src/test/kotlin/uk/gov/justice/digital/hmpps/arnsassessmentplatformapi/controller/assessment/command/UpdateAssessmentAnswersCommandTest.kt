@@ -45,7 +45,7 @@ class UpdateAssessmentAnswersCommandTest(
 
   @Test
   fun `it updates answers`() {
-    val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
+    val assessmentEntity = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
     assessmentRepository.save(assessmentEntity)
     val aggregateEntity = AggregateEntity(
       assessment = assessmentEntity,

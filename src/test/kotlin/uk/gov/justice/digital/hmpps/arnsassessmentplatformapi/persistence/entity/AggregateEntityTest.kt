@@ -11,7 +11,7 @@ import kotlin.test.Test
 class AggregateEntityTest {
   @Test
   fun `aggregate entity is cloned`() {
-    val assessment = AssessmentEntity()
+    val assessment = AssessmentEntity(type = "TEST")
 
     val dataAggregate: AssessmentAggregate = mockk()
     val clonedAggregate: AssessmentAggregate = mockk()

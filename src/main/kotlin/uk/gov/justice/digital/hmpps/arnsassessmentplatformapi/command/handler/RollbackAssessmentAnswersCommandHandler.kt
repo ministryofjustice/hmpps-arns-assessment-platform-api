@@ -22,7 +22,7 @@ class RollbackAssessmentAnswersCommandHandler(
     val event = with(command) {
       EventEntity(
         user = command.user,
-        assessment = assessmentService.findByUuid(assessmentUuid),
+        assessment = assessmentService.findBy(assessmentUuid),
         data = AssessmentAnswersRolledBackEvent(
           rolledBackTo = command.pointInTime,
           timeline = timeline,

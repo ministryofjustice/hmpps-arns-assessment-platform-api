@@ -15,7 +15,7 @@ class AssessmentTimelineQueryHandler(
 ) : QueryHandler<AssessmentTimelineQuery> {
   override val type = AssessmentTimelineQuery::class
   override fun handle(query: AssessmentTimelineQuery): AssessmentTimelineQueryResult {
-    val assessment = assessmentService.findByUuid(query.assessmentUuid)
+    val assessment = assessmentService.findBy(query.assessmentIdentifier)
 
     val state = stateService.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState

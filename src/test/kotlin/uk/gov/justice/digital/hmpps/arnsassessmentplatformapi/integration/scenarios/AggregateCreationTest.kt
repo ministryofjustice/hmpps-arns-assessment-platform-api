@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.respons
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -46,12 +47,12 @@ class AggregateCreationTest : IntegrationTestBase() {
   @Test
   fun `new aggregate is created for point-in-time`() {
     val assessmentUuid = assertIs<CreateAssessmentCommandResult>(
-      command(CreateAssessmentCommand(user = user, formVersion = "1")).commands[0].result,
+      command(CreateAssessmentCommand(user = user, assessmentType = "TEST", formVersion = "1")).commands[0].result,
     ).assessmentUuid
 
     val pointsInTime = mutableMapOf(
       "event-1" to assertIs<AssessmentVersionQueryResult>(
-        query(AssessmentVersionQuery(user = user, assessmentUuid = assessmentUuid)).queries[0].result,
+        query(AssessmentVersionQuery(user = user, assessmentIdentifier = UuidIdentifier(assessmentUuid))).queries[0].result,
       ),
     )
 
@@ -66,7 +67,7 @@ class AggregateCreationTest : IntegrationTestBase() {
       )
 
       pointsInTime["event-$i"] = assertIs<AssessmentVersionQueryResult>(
-        query(AssessmentVersionQuery(user = user, assessmentUuid = assessmentUuid)).queries[0].result,
+        query(AssessmentVersionQuery(user = user, assessmentIdentifier = UuidIdentifier(assessmentUuid))).queries[0].result,
       ).also {
         assertEquals(i - 1, it.answers.size)
         assertEquals(SingleValue("answer-$i"), it.answers["event-$i"])
@@ -80,7 +81,7 @@ class AggregateCreationTest : IntegrationTestBase() {
     assertNotEquals(pointsInTime["event-1"]!!.aggregateUuid, pointsInTime["event-51"]!!.aggregateUuid, "New aggregate for event 51")
 
     val recreated = assertIs<AssessmentVersionQueryResult>(
-      query(AssessmentVersionQuery(user = user, assessmentUuid = assessmentUuid, timestamp = pointsInTime["event-49"]!!.updatedAt)).queries[0].result,
+      query(AssessmentVersionQuery(user = user, assessmentIdentifier = UuidIdentifier(assessmentUuid), timestamp = pointsInTime["event-49"]!!.updatedAt)).queries[0].result,
     )
 
     for (i in 1..51) {

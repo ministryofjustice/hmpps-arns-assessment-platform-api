@@ -49,7 +49,7 @@ class CreateCollectionCommandTest(
 
   @Test
   fun `it creates a collection`() {
-    val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
+    val assessmentEntity = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
     assessmentRepository.save(assessmentEntity)
 
     val aggregateEntity = AggregateEntity(
@@ -125,7 +125,7 @@ class CreateCollectionCommandTest(
 
   @Test
   fun `it creates a child collection`() {
-    val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
+    val assessmentEntity = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
     assessmentRepository.save(assessmentEntity)
 
     val collectionUuid = UUID.randomUUID()

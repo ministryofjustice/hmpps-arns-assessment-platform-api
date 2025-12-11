@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentTimelineQueryResult
 import java.time.LocalDateTime
 
@@ -50,7 +51,7 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns unfiltered timeline data for a point in time`(timestamp: LocalDateTime?) {
     val query = AssessmentTimelineQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = UuidIdentifier(assessment.uuid),
       timestamp = timestamp,
     )
 
@@ -66,7 +67,7 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns filtered timeline data for a single timeline type and a point in time`(timestamp: LocalDateTime?) {
     val query = AssessmentTimelineQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = UuidIdentifier(assessment.uuid),
       timestamp = timestamp,
       timelineTypes = listOf("FOO"),
     )
@@ -94,7 +95,7 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns filtered timeline data for multiple timeline types and a point in time`(timestamp: LocalDateTime?) {
     val query = AssessmentTimelineQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = UuidIdentifier(assessment.uuid),
       timestamp = timestamp,
       timelineTypes = listOf("BAR", "BAZ"),
     )
@@ -122,7 +123,7 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns empty timeline data for a non-existent timeline type and a point in time`(timestamp: LocalDateTime?) {
     val query = AssessmentTimelineQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = UuidIdentifier(assessment.uuid),
       timestamp = timestamp,
       timelineTypes = listOf("TEST"),
     )

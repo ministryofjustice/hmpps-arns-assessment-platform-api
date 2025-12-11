@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.CollectionQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.exception.CollectionDepthOutOfBoundsException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.CollectionQueryResult
 import java.time.LocalDateTime
@@ -100,7 +101,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns the collection data for depth=-1 and a point in time`(timestamp: LocalDateTime?) {
     val query = CollectionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = UuidIdentifier(assessment.uuid),
       collectionUuid = uuid[0],
       depth = -1,
       timestamp = timestamp,
@@ -118,7 +119,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns the collection data for depth=0 and a point in time`(timestamp: LocalDateTime?) {
     val query = CollectionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = UuidIdentifier(assessment.uuid),
       collectionUuid = uuid[0],
       depth = 0,
       timestamp = timestamp,
@@ -159,7 +160,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns the collection data for depth=1 and a point in time`(timestamp: LocalDateTime?) {
     val query = CollectionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = UuidIdentifier(assessment.uuid),
       collectionUuid = uuid[0],
       depth = 1,
       timestamp = timestamp,
@@ -224,7 +225,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `finds a deeply nested collection and returns its data for depth=0 and a point in time`(timestamp: LocalDateTime?) {
     val query = CollectionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = UuidIdentifier(assessment.uuid),
       collectionUuid = uuid[5],
       depth = 0,
       timestamp = timestamp,
@@ -248,7 +249,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `throws when the collection does not exist for a point in time`(timestamp: LocalDateTime?) {
     val query = CollectionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = UuidIdentifier(assessment.uuid),
       collectionUuid = UUID.randomUUID(),
       depth = 0,
       timestamp = timestamp,
@@ -262,7 +263,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `throws when the requested depth is invalid`(timestamp: LocalDateTime?) {
     val query = CollectionQuery(
       user = user,
-      assessmentUuid = assessment.uuid,
+      assessmentIdentifier = UuidIdentifier(assessment.uuid),
       collectionUuid = uuid[0],
       depth = -2,
       timestamp = timestamp,
