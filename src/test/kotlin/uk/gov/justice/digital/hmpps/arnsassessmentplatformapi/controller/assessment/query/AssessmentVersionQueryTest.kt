@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertIs
@@ -113,13 +114,15 @@ class AssessmentVersionQueryTest(
 
   @Test
   fun `it fetches an aggregate for a point in time`() {
-    val assessment: AssessmentEntity = AssessmentEntity().run(assessmentRepository::save)
+    val assessment: AssessmentEntity = AssessmentEntity(
+      createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+    ).run(assessmentRepository::save)
 
     listOf(
       EventEntity(
         user = User("FOO_USER", "Foo User"),
         assessment = assessment,
-        createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+        createdAt = assessment.createdAt,
         data = AssessmentCreatedEvent(
           formVersion = "1",
           properties = mapOf(),
@@ -297,12 +300,14 @@ class AssessmentVersionQueryTest(
 
   @Test
   fun `events with nested child events are atomic`() {
-    val assessment: AssessmentEntity = AssessmentEntity().run(assessmentRepository::save)
+    val assessment: AssessmentEntity = AssessmentEntity(
+      createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+    ).run(assessmentRepository::save)
 
     val assessmentCreatedEvent = EventEntity(
       user = User("FOO_USER", "Foo User"),
       assessment = assessment,
-      createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+      createdAt = assessment.createdAt,
       data = AssessmentCreatedEvent(
         formVersion = "1",
         properties = mapOf(),
@@ -411,5 +416,61 @@ class AssessmentVersionQueryTest(
       .bodyValue(request)
       .exchange()
       .expectStatus().isNotFound
+  }
+
+  @Test
+  fun `it returns an error when the requested point in time is before the assessment created date`() {
+    val assessment: AssessmentEntity = AssessmentEntity(
+      createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+    ).run(assessmentRepository::save)
+
+    val event = EventEntity(
+      user = User("FOO_USER", "Foo User"),
+      assessment = assessment,
+      createdAt = assessment.createdAt,
+      data = AssessmentCreatedEvent(
+        formVersion = "1",
+        properties = emptyMap(),
+        timeline = null,
+      ),
+    ).run(eventRepository::save)
+
+    val aggregateData = AssessmentAggregate().apply {
+      collaborators.add(event.user)
+      formVersion = event.data.formVersion
+    }
+
+    AggregateEntity(
+      assessment = assessment,
+      eventsFrom = event.createdAt,
+      eventsTo = event.createdAt,
+      data = aggregateData,
+    )
+      .apply { numberOfEventsApplied = 1 }
+      .run(aggregateRepository::save)
+
+    val request = QueriesRequest(
+      queries = listOf(
+        AssessmentVersionQuery(
+          user = User("test-user", "Test User"),
+          assessmentUuid = assessment.uuid,
+          timestamp = LocalDateTime.parse("2025-01-01T08:00:01"),
+        ),
+      ),
+    )
+
+    val response = webTestClient.post().uri("/query")
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+      .bodyValue(request)
+      .exchange()
+      .expectStatus().isBadRequest
+      .expectBody(ErrorResponse::class.java)
+      .returnResult()
+      .responseBody
+
+    assertThat(response?.status).isEqualTo(400)
+    assertThat(response?.userMessage).isEqualTo("Invalid timestamp 2025-01-01T08:00:01")
+    assertThat(response?.developerMessage).isEqualTo("Timestamp cannot be before the assessment created date")
   }
 }
