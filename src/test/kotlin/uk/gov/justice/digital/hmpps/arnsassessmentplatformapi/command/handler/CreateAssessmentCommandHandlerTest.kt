@@ -50,7 +50,7 @@ class CreateAssessmentCommandHandlerTest {
 
   val expectedEvent = AssessmentCreatedEvent(
     formVersion = "1",
-    properties = command.properties,
+    properties = command.properties!!,
     timeline = command.timeline,
   )
 
@@ -94,6 +94,7 @@ class CreateAssessmentCommandHandlerTest {
     assertThat(handledEvent.captured.data).isEqualTo(expectedEvent)
 
     assertThat(handledEvent.captured).isEqualTo(persistedEvent.captured)
+    assertThat(handledEvent.captured.createdAt).isEqualTo(assessment.captured.createdAt)
 
     assertThat(result).isEqualTo(expectedResult)
   }
