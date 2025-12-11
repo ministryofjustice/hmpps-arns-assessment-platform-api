@@ -27,7 +27,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
 abstract class AbstractCommandHandlerTest {
-  val assessment = AssessmentEntity()
+  val assessment = AssessmentEntity(type = "TEST")
   val assessmentService: AssessmentService = mockk()
   val eventBus: EventBus = mockk()
   val eventService: EventService = mockk()

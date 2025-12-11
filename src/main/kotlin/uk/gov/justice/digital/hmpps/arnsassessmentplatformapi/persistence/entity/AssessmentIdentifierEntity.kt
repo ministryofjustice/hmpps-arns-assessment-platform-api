@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entit
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -10,6 +12,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -32,6 +35,7 @@ class AssessmentIdentifierEntity(
   val createdAt: LocalDateTime = Clock.now(),
 
   @Column(name = "identifier_type")
+  @Enumerated(EnumType.STRING)
   val identifierType: IdentifierType,
 
   @Column(name = "identifier")
@@ -40,4 +44,10 @@ class AssessmentIdentifierEntity(
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "assessment_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
   val assessment: AssessmentEntity,
-)
+) {
+  fun toIdentifier() = ExternalIdentifier(
+    identifier = identifier,
+    identifierType = identifierType,
+    assessmentType = assessment.type,
+  )
+}

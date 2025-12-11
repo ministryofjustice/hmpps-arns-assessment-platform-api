@@ -24,7 +24,7 @@ import java.util.UUID
 
 class AssessmentAnswersRolledBackEventHandlerTest {
   private val aggregateUuid: UUID = UUID.randomUUID()
-  private val assessment = AssessmentEntity()
+  private val assessment = AssessmentEntity(type = "TEST")
   private val mockClock: Clock = mockk()
   private val stateProvider: StateService.StateForType<AssessmentAggregate> = mockk()
   private val stateService: StateService = mockk()

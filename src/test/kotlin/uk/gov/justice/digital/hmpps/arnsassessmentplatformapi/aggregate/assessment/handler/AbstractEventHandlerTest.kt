@@ -52,7 +52,7 @@ abstract class AbstractEventHandlerTest<E : Event> {
   abstract val scenarios: List<Scenario<E>>
 
   protected val aggregateUuid: UUID = UUID.randomUUID()
-  protected val assessment = AssessmentEntity()
+  protected val assessment = AssessmentEntity(type = "TEST")
   protected val mockClock: Clock = mockk()
   protected val user = User("FOO_USER", "Foo User")
   protected val timeline = Timeline("test", mapOf("foo" to listOf("bar")))

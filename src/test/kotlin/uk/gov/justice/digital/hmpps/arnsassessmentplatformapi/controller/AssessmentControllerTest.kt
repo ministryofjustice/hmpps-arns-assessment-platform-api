@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.Integr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
 import java.util.UUID
 import kotlin.test.assertIs
@@ -73,10 +74,12 @@ class AssessmentControllerTest(
         commands = listOf(
           CreateAssessmentCommand(
             User("test-user-1", "Test User"),
+            assessmentType = "TEST",
             formVersion = "1",
           ),
           CreateAssessmentCommand(
             User("test-user-2", "Test User"),
+            assessmentType = "TEST",
             formVersion = "1",
           ),
         ),
@@ -142,10 +145,12 @@ class AssessmentControllerTest(
     fun `it can process multiple queries`() {
       val assessment1 = CreateAssessmentCommand(
         User("test-user-1", "Test User"),
+        assessmentType = "TEST",
         formVersion = "1",
       )
       val assessment2 = CreateAssessmentCommand(
         User("test-user-2", "Test User"),
+        assessmentType = "TEST",
         formVersion = "1",
       )
 
@@ -161,8 +166,14 @@ class AssessmentControllerTest(
 
       val request = QueriesRequest(
         queries = listOf(
-          AssessmentVersionQuery(User("test-user-1", "Test User"), assessment1.assessmentUuid),
-          AssessmentVersionQuery(User("test-user-2", "Test User"), assessment2.assessmentUuid),
+          AssessmentVersionQuery(
+            user = User("test-user-1", "Test User"),
+            assessmentIdentifier = UuidIdentifier(assessment1.assessmentUuid),
+          ),
+          AssessmentVersionQuery(
+            user = User("test-user-2", "Test User"),
+            assessmentIdentifier = UuidIdentifier(assessment2.assessmentUuid),
+          ),
         ),
       )
 
@@ -200,7 +211,13 @@ class AssessmentControllerTest(
       @Test
       fun `it allows access with ROLE_AAP__FRONTEND_RW`() {
         val request = CommandsRequest(
-          commands = listOf(CreateAssessmentCommand(formVersion = "1", user = User("test-user", "Test User"))),
+          commands = listOf(
+            CreateAssessmentCommand(
+              user = User("test-user", "Test User"),
+              assessmentType = "TEST",
+              formVersion = "1",
+            ),
+          ),
         )
 
         webTestClient.post().uri("/command")
@@ -214,7 +231,13 @@ class AssessmentControllerTest(
       @Test
       fun `it denies access with no roles`() {
         val request = CommandsRequest(
-          commands = listOf(CreateAssessmentCommand(formVersion = "1", user = User("test-user", "Test User"))),
+          commands = listOf(
+            CreateAssessmentCommand(
+              user = User("test-user", "Test User"),
+              assessmentType = "TEST",
+              formVersion = "1",
+            ),
+          ),
         )
 
         webTestClient.post().uri("/command")
@@ -230,7 +253,11 @@ class AssessmentControllerTest(
     inner class QueryEndpoint {
       @Test
       fun `it allows access with ROLE_AAP__FRONTEND_RW`() {
-        val assessment = CreateAssessmentCommand(formVersion = "1", user = User("test-user", "Test User"))
+        val assessment = CreateAssessmentCommand(
+          user = User("test-user", "Test User"),
+          assessmentType = "TEST",
+          formVersion = "1",
+        )
 
         val httpRequest = MockHttpServletRequest()
         RequestContextHolder.setRequestAttributes(ServletRequestAttributes(httpRequest))
@@ -242,7 +269,12 @@ class AssessmentControllerTest(
         }
 
         val request = QueriesRequest(
-          queries = listOf(AssessmentVersionQuery(User("test-user", "Test User"), assessment.assessmentUuid)),
+          queries = listOf(
+            AssessmentVersionQuery(
+              user = User("test-user", "Test User"),
+              assessmentIdentifier = UuidIdentifier(assessment.assessmentUuid),
+            ),
+          ),
         )
 
         webTestClient.post().uri("/query")
@@ -256,7 +288,12 @@ class AssessmentControllerTest(
       @Test
       fun `it denies access with no roles`() {
         val request = QueriesRequest(
-          queries = listOf(AssessmentVersionQuery(User("test-user", "Test User"), UUID.randomUUID())),
+          queries = listOf(
+            AssessmentVersionQuery(
+              user = User("test-user", "Test User"),
+              assessmentIdentifier = UuidIdentifier(UUID.randomUUID()),
+            ),
+          ),
         )
 
         webTestClient.post().uri("/query")

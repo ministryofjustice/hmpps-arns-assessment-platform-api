@@ -6,22 +6,29 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentIdentifierRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
 import java.util.UUID
 
 class AssessmentServiceTest {
   val assessmentRepository: AssessmentRepository = mockk()
+  val assessmentIdentifierRepository: AssessmentIdentifierRepository = mockk()
   val service = AssessmentService(
     assessmentRepository = assessmentRepository,
+    assessmentIdentifierRepository = assessmentIdentifierRepository,
   )
 
   @Nested
   inner class FindByUuid {
     @Test
     fun `it finds and returns the assessment`() {
-      val assessment = AssessmentEntity()
+      val assessment = AssessmentEntity(type = "TEST")
 
       every { assessmentRepository.findByUuid(assessment.uuid) } returns assessment
 
@@ -36,6 +43,71 @@ class AssessmentServiceTest {
 
       assertThrows<AssessmentNotFoundException> {
         service.findBy(UUID.randomUUID())
+      }
+    }
+  }
+
+  @Nested
+  inner class FindByUuidIdentifier {
+    @Test
+    fun `it finds and returns the assessment`() {
+      val assessment = AssessmentEntity(type = "TEST")
+
+      every { assessmentRepository.findByUuid(assessment.uuid) } returns assessment
+
+      val result = service.findBy(UuidIdentifier(assessment.uuid))
+
+      assertThat(result).isEqualTo(assessment)
+    }
+
+    @Test
+    fun `it throws when unable to find the assessment`() {
+      every { assessmentRepository.findByUuid(any<UUID>()) } returns null
+
+      assertThrows<AssessmentNotFoundException> {
+        service.findBy(UuidIdentifier(UUID.randomUUID()))
+      }
+    }
+  }
+
+  @Nested
+  inner class FindByExternalIdentifier {
+    val assessment = AssessmentEntity(type = "TEST")
+    val identifier = AssessmentIdentifierEntity(identifierType = IdentifierType.CRN, identifier = "CRN123", assessment = assessment)
+
+    val externalIdentifier = ExternalIdentifier(
+      identifierType = IdentifierType.CRN,
+      identifier = "CRN123",
+      assessmentType = "TEST",
+    )
+
+    @Test
+    fun `it finds and returns the assessment`() {
+      every {
+        assessmentIdentifierRepository.findByIdentifierTypeAndIdentifierAndAssessmentType(
+          type = IdentifierType.CRN,
+          identifier = "CRN123",
+          assessmentType = "TEST",
+        )
+      } returns identifier
+
+      val result = service.findBy(externalIdentifier)
+
+      assertThat(result).isEqualTo(assessment)
+    }
+
+    @Test
+    fun `it throws when unable to find the assessment`() {
+      every {
+        assessmentIdentifierRepository.findByIdentifierTypeAndIdentifierAndAssessmentType(
+          type = IdentifierType.CRN,
+          identifier = "CRN123",
+          assessmentType = "TEST",
+        )
+      } returns null
+
+      assertThrows<AssessmentNotFoundException> {
+        service.findBy(externalIdentifier)
       }
     }
   }

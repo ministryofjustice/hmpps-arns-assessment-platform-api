@@ -2,6 +2,10 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.assess
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
@@ -20,14 +24,20 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.Assess
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertIs
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AssessmentVersionQueryTest(
   @Autowired
   private val assessmentRepository: AssessmentRepository,
@@ -36,9 +46,10 @@ class AssessmentVersionQueryTest(
   @Autowired
   private val eventRepository: EventRepository,
 ) : IntegrationTestBase() {
-  @Test
-  fun `it fetches the latest aggregate for an assessment`() {
-    val assessment: AssessmentEntity = AssessmentEntity().run(assessmentRepository::save)
+  @ParameterizedTest
+  @MethodSource("assessmentAndIdentifierProvider")
+  fun `it fetches the latest aggregate for an assessment`(assessment: AssessmentEntity, identifier: AssessmentIdentifier) {
+    assessmentRepository.save(assessment)
 
     val events = listOf(
       EventEntity(
@@ -88,7 +99,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentIdentifier = assessment.uuid,
+          assessmentIdentifier = identifier,
         ),
       ),
     )
@@ -114,7 +125,8 @@ class AssessmentVersionQueryTest(
 
   @Test
   fun `it fetches an aggregate for a point in time`() {
-    val assessment: AssessmentEntity = AssessmentEntity(
+    val assessment = AssessmentEntity(
+      type = "TEST",
       createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
     ).run(assessmentRepository::save)
 
@@ -188,7 +200,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentIdentifier = assessment.uuid,
+          assessmentIdentifier = UuidIdentifier(assessment.uuid),
           timestamp = LocalDateTime.parse("2025-01-01T12:15:00"),
         ),
       ),
@@ -215,7 +227,7 @@ class AssessmentVersionQueryTest(
 
   @Test
   fun `it creates an aggregate for an assessment where none exists`() {
-    val assessment: AssessmentEntity = AssessmentEntity().run(assessmentRepository::save)
+    val assessment = AssessmentEntity(type = "TEST").run(assessmentRepository::save)
 
     listOf(
       EventEntity(
@@ -260,7 +272,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentIdentifier = assessment.uuid,
+          assessmentIdentifier = UuidIdentifier(assessment.uuid),
         ),
       ),
     )
@@ -300,7 +312,8 @@ class AssessmentVersionQueryTest(
 
   @Test
   fun `events with nested child events are atomic`() {
-    val assessment: AssessmentEntity = AssessmentEntity(
+    val assessment = AssessmentEntity(
+      type = "TEST",
       createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
     ).run(assessmentRepository::save)
 
@@ -360,7 +373,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentIdentifier = assessment.uuid,
+          assessmentIdentifier = UuidIdentifier(assessment.uuid),
           timestamp = LocalDateTime.parse("2025-01-01T12:25:00"),
         ),
       ),
@@ -405,7 +418,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentIdentifier = UUID.randomUUID(),
+          assessmentIdentifier = UuidIdentifier(UUID.randomUUID()),
         ),
       ),
     )
@@ -420,7 +433,8 @@ class AssessmentVersionQueryTest(
 
   @Test
   fun `it returns an error when the requested point in time is before the assessment created date`() {
-    val assessment: AssessmentEntity = AssessmentEntity(
+    val assessment = AssessmentEntity(
+      type = "TEST",
       createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
     ).run(assessmentRepository::save)
 
@@ -453,7 +467,7 @@ class AssessmentVersionQueryTest(
       queries = listOf(
         AssessmentVersionQuery(
           user = User("test-user", "Test User"),
-          assessmentUuid = assessment.uuid,
+          assessmentIdentifier = UuidIdentifier(assessment.uuid),
           timestamp = LocalDateTime.parse("2025-01-01T08:00:01"),
         ),
       ),
@@ -472,5 +486,32 @@ class AssessmentVersionQueryTest(
     assertThat(response?.status).isEqualTo(400)
     assertThat(response?.userMessage).isEqualTo("Invalid timestamp 2025-01-01T08:00:01")
     assertThat(response?.developerMessage).isEqualTo("Timestamp cannot be before the assessment created date")
+  }
+
+  companion object {
+    @JvmStatic
+    fun assessmentAndIdentifierProvider() = AssessmentEntity(type = "TEST").apply {
+      identifiers.add(
+        AssessmentIdentifierEntity(
+          identifierType = IdentifierType.CRN,
+          identifier = UUID.randomUUID().toString(),
+          assessment = this,
+        ),
+      )
+    }.let { assessment ->
+      listOf(
+        Arguments.of(assessment, UuidIdentifier(assessment.uuid)),
+        Arguments.of(
+          assessment,
+          with(assessment.identifiers.first()) {
+            ExternalIdentifier(
+              identifier = identifier,
+              identifierType = identifierType,
+              assessmentType = assessment.type,
+            )
+          },
+        ),
+      )
+    }
   }
 }

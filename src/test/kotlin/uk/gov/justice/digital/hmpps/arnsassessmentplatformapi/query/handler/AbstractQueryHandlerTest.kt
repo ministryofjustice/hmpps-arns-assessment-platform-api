@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.QueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
@@ -26,7 +27,7 @@ import kotlin.reflect.full.primaryConstructor
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractQueryHandlerTest {
-  val assessment = AssessmentEntity()
+  val assessment = AssessmentEntity(type = "TEST")
   val assessmentService: AssessmentService = mockk()
   val stateService: StateService = mockk()
   val stateProvider: StateService.StateForType<AssessmentAggregate> = mockk()
@@ -41,7 +42,7 @@ abstract class AbstractQueryHandlerTest {
   }
 
   fun test(query: RequestableQuery, aggregate: AggregateEntity<AssessmentAggregate>, expectedResult: QueryResult) {
-    every { assessmentService.findBy(assessment.uuid) } returns assessment
+    every { assessmentService.findBy(UuidIdentifier(assessment.uuid)) } returns assessment
 
     val state: AssessmentState = mockk()
     every { state.getForRead() } returns aggregate
@@ -57,7 +58,7 @@ abstract class AbstractQueryHandlerTest {
 
     val result = handlerInstance.execute(query)
 
-    verify(exactly = 1) { assessmentService.findBy(assessment.uuid) }
+    verify(exactly = 1) { assessmentService.findBy(UuidIdentifier(assessment.uuid)) }
     verify(exactly = 1) { state.getForRead() }
     verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, query.timestamp) }
     verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
@@ -66,7 +67,7 @@ abstract class AbstractQueryHandlerTest {
   }
 
   fun testThrows(query: RequestableQuery, aggregate: AggregateEntity<AssessmentAggregate>, expectedError: AssessmentPlatformException) {
-    every { assessmentService.findBy(assessment.uuid) } returns assessment
+    every { assessmentService.findBy(UuidIdentifier(assessment.uuid)) } returns assessment
 
     val state: AssessmentState = mockk()
     every { state.getForRead() } returns aggregate
@@ -82,7 +83,7 @@ abstract class AbstractQueryHandlerTest {
 
     val error = assertThrows<AssessmentPlatformException> { handlerInstance.execute(query) }
 
-    verify(exactly = 1) { assessmentService.findBy(assessment.uuid) }
+    verify(exactly = 1) { assessmentService.findBy(UuidIdentifier(assessment.uuid)) }
     verify(exactly = 1) { state.getForRead() }
     verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, query.timestamp) }
     verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }

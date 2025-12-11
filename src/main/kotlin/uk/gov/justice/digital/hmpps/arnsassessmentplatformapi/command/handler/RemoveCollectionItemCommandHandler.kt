@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemRemovedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
@@ -23,7 +22,7 @@ class RemoveCollectionItemCommandHandler(
     val event = with(command) {
       EventEntity(
         user = user,
-        assessment = assessmentService.findBy(UuidIdentifier(assessmentUuid)),
+        assessment = assessmentService.findBy(assessmentUuid),
         data = CollectionItemRemovedEvent(
           collectionItemUuid = collectionItemUuid,
           timeline = timeline,

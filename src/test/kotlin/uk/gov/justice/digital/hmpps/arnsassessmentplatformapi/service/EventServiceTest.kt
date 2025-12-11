@@ -21,7 +21,7 @@ class EventServiceTest {
   val service = EventService(
     eventRepository = eventRepository,
   )
-  val assessment = AssessmentEntity()
+  val assessment = AssessmentEntity(type = "TEST")
   val user = User("FOO_USER", "Foo User")
 
   val events = listOf(

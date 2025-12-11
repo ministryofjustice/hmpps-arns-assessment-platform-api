@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class AssessmentStateTest {
-  val assessment = AssessmentEntity()
+  val assessment = AssessmentEntity(type = "TEST")
 
   @Test
   fun `constructs taking an aggregate`() {

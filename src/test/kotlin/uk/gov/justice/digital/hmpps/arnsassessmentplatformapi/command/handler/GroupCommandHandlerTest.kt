@@ -30,7 +30,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventServi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 
 class GroupCommandHandlerTest {
-  val assessment = AssessmentEntity()
+  val assessment = AssessmentEntity(type = "TEST")
   val assessmentService: AssessmentService = mockk()
   val eventBus: EventBus = mockk()
   val eventService: EventService = mockk(relaxed = true)

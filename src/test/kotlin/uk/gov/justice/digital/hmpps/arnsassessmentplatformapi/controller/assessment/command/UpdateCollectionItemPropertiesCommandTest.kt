@@ -52,7 +52,7 @@ class UpdateCollectionItemPropertiesCommandTest(
 
   @Test
   fun `it updates the properties in a collection item`() {
-    val assessmentEntity = AssessmentEntity(createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
+    val assessmentEntity = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.parse("2025-01-01T12:35:00"))
     assessmentRepository.save(assessmentEntity)
 
     val collectionUuid = UUID.randomUUID()
@@ -185,7 +185,7 @@ class UpdateCollectionItemPropertiesCommandTest(
     val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(5)
-    assertThat(eventsForAssessment.last().data).isInstanceOf(CollectionItemPropertiesUpdatedEvent::class.java)
+    assertThat(eventsForAssessment.maxBy { it.createdAt }.data).isInstanceOf(CollectionItemPropertiesUpdatedEvent::class.java)
 
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,

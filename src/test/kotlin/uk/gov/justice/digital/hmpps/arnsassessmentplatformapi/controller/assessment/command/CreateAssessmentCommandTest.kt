@@ -18,6 +18,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
+import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
 import kotlin.test.assertIs
 
@@ -40,8 +43,14 @@ class CreateAssessmentCommandTest(
 
   @Test
   fun `it creates an assessment`() {
+    val randomCrn = UUID.randomUUID().toString()
+
     val command = CreateAssessmentCommand(
       user = User("test-user", "Test User"),
+      assessmentType = "TEST",
+      identifiers = mapOf(
+        IdentifierType.CRN to randomCrn,
+      ),
       formVersion = "1",
       properties = mapOf("prop1" to SingleValue("val1")),
     )
@@ -69,6 +78,11 @@ class CreateAssessmentCommandTest(
     val assessment = assessmentRepository.findByUuid(assessmentUuid)
 
     assertThat(assessment).isNotNull
+    assertThat(assessment?.type).isEqualTo("TEST")
+
+    val expectedIdentifier = ExternalIdentifier(randomCrn, IdentifierType.CRN, "TEST")
+    assertThat(assessment?.identifiers).hasSize(1)
+    assertThat(assessment?.identifiers?.first()?.toIdentifier()).isEqualTo(expectedIdentifier)
 
     val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentUuid)
 
@@ -82,6 +96,43 @@ class CreateAssessmentCommandTest(
   }
 
   @Test
+  fun `it rejects the request if the provided identifier is not unique`() {
+    val randomCrn = UUID.randomUUID().toString()
+
+    val command = CreateAssessmentCommand(
+      user = User("test-user", "Test User"),
+      assessmentType = "TEST",
+      identifiers = mapOf(
+        IdentifierType.CRN to randomCrn,
+      ),
+      formVersion = "1",
+    )
+
+    val request = CommandsRequest(
+      commands = listOf(command),
+    )
+
+    webTestClient.post().uri("/command")
+      .header(HttpHeaders.CONTENT_TYPE, "application/json")
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+      .bodyValue(request)
+      .exchange()
+      .expectStatus().isOk
+
+    val response = webTestClient.post().uri("/command")
+      .header(HttpHeaders.CONTENT_TYPE, "application/json")
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+      .bodyValue(request)
+      .exchange()
+      .expectStatus().isBadRequest
+      .expectBody(ErrorResponse::class.java)
+      .returnResult()
+      .responseBody
+
+    assertThat(response?.userMessage).isEqualTo("The provided identifier already exists")
+  }
+
+  @Test
   fun `it ignores the user-provided assessment UUID and assigns a new random UUID`() {
     val requestedAssessmentUuid = UUID.randomUUID()
     val request = """
@@ -89,6 +140,7 @@ class CreateAssessmentCommandTest(
         "commands": [
           {
             "type": "CreateAssessmentCommand",
+            "assessmentType": "TEST",
             "formVersion": "1",
             "properties": {},
             "user": {

@@ -10,29 +10,34 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.DuplicateExternalIdentifierException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
 
 class CreateAssessmentCommandHandlerTest {
-  val assessmentRepository: AssessmentRepository = mockk()
+  val assessmentService: AssessmentService = mockk()
   val eventBus: EventBus = mockk()
   val eventService: EventService = mockk()
   val stateService: StateService = mockk()
 
   val handler = CreateAssessmentCommandHandler(
-    assessmentRepository = assessmentRepository,
+    assessmentService = assessmentService,
     eventBus = eventBus,
     eventService = eventService,
     stateService = stateService,
@@ -40,8 +45,12 @@ class CreateAssessmentCommandHandlerTest {
 
   val command = CreateAssessmentCommand(
     user = User("FOO_USER", "Foo User"),
+    assessmentType = "TEST",
     formVersion = "1",
     properties = mapOf("foo" to SingleValue("bar")),
+    identifiers = mapOf(
+      IdentifierType.CRN to "CRN123",
+    ),
     timeline = Timeline(
       type = "test",
       data = mapOf("bar" to listOf("baz")),
@@ -71,7 +80,10 @@ class CreateAssessmentCommandHandlerTest {
   @Test
   fun `it handles the command`() {
     val assessment = slot<AssessmentEntity>()
-    every { assessmentRepository.save(capture(assessment)) } answers { firstArg() }
+    every { assessmentService.findBy(any<ExternalIdentifier>()) } answers {
+      throw AssessmentNotFoundException(firstArg())
+    }
+    every { assessmentService.save(capture(assessment)) } answers { firstArg() }
 
     val handledEvent = slot<EventEntity<out Event>>()
     val persistedEvent = slot<EventEntity<out Event>>()
@@ -83,12 +95,20 @@ class CreateAssessmentCommandHandlerTest {
 
     val result = handler.handle(command)
 
-    verify(exactly = 1) { assessmentRepository.save(any<AssessmentEntity>()) }
+    val expectedIdentifier = ExternalIdentifier("CRN123", IdentifierType.CRN, "TEST")
+
+    verify(exactly = 1) { assessmentService.findBy(expectedIdentifier) }
+    verify(exactly = 1) { assessmentService.save(any<AssessmentEntity>()) }
     verify(exactly = 1) { eventBus.handle(any<EventEntity<out Event>>()) }
     verify(exactly = 1) { stateService.persist(state) }
     verify(exactly = 1) { eventService.save(any<EventEntity<out Event>>()) }
 
     assertThat(assessment.captured.uuid).isEqualTo(command.assessmentUuid)
+    assertThat(assessment.captured.type).isEqualTo(command.assessmentType)
+    assertThat(assessment.captured.identifiers).hasSize(1)
+    assessment.captured.identifiers.forEach {
+      assertThat(it.toIdentifier()).isEqualTo(expectedIdentifier)
+    }
     assertThat(handledEvent.captured.assessment.uuid).isEqualTo(assessment.captured.uuid)
     assertThat(handledEvent.captured.user).isEqualTo(command.user)
     assertThat(handledEvent.captured.data).isEqualTo(expectedEvent)
@@ -97,5 +117,28 @@ class CreateAssessmentCommandHandlerTest {
     assertThat(handledEvent.captured.createdAt).isEqualTo(assessment.captured.createdAt)
 
     assertThat(result).isEqualTo(expectedResult)
+  }
+
+  @Test
+  fun `it throws when the provided identifier already exists`() {
+    val assessment = slot<AssessmentEntity>()
+    every { assessmentService.findBy(any<ExternalIdentifier>()) } answers { AssessmentEntity(type = "TEST") }
+    every { assessmentService.save(capture(assessment)) } answers { firstArg() }
+
+    every { eventBus.handle(any<EventEntity<out Event>>()) } returns mockk()
+    every { stateService.persist(any()) } just Runs
+    every { eventService.save(any<EventEntity<out Event>>()) } answers { firstArg() }
+
+    val exception = assertThrows<DuplicateExternalIdentifierException> { handler.handle(command) }
+
+    val expectedIdentifier = ExternalIdentifier("CRN123", IdentifierType.CRN, "TEST")
+
+    assertThat(exception.developerMessage).isEqualTo("Duplicate identifier: $expectedIdentifier")
+
+    verify(exactly = 1) { assessmentService.findBy(expectedIdentifier) }
+    verify(exactly = 0) { assessmentService.save(any<AssessmentEntity>()) }
+    verify(exactly = 0) { eventBus.handle(any<EventEntity<out Event>>()) }
+    verify(exactly = 0) { stateService.persist(any()) }
+    verify(exactly = 0) { eventService.save(any<EventEntity<out Event>>()) }
   }
 }

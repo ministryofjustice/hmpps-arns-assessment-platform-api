@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
 import java.time.LocalDateTime
 import java.util.UUID
@@ -40,7 +41,7 @@ class AssessmentVersionQueryHandlerTest : AbstractQueryHandlerTest() {
 
     val query = AssessmentVersionQuery(
       user = user,
-      assessmentIdentifier = assessment.uuid,
+      assessmentIdentifier = UuidIdentifier(assessment.uuid),
       timestamp = timestamp,
     )
 

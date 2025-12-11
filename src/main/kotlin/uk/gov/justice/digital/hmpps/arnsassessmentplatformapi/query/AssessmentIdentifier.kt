@@ -12,6 +12,6 @@ import java.util.UUID
 )
 sealed interface AssessmentIdentifier
 
-class ExternalIdentifier(val identifier: String, val identifierType: IdentifierType, val assessmentType: String) : AssessmentIdentifier
+data class ExternalIdentifier(val identifier: String, val identifierType: IdentifierType, val assessmentType: String) : AssessmentIdentifier
 
-class UuidIdentifier(val uuid: UUID) : AssessmentIdentifier
+data class UuidIdentifier(val uuid: UUID) : AssessmentIdentifier

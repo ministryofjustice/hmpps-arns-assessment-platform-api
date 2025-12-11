@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidQueryException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,7 +16,7 @@ class QueriesRequestTest {
   fun `it creates`() {
     val query = AssessmentTimelineQuery(
       user = User("FOO_USER", "Foo User"),
-      assessmentIdentifier = UUID.randomUUID(),
+      assessmentIdentifier = UuidIdentifier(UUID.randomUUID()),
       timestamp = Clock.now(),
     )
 

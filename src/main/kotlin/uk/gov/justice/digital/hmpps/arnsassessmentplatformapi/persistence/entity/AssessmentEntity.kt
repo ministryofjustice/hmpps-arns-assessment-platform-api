@@ -27,8 +27,8 @@ class AssessmentEntity(
   @Column(name = "created_at")
   val createdAt: LocalDateTime = Clock.now(),
 
-  @Column(name = "assessment_type", nullable = false)
-  val assessmentType: String? = null,
+  @Column(name = "type", nullable = false)
+  val type: String,
 
   @OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL])
   val identifiers: MutableList<AssessmentIdentifierEntity> = mutableListOf(),

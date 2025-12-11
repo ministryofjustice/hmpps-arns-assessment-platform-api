@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Add
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAddedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
@@ -23,7 +22,7 @@ class AddCollectionItemCommandHandler(
     val event = with(command) {
       EventEntity(
         user = user,
-        assessment = assessmentService.findBy(UuidIdentifier(assessmentUuid)),
+        assessment = assessmentService.findBy(assessmentUuid),
         data = CollectionItemAddedEvent(collectionItemUuid, collectionUuid, answers, properties, index, timeline),
       )
     }
