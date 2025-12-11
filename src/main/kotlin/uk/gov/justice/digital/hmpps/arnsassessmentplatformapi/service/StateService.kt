@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.Aggreg
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AggregateTypeNotFoundException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.InvalidTimestampException
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
@@ -53,8 +54,9 @@ class StateService(
     fun fetchOrCreateState(
       assessment: AssessmentEntity,
       pointInTime: LocalDateTime?,
-    ): AggregateState<A> = when (pointInTime) {
-      null -> fetchOrCreateLatestState(assessment)
+    ): AggregateState<A> = when {
+      pointInTime == null -> fetchOrCreateLatestState(assessment)
+      pointInTime < assessment.createdAt -> throw InvalidTimestampException(pointInTime, "Timestamp cannot be before the assessment created date")
       else -> fetchOrCreateStateForExactPointInTime(assessment, pointInTime)
     }
 

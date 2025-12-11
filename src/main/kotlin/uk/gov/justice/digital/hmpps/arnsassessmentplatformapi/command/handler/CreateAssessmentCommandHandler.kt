@@ -25,9 +25,10 @@ class CreateAssessmentCommandHandler(
       EventEntity(
         user = user,
         assessment = assessment,
+        createdAt = assessment.createdAt,
         data = AssessmentCreatedEvent(
           formVersion = formVersion,
-          properties = properties,
+          properties = properties ?: emptyMap(),
           timeline = timeline,
         ),
       )

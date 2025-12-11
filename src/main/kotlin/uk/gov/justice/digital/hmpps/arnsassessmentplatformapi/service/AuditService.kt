@@ -1,10 +1,10 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery

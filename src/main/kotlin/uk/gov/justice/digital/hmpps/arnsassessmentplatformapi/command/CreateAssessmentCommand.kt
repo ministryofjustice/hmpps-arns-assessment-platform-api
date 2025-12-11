@@ -9,7 +9,7 @@ import java.util.UUID
 data class CreateAssessmentCommand(
   override val user: User,
   val formVersion: FormVersion,
-  val properties: Map<String, Value> = emptyMap(),
+  val properties: Map<String, Value>? = null,
   override val timeline: Timeline? = null,
 ) : RequestableCommand {
   @JsonIgnore
