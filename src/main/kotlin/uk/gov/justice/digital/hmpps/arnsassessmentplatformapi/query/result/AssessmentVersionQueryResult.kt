@@ -5,12 +5,14 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.CollectionsView
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.FormVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.PropertiesView
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
 import java.time.LocalDateTime
 import java.util.UUID
 
 data class AssessmentVersionQueryResult(
   val assessmentUuid: UUID,
   val aggregateUuid: UUID,
+  val assessmentType: String,
   val formVersion: FormVersion,
   val createdAt: LocalDateTime,
   val updatedAt: LocalDateTime,
@@ -18,4 +20,5 @@ data class AssessmentVersionQueryResult(
   val properties: PropertiesView,
   val collections: CollectionsView,
   val collaborators: CollaboratorsView,
+  val identifiers: Map<IdentifierType, String>,
 ) : QueryResult

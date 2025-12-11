@@ -120,7 +120,10 @@ class AssessmentVersionQueryTest(
 
     assertThat(result.answers).isEqualTo(aggregateData.answers)
     assertThat(result.collaborators).isEqualTo(aggregateData.collaborators)
+    assertThat(result.assessmentType).isEqualTo(assessment.type)
     assertThat(result.formVersion).isEqualTo(aggregateData.formVersion)
+    assertThat(result.identifiers).hasSize(1)
+    assertThat(result.identifiers).isEqualTo(assessment.identifiersMap())
   }
 
   @Test
@@ -223,6 +226,7 @@ class AssessmentVersionQueryTest(
     assertThat(result.answers).isEqualTo(firstAggregateData.answers)
     assertThat(result.collaborators).isEqualTo(firstAggregateData.collaborators)
     assertThat(result.formVersion).isEqualTo(firstAggregateData.formVersion)
+    assertThat(result.assessmentType).isEqualTo(assessment.type)
   }
 
   @Test
@@ -299,6 +303,7 @@ class AssessmentVersionQueryTest(
 
     assertThat(result.answers).isEqualTo(expectedAggregate.answers)
     assertThat(result.collaborators).isEqualTo(expectedAggregate.collaborators)
+    assertThat(result.assessmentType).isEqualTo(assessment.type)
     assertThat(result.formVersion).isEqualTo(expectedAggregate.formVersion)
 
     val persistedAggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
@@ -401,6 +406,7 @@ class AssessmentVersionQueryTest(
 
     assertThat(result.answers).isEqualTo(expectedAggregate.answers)
     assertThat(result.collaborators).isEqualTo(expectedAggregate.collaborators)
+    assertThat(result.assessmentType).isEqualTo(assessment.type)
     assertThat(result.formVersion).isEqualTo(expectedAggregate.formVersion)
 
     val persistedAggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(

@@ -48,6 +48,7 @@ class AssessmentVersionQueryHandlerTest : AbstractQueryHandlerTest() {
     val expectedResult = AssessmentVersionQueryResult(
       assessmentUuid = assessment.uuid,
       aggregateUuid = aggregate.uuid,
+      assessmentType = "TEST",
       formVersion = "1",
       createdAt = aggregate.eventsFrom,
       updatedAt = aggregate.eventsTo,
@@ -55,6 +56,7 @@ class AssessmentVersionQueryHandlerTest : AbstractQueryHandlerTest() {
       properties = aggregate.data.properties,
       collections = aggregate.data.collections,
       collaborators = aggregate.data.collaborators,
+      identifiers = emptyMap(),
     )
 
     test(query, aggregate, expectedResult)

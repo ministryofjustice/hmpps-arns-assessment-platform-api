@@ -26,6 +26,7 @@ class AssessmentVersionQueryHandler(
     return AssessmentVersionQueryResult(
       assessmentUuid = assessment.uuid,
       aggregateUuid = aggregate.uuid,
+      assessmentType = assessment.type,
       formVersion = data.formVersion,
       createdAt = aggregate.eventsFrom,
       updatedAt = aggregate.eventsTo,
@@ -33,6 +34,7 @@ class AssessmentVersionQueryHandler(
       properties = data.properties,
       collections = data.collections,
       collaborators = data.collaborators,
+      identifiers = assessment.identifiersMap(),
     )
   }
 }
