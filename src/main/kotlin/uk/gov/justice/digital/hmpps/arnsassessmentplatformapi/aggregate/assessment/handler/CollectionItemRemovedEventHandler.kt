@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionItemNotFoundException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemRemovedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -22,7 +22,7 @@ class CollectionItemRemovedEventHandler(
     val aggregate = state.getForWrite()
 
     if (!aggregate.data.collections.any { collection -> collection.removeItem(event.data.collectionItemUuid) }) {
-      throw CollectionItemNotFoundException(event.data.collectionItemUuid)
+      throw CollectionItemNotFoundException(event.data.collectionItemUuid, aggregate.uuid)
     }
 
     aggregate.data.apply {

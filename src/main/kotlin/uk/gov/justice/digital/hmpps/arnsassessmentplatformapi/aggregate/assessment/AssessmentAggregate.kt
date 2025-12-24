@@ -1,12 +1,10 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionItemNotFoundException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionNotFoundException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
 import java.util.UUID
 import kotlin.collections.mutableListOf
 
@@ -43,9 +41,6 @@ class AssessmentAggregate :
 
   override fun getCollection(collectionUuid: UUID) = collections.firstOrNull { it.uuid == collectionUuid }
     ?: collections.firstNotNullOfOrNull { collection -> collection.items.firstNotNullOfOrNull { it.findCollection(collectionUuid) } }
-    ?: throw CollectionNotFoundException(collectionUuid)
 
-  override fun getCollectionItem(collectionItemUuid: UUID) = collections.firstNotNullOfOrNull { it.findItem(collectionItemUuid) } ?: throw CollectionItemNotFoundException(
-    collectionItemUuid,
-  )
+  override fun getCollectionItem(collectionItemUuid: UUID) = collections.firstNotNullOfOrNull { it.findItem(collectionItemUuid) }
 }

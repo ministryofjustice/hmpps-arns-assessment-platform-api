@@ -2,18 +2,16 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate
 
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNull
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionItemNotFoundException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionNotFoundException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -181,7 +179,7 @@ class AssessmentAggregateTest {
     }
 
     @Test
-    fun `throws error when collection not found at any level`() {
+    fun `returns null when collection not found at any level`() {
       val missingCollectionUuid = UUID.randomUUID()
       val existingCollection = creatCollection()
 
@@ -190,25 +188,21 @@ class AssessmentAggregateTest {
         collections.add(existingCollection)
       }
 
-      val error = assertThrows(CollectionNotFoundException::class.java) {
-        aggregate.getCollection(missingCollectionUuid)
-      }
+      val result = aggregate.getCollection(missingCollectionUuid)
 
-      assertTrue(error.developerMessage.contains(missingCollectionUuid.toString()))
+      assertNull(result)
     }
 
     @Test
-    fun `throws error when collections list is empty`() {
+    fun `returns null when collections list is empty`() {
       val aggregate = AssessmentAggregate().apply {
         formVersion = "v1"
       }
       val collectionUuid = UUID.randomUUID()
 
-      val error = assertThrows(CollectionNotFoundException::class.java) {
-        aggregate.getCollection(collectionUuid)
-      }
+      val result = aggregate.getCollection(collectionUuid)
 
-      assertTrue(error.developerMessage.contains(collectionUuid.toString()))
+      assertNull(result)
     }
   }
 
@@ -257,7 +251,7 @@ class AssessmentAggregateTest {
     }
 
     @Test
-    fun `throws error when item not found`() {
+    fun `returns null when item not found`() {
       val missingItemUuid = UUID.randomUUID()
       val existingItem = createCollectionItem()
 
@@ -270,25 +264,21 @@ class AssessmentAggregateTest {
         collections.add(collection)
       }
 
-      val error = assertThrows(CollectionItemNotFoundException::class.java) {
-        aggregate.getCollectionItem(missingItemUuid)
-      }
+      val result = aggregate.getCollectionItem(missingItemUuid)
 
-      assertTrue(error.developerMessage.contains(missingItemUuid.toString()))
+      assertNull(result)
     }
 
     @Test
-    fun `throws error when collections list is empty`() {
+    fun `returns null when collections list is empty`() {
       val aggregate = AssessmentAggregate().apply {
         formVersion = "v1"
       }
       val itemUuid = UUID.randomUUID()
 
-      val error = assertThrows(CollectionItemNotFoundException::class.java) {
-        aggregate.getCollectionItem(itemUuid)
-      }
+      val result = aggregate.getCollectionItem(itemUuid)
 
-      assertTrue(error.developerMessage.contains(itemUuid.toString()))
+      assertNull(result)
     }
   }
 }

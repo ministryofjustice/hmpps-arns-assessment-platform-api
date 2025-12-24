@@ -3,7 +3,8 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.CollectionItemQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.exception.CollectionDepthOutOfBoundsException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.CollectionItemQueryResult
@@ -22,7 +23,9 @@ class CollectionItemQueryHandler(
     val state = stateService.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
 
-    val collectionItem = state.getForRead().data.getCollectionItem(query.collectionItemUuid)
+    val aggregate = state.getForRead()
+    val collectionItem = aggregate.data.getCollectionItem(query.collectionItemUuid)
+      ?: throw CollectionItemNotFoundException(query.collectionItemUuid, aggregate.uuid)
 
     val truncatedCollectionItem = when {
       query.depth == -1 -> collectionItem

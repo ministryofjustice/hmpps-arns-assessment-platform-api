@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception
 
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
