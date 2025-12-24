@@ -8,9 +8,6 @@ import org.junit.jupiter.api.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateCollectionCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
@@ -20,6 +17,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.respons
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository

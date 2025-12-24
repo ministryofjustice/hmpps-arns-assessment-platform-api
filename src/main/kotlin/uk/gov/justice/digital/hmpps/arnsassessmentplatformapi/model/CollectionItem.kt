@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.Answers
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AnswersView

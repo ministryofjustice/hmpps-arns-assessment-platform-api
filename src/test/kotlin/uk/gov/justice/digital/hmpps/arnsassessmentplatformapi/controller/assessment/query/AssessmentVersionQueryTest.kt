@@ -9,7 +9,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
@@ -19,6 +18,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
