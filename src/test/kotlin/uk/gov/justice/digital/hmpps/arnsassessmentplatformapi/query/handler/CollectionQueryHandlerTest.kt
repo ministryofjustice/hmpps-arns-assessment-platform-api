@@ -3,10 +3,10 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception.CollectionNotFoundException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionNotFoundException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.CollectionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
@@ -255,7 +255,7 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
       timestamp = timestamp,
     )
 
-    testThrows(query, aggregate, CollectionNotFoundException(query.collectionUuid))
+    testThrows(query, aggregate, CollectionNotFoundException(query.collectionUuid, aggregate.uuid))
   }
 
   @ParameterizedTest

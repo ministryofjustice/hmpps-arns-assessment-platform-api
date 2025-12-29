@@ -1,9 +1,9 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import java.util.UUID
 
 class UpdateCollectionItemAnswersCommandHandlerTest : AbstractCommandHandlerTest() {

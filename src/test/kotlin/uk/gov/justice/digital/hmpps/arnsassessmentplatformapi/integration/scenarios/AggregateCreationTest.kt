@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.scenarios
 
 import org.springframework.http.HttpHeaders
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
@@ -12,6 +11,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier

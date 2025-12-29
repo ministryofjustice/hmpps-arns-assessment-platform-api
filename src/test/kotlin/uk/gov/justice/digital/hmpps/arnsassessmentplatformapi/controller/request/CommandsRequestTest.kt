@@ -2,10 +2,10 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.reques
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.assertThrows
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidCommandException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
