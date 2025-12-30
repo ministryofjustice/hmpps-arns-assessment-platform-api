@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model
 
 import java.time.LocalDateTime
 
