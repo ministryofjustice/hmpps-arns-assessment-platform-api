@@ -1,12 +1,12 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.exception
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception
 
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
 import java.util.UUID
 
-class CollectionNotFoundException(collectionUuid: UUID) :
+class CollectionNotFoundException(collectionUuid: UUID, aggregateUuid: UUID) :
   AssessmentPlatformException(
     message = "Collection not found",
-    developerMessage = "No collection found with the UUID \"${collectionUuid}\"",
+    developerMessage = "No collection found with the UUID \"${collectionUuid}\" on aggregate \"$aggregateUuid\"",
     statusCode = HttpStatus.BAD_REQUEST,
   )

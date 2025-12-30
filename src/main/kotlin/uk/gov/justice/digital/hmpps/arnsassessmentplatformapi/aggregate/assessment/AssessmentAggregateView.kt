@@ -1,11 +1,11 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateView
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collection
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.CollectionItem
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.TimelineItem
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
 import java.util.UUID
 
 typealias TimelineView = List<TimelineItem>
@@ -25,6 +25,6 @@ interface AssessmentAggregateView : AggregateView {
   val collaborators: CollaboratorsView
   val timeline: TimelineView
 
-  fun getCollection(collectionUuid: UUID): Collection
-  fun getCollectionItem(collectionItemUuid: UUID): CollectionItem
+  fun getCollection(collectionUuid: UUID): Collection?
+  fun getCollectionItem(collectionItemUuid: UUID): CollectionItem?
 }

@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import io.mockk.mockk
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertNull
