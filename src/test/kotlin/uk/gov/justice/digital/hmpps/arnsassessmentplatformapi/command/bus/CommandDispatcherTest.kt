@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.orm.ObjectOptimisticLockingFailureException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.TestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -89,33 +88,37 @@ class CommandDispatcherTest() : IntegrationTestBase() {
 
   @Test
   fun `retries dispatch on optimistic locking failure`() {
-    val command = TestableCommand()
+    val command = mockk<RequestableCommand>()
     val commands = listOf(command)
 
     every { commandBus.dispatch(commands) } throws
       ObjectOptimisticLockingFailureException("Test", "id") andThenThrows
       ObjectOptimisticLockingFailureException("Test", "id") andThen
       response
+    every { auditService.audit(command) } just Runs
 
     val result = commandDispatcher.dispatch(commands)
 
     assertEquals(response, result)
 
     verify(exactly = 3) { commandBus.dispatch(commands) }
+    verify(exactly = 1) { auditService.audit(command) }
   }
 
   @Test
   fun `fails after max retry attempts`() {
-    val command = mockk<Command>()
+    val command = mockk<RequestableCommand>()
     val commands = listOf(command)
 
     every { commandBus.dispatch(commands) } throws
       ObjectOptimisticLockingFailureException("Test", "id")
+    every { auditService.audit(command) } just Runs
 
     assertThrows<ObjectOptimisticLockingFailureException> {
       commandDispatcher.dispatch(commands)
     }
 
     verify(exactly = 3) { commandBus.dispatch(commands) }
+    verify(exactly = 0) { auditService.audit(command) }
   }
 }
