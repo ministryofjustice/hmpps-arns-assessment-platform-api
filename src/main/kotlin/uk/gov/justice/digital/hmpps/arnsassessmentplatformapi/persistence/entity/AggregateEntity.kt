@@ -49,7 +49,7 @@ class AggregateEntity<T : Aggregate<T>>(
 
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "data", columnDefinition = "jsonb", nullable = false)
-  override val data: T,
+  override var data: T,
 ) : AggregateEntityView<T> {
   fun clone() = AggregateEntity(
     eventsFrom = this.eventsFrom,

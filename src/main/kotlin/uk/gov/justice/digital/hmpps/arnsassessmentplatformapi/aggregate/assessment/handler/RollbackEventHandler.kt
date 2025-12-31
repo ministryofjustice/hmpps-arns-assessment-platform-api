@@ -6,21 +6,21 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersRolledBackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.RollbackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 
 @Component
-class AssessmentAnswersRolledBackEventHandler(
+class RollbackEventHandler(
   private val clock: Clock,
   @param:Lazy private val stateService: StateService,
-) : AssessmentEventHandler<AssessmentAnswersRolledBackEvent> {
+) : AssessmentEventHandler<RollbackEvent> {
 
-  override val eventType = AssessmentAnswersRolledBackEvent::class
+  override val eventType = RollbackEvent::class
   override val stateType = AssessmentState::class
 
   override fun handle(
-    event: EventEntity<AssessmentAnswersRolledBackEvent>,
+    event: EventEntity<RollbackEvent>,
     state: AssessmentState,
   ): AssessmentState {
     val aggregate = state.getForWrite()
@@ -30,20 +30,7 @@ class AssessmentAnswersRolledBackEventHandler(
       event.data.rolledBackTo,
     ) as AssessmentState
 
-    val currentAnswers = aggregate.data.answers
-    val previousAnswers = previousState.getForWrite().data.answers
-
-    val answersAdded = buildMap {
-      for ((key, oldValue) in previousAnswers) {
-        if (currentAnswers[key] != oldValue) {
-          put(key, oldValue)
-        }
-      }
-    }
-
-    val answersRemoved = currentAnswers.keys.filter { !previousAnswers.contains(it) }
-
-    AssessmentAnswersUpdatedEventHandler.updateAnswers(state, answersAdded, answersRemoved)
+    aggregate.apply { data = previousState.getForWrite().data.clone() }
 
     aggregate.data.apply {
       collaborators.add(event.user)
