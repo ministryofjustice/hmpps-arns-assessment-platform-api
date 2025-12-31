@@ -39,16 +39,11 @@ class AssessmentPropertiesUpdatedEventHandler(
     with(state.getForWrite()) {
       event.added.entries.forEach {
         data.properties.put(it.key, it.value)
-        data.deletedProperties.remove(it.key)
       }
       event.removed.forEach { propertyName ->
         val removedValue = data.properties[propertyName]
         if (removedValue != null) {
           data.properties.remove(propertyName)
-          data.deletedProperties.put(
-            propertyName,
-            removedValue,
-          )
         } else {
           throw PropertyNotFoundException(propertyName, uuid)
         }

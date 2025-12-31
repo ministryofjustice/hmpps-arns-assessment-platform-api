@@ -40,17 +40,12 @@ class AssessmentAnswersUpdatedEventHandler(
     fun updateAnswers(state: AssessmentState, added: Map<String, Value>, removed: List<String>) {
       with(state.getForWrite()) {
         added.entries.forEach {
-          data.answers.put(it.key, it.value)
-          data.deletedAnswers.remove(it.key)
+          data.answers[it.key] = it.value
         }
         removed.forEach { fieldCode ->
           val removedValue = data.answers[fieldCode]
           if (removedValue != null) {
             data.answers.remove(fieldCode)
-            data.deletedAnswers.put(
-              fieldCode,
-              removedValue,
-            )
           } else {
             throw AnswerNotFoundException(fieldCode, uuid)
           }

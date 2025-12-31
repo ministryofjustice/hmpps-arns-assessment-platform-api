@@ -21,18 +21,14 @@ class AssessmentAggregate :
   override lateinit var formVersion: FormVersion
 
   override val properties: Properties = mutableMapOf()
-  override val deletedProperties: Properties = mutableMapOf()
   override val answers: Answers = mutableMapOf()
-  override val deletedAnswers: Answers = mutableMapOf()
   override val collections: Collections = mutableListOf()
   override val collaborators: Collaborators = mutableSetOf()
   override val timeline: Timeline = mutableListOf()
 
   override fun clone() = AssessmentAggregate().also { clone ->
     clone.properties.putAll(properties)
-    clone.deletedProperties.putAll(deletedProperties)
     clone.answers.putAll(answers)
-    clone.deletedAnswers.putAll(deletedAnswers)
     clone.collections.addAll(collections)
     clone.collaborators.addAll(collaborators)
     clone.timeline.addAll(timeline)
