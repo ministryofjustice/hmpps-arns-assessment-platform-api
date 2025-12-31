@@ -20,7 +20,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.Integr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AuditService
 import kotlin.test.assertEquals
 
-class CommandDispatcherTest() : IntegrationTestBase() {
+class CommandDispatcherTest : IntegrationTestBase() {
 
   @MockkBean
   private lateinit var commandBus: CommandBus
