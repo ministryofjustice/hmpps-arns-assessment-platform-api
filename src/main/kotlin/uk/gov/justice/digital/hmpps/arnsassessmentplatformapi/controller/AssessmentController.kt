@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.bus.QueryBus
@@ -18,7 +18,7 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestController
 class AssessmentController(
-  private val commandBus: CommandBus,
+  private val commandDispatcher: CommandDispatcher,
   private val queryBus: QueryBus,
 ) {
   @RequestMapping(path = ["/command"], method = [RequestMethod.POST])
@@ -47,7 +47,7 @@ class AssessmentController(
   fun executeCommands(
     @RequestBody
     request: CommandsRequest,
-  ) = commandBus.dispatch(request.commands)
+  ) = commandDispatcher.dispatch(request.commands)
 
   @RequestMapping(path = ["/query"], method = [RequestMethod.POST])
   @Operation(description = "Execute queries on an assessment")

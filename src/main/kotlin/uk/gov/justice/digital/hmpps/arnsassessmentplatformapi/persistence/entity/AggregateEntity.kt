@@ -9,6 +9,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.persistence.Version
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
@@ -26,6 +27,9 @@ class AggregateEntity<T : Aggregate<T>>(
 
   @Column(name = "uuid")
   override val uuid: UUID = UUID.randomUUID(),
+
+  @Version
+  override val version: Long = 0,
 
   @Column(name = "updated_at")
   override var updatedAt: LocalDateTime = Clock.now(),
