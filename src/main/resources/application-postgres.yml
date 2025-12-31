@@ -1,22 +1,10 @@
 spring:
   datasource:
-    write:
-      url: jdbc:postgresql://${database.endpoint:localhost:5432}/${database.name:postgres}?currentSchema=${database.schema.name:assessment-platform}&stringtype=unspecified
-      username: ${database.username:root}
-      password: ${database.password:dev}
-      driver-class-name: org.postgresql.Driver
-    write-hikari:
-      poolName: WritePool
-      maximum-pool-size: 20
-      connection-timeout: 15000
-      leakDetectionThreshold: 20000
-    read:
-      url: jdbc:postgresql://${database.read.endpoint:${database.endpoint:localhost:5432}}/${database.read.name:${database.name:postgres}}?currentSchema=${database.schema.name:assessment-platform}&stringtype=unspecified
-      username: ${database.read.username:${database.username:root}}
-      password: ${database.read.password:${database.password:dev}}
-      driver-class-name: org.postgresql.Driver
-    read-hikari:
-      poolName: ReadPool
+    url: jdbc:postgresql://${database.endpoint:localhost:5432}/${database.name:postgres}?currentSchema=${database.schema.name:assessment-platform}&stringtype=unspecified
+    username: ${database.username:root}
+    password: ${database.password:dev}
+    driver-class-name: org.postgresql.Driver
+    hikari:
       maximum-pool-size: 20
       connection-timeout: 15000
       leakDetectionThreshold: 20000
