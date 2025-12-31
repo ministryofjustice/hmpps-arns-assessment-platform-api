@@ -18,9 +18,7 @@ typealias FormVersionView = String
 interface AssessmentAggregateView : AggregateView {
   val formVersion: FormVersionView
   val properties: PropertiesView
-  val deletedProperties: PropertiesView
   val answers: AnswersView
-  val deletedAnswers: AnswersView
   val collections: CollectionsView
   val collaborators: CollaboratorsView
   val timeline: TimelineView

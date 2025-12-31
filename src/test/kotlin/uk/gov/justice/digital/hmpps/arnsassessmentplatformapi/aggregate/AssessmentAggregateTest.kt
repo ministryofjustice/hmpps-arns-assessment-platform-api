@@ -47,10 +47,8 @@ class AssessmentAggregateTest {
     formVersion = "v1"
 
     properties["p1"] = SingleValue("v1")
-    deletedProperties["dp1"] = SingleValue("dv1")
 
     answers["a1"] = SingleValue("answer1")
-    deletedAnswers["da1"] = SingleValue("deletedAnswer1")
 
     val collection1 = creatCollection()
     val collection2 = creatCollection()
@@ -73,9 +71,7 @@ class AssessmentAggregateTest {
 
       assertEquals(aggregate.formVersion, clone.formVersion)
       assertEquals(aggregate.properties, clone.properties)
-      assertEquals(aggregate.deletedProperties, clone.deletedProperties)
       assertEquals(aggregate.answers, clone.answers)
-      assertEquals(aggregate.deletedAnswers, clone.deletedAnswers)
       assertEquals(aggregate.collections, clone.collections)
       assertEquals(aggregate.collaborators, clone.collaborators)
       assertEquals(aggregate.timeline, clone.timeline)
@@ -88,9 +84,7 @@ class AssessmentAggregateTest {
       val clone = aggregate.clone()
 
       assertNotSame(aggregate.properties, clone.properties)
-      assertNotSame(aggregate.deletedProperties, clone.deletedProperties)
       assertNotSame(aggregate.answers, clone.answers)
-      assertNotSame(aggregate.deletedAnswers, clone.deletedAnswers)
       assertNotSame(aggregate.collections, clone.collections)
       assertNotSame(aggregate.collaborators, clone.collaborators)
       assertNotSame(aggregate.timeline, clone.timeline)

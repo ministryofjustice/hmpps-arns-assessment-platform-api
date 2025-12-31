@@ -11,7 +11,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.RollbackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateServi
 import java.time.LocalDateTime
 import java.util.UUID
 
-class AssessmentAnswersRolledBackEventHandlerTest {
+class AssessmentRolledBackEventHandlerTest {
   private val aggregateUuid: UUID = UUID.randomUUID()
   private val assessment = AssessmentEntity(type = "TEST")
   private val mockClock: Clock = mockk()
@@ -37,9 +37,9 @@ class AssessmentAnswersRolledBackEventHandlerTest {
     every { mockClock.now() } returns LocalDateTime.parse("2025-01-01T12:00:00")
   }
 
-  private fun getHandler(): EventHandler<RollbackEvent, AssessmentState> = RollbackEventHandler(mockClock, stateService)
+  private fun getHandler(): EventHandler<AssessmentRolledBackEvent, AssessmentState> = AssessmentRolledBackEventHandler(mockClock, stateService)
 
-  private fun eventEntityFor(eventData: RollbackEvent) = EventEntity(
+  private fun eventEntityFor(eventData: AssessmentRolledBackEvent) = EventEntity(
     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
     user = user,
     assessment = assessment,
@@ -48,14 +48,14 @@ class AssessmentAnswersRolledBackEventHandlerTest {
 
   @Test
   fun `it handles the correct event type`() {
-    assertThat(getHandler().eventType).isEqualTo(RollbackEvent::class)
+    assertThat(getHandler().eventType).isEqualTo(AssessmentRolledBackEvent::class)
   }
 
   @Test
   fun `it handles the event`() {
     val event =
       eventEntityFor(
-        RollbackEvent(
+        AssessmentRolledBackEvent(
           rolledBackTo = LocalDateTime.parse("2025-01-01T09:00:00"),
           timeline = timeline,
         ),
@@ -106,7 +106,6 @@ class AssessmentAnswersRolledBackEventHandlerTest {
             formVersion = "1"
             collaborators.add(user)
             answers.put("foo", SingleValue("rolled_back"))
-            deletedAnswers.put("bar", SingleValue("bar_current_value"))
             timeline.add(
               TimelineItem(
                 "test",
@@ -133,7 +132,7 @@ class AssessmentAnswersRolledBackEventHandlerTest {
   fun `it handles when no timeline provided`() {
     val event =
       eventEntityFor(
-        RollbackEvent(
+        AssessmentRolledBackEvent(
           rolledBackTo = LocalDateTime.parse("2025-01-01T09:00:00"),
           timeline = null,
         ),

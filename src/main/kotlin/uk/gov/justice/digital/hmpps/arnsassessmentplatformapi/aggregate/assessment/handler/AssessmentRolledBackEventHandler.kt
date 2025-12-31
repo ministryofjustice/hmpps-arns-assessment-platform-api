@@ -6,21 +6,21 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.RollbackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 
 @Component
-class RollbackEventHandler(
+class AssessmentRolledBackEventHandler(
   private val clock: Clock,
   @param:Lazy private val stateService: StateService,
-) : AssessmentEventHandler<RollbackEvent> {
+) : AssessmentEventHandler<AssessmentRolledBackEvent> {
 
-  override val eventType = RollbackEvent::class
+  override val eventType = AssessmentRolledBackEvent::class
   override val stateType = AssessmentState::class
 
   override fun handle(
-    event: EventEntity<RollbackEvent>,
+    event: EventEntity<AssessmentRolledBackEvent>,
     state: AssessmentState,
   ): AssessmentState {
     val aggregate = state.getForWrite()

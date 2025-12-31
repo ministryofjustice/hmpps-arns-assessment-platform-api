@@ -50,7 +50,6 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
               formVersion = "1"
               collaborators.add(user)
               events.forEach { it.data.added.forEach { (key, value) -> answers.put(key, value) } }
-              events.flatMap { it.data.removed }.forEach { deletedAnswers.put(it, SingleValue("value_to_remove")) }
               timeline.add(
                 TimelineItem(
                   "test",
@@ -99,7 +98,6 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
               formVersion = "1"
               collaborators.add(user)
               events.forEach { it.data.added.forEach { (key, value) -> answers.put(key, value) } }
-              events.flatMap { it.data.removed }.forEach { deletedAnswers.put(it, SingleValue("value_to_remove")) }
             },
           ),
         )

@@ -32,7 +32,7 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              properties.put("bar", SingleValue("value_to_remove"))
+              properties["bar"] = SingleValue("value_to_remove")
             },
             assessment = assessment,
           ),
@@ -51,8 +51,7 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
             data = AssessmentAggregate().apply {
               formVersion = "1"
               collaborators.add(user)
-              events.forEach { it.data.added.forEach { (key, value) -> properties.put(key, value) } }
-              events.flatMap { it.data.removed }.forEach { deletedProperties.put(it, SingleValue("value_to_remove")) }
+              events.forEach { it.data.added.forEach { (key, value) -> properties[key] = value } }
               timeline.add(TimelineItem("test", LocalDateTime.parse("2025-01-01T12:00:00"), mapOf("foo" to listOf("bar"))))
             },
           ),
@@ -77,7 +76,7 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              properties.put("bar", SingleValue("value_to_remove"))
+              properties["bar"] = SingleValue("value_to_remove")
             },
             assessment = assessment,
           ),
@@ -96,8 +95,7 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
             data = AssessmentAggregate().apply {
               formVersion = "1"
               collaborators.add(user)
-              events.forEach { it.data.added.forEach { (key, value) -> properties.put(key, value) } }
-              events.flatMap { it.data.removed }.forEach { deletedProperties.put(it, SingleValue("value_to_remove")) }
+              events.forEach { it.data.added.forEach { (key, value) -> properties[key] = value } }
             },
           ),
         )

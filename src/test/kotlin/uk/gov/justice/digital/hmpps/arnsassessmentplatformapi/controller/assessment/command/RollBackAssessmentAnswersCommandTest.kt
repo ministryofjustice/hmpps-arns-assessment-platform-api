@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.RollbackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
@@ -140,7 +140,7 @@ class RollBackAssessmentAnswersCommandTest(
     val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(5)
-    assertThat(eventsForAssessment.last().data).isInstanceOf(RollbackEvent::class.java)
+    assertThat(eventsForAssessment.last().data).isInstanceOf(AssessmentRolledBackEvent::class.java)
 
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
@@ -174,7 +174,7 @@ class RollBackAssessmentAnswersCommandTest(
     val eventsAfterSecondRollback = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
 
     assertThat(eventsAfterSecondRollback.size).isEqualTo(6)
-    assertThat(eventsAfterSecondRollback.last().data).isInstanceOf(RollbackEvent::class.java)
+    assertThat(eventsAfterSecondRollback.last().data).isInstanceOf(AssessmentRolledBackEvent::class.java)
 
     val aggregateAfterSecondUpdate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
