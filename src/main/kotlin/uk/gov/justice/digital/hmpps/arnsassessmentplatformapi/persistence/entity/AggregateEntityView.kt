@@ -7,6 +7,7 @@ import java.util.UUID
 interface AggregateEntityView<A : AggregateView> {
   val id: Long?
   val uuid: UUID
+  val version: Long
   val updatedAt: LocalDateTime
   val eventsFrom: LocalDateTime
   val eventsTo: LocalDateTime
