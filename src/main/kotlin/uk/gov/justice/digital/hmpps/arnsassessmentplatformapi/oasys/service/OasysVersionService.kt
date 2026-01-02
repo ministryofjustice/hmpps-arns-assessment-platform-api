@@ -23,6 +23,7 @@ class OasysVersionService(
 
     val shouldUpdateLatest = latest != null &&
       createdBy == CreatedBy.DAILY_EDIT &&
+      (latest.status == "UNSIGNED" || latest.status == null) &&
       latest.updatedAt.toLocalDate().isEqual(now.toLocalDate())
 
     val entity = if (shouldUpdateLatest) {
