@@ -1,9 +1,12 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
@@ -11,6 +14,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAn
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.oasys.service.OasysVersionService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -18,8 +22,10 @@ import java.time.LocalDateTime
 
 class EventServiceTest {
   val eventRepository: EventRepository = mockk()
+  val oasysVersionService: OasysVersionService = mockk()
   val service = EventService(
     eventRepository = eventRepository,
+    oasysVersionService = oasysVersionService,
   )
   val assessment = AssessmentEntity(type = "TEST")
   val user = User("FOO_USER", "Foo User")
@@ -40,6 +46,11 @@ class EventServiceTest {
       ),
     ),
   )
+
+  @BeforeEach
+  fun setUp() {
+    every { oasysVersionService.createVersionFor(any(EventEntity::class)) } just Runs
+  }
 
   @Nested
   inner class FindAllByAssessmentUuidAndCreatedAtBefore {

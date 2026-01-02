@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.oasys.service.OasysVersionService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.LocalDateTime
@@ -11,6 +12,7 @@ import java.util.UUID
 @Service
 class EventService(
   private val eventRepository: EventRepository,
+  private val oasysVersionService: OasysVersionService,
 ) {
   private val parentEvent = ThreadLocal<EventEntity<GroupEvent>?>()
   fun setParentEvent(event: EventEntity<GroupEvent>) = parentEvent.set(event)
@@ -18,5 +20,8 @@ class EventService(
 
   fun findAllForPointInTime(assessmentUuid: UUID, pointInTime: LocalDateTime) = eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(assessmentUuid, pointInTime)
 
-  fun <E : Event> save(event: EventEntity<E>): EventEntity<E> = eventRepository.save(event.apply { parent = parentEvent.get() })
+  fun <E : Event> save(event: EventEntity<E>): EventEntity<E> = eventRepository.save(event.apply { parent = parentEvent.get() }).also {
+    // TODO: check this the right place
+    oasysVersionService.createVersionFor(event)
+  }
 }
