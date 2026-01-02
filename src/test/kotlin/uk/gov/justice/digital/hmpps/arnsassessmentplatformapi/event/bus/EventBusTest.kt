@@ -61,9 +61,9 @@ class EventBusTest {
     every { registry.getHandlersFor(any<KClass<AssessmentCreatedEvent>>()) } returns listOf(handler1, handler2)
 
     val eventBus = EventBus(
+      registry = registry,
       stateService = stateService,
       eventService = eventService,
-      registry = registry,
     )
 
     eventBus.handle(event)
