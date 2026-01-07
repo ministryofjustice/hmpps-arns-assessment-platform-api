@@ -7,6 +7,8 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregat
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.values.ValuesAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.values.ValuesState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
@@ -36,6 +38,7 @@ class StateService(
   ) {
     fun createState(aggregateEntity: AggregateEntity<A>): AggregateState<A> = when (type) {
       AssessmentAggregate::class -> AssessmentState(aggregateEntity as AggregateEntity<AssessmentAggregate>) as AggregateState<A>
+      ValuesAggregate::class -> ValuesState(aggregateEntity as AggregateEntity<ValuesAggregate>) as AggregateState<A>
       else -> throw AggregateTypeNotFoundException(type.simpleName ?: "Unknown")
     }
 

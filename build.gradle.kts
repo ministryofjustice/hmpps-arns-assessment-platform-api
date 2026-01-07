@@ -25,6 +25,7 @@ dependencies {
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
   implementation("tools.jackson.module:jackson-module-kotlin:3.0.3")
   implementation("org.springframework.retry:spring-retry")
+  implementation("io.github.java-diff-utils:java-diff-utils:4.16")
 
   // Database dependencies
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
