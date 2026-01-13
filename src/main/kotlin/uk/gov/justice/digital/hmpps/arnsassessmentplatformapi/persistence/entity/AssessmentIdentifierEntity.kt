@@ -18,6 +18,7 @@ import java.util.UUID
 
 enum class IdentifierType {
   CRN,
+  NOMIS_ID,
 }
 
 @Entity
