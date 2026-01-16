@@ -10,9 +10,9 @@ import kotlin.reflect.full.createInstance
 
 @Component
 class EventBus(
-  val registry: EventHandlerRegistry,
-  val stateService: StateService,
-  val eventService: EventService,
+  private val registry: EventHandlerRegistry,
+  private val stateService: StateService,
+  private val eventService: EventService,
 ) {
   private fun <E : Event, S : State> execute(event: EventEntity<E>, state: S): S {
     registry.getHandlersFor(event.data::class).map { handler ->
@@ -31,6 +31,7 @@ class EventBus(
       }
     }
     event.children.sortedBy { it.createdAt }.fold(state) { acc: State, event -> execute(event, acc) }
+
     return state
   }
 
