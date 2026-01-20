@@ -43,7 +43,7 @@ class AssessmentController(
       ),
     ],
   )
-  @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW')")
+  @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW', 'ROLE_AAP__COORDINATOR_RW')")
   fun executeCommands(
     @RequestBody
     request: CommandsRequest,
@@ -71,7 +71,7 @@ class AssessmentController(
       ),
     ],
   )
-  @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW')")
+  @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW', 'ROLE_AAP__COORDINATOR_RW')")
   fun executeQueries(
     @RequestBody
     request: QueriesRequest,
