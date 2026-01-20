@@ -50,7 +50,7 @@ class ResourceSecurityTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Ensure command and query endpoints require ROLE_AAP__FRONTEND_RW`() {
+  fun `Ensure command and query endpoints require ROLE_AAP__FRONTEND_RW or ROLE_AAP__COORDINATOR_RW`() {
     val beans = context.getBeansOfType(RequestMappingHandlerMapping::class.java)
     beans.forEach { (_, mapping) ->
       mapping.handlerMethods.forEach { (mappingInfo, method) ->
@@ -66,8 +66,8 @@ class ResourceSecurityTest : IntegrationTestBase() {
           }.isNotNull()
 
           assertThat(annotation?.value).withFailMessage {
-            "Endpoint ${paths.first()} must require ROLE_AAP__FRONTEND_RW, but has: ${annotation?.value}"
-          }.isEqualTo("hasAnyRole('ROLE_AAP__FRONTEND_RW')")
+            "Endpoint ${paths.first()} must require ROLE_AAP__FRONTEND_RW or ROLE_AAP__COORDINATOR_RW, but has: ${annotation?.value}"
+          }.isEqualTo("hasAnyRole('ROLE_AAP__FRONTEND_RW', 'ROLE_AAP__COORDINATOR_RW')")
         }
       }
     }
