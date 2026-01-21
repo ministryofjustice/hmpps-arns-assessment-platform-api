@@ -12,9 +12,9 @@ import org.junit.jupiter.params.provider.Arguments
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
@@ -32,7 +32,7 @@ abstract class AbstractQueryHandlerTest {
   val stateService: StateService = mockk()
   val stateProvider: StateService.StateForType<AssessmentAggregate> = mockk()
 
-  val user = UserDetailsEntity("FOO_USER", "Foo User")
+  val user = UserDetails("FOO_USER", "Foo User")
 
   abstract val handler: KClass<out QueryHandler<out Query>>
 

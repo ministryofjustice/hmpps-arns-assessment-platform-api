@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collaborator
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemRemovedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
@@ -73,7 +74,7 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              collaborators.add(user)
+              collaborators.add(Collaborator.from(user))
               collections.addAll(
                 listOf(
                   Collection(
@@ -155,7 +156,7 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              collaborators.add(user)
+              collaborators.add(Collaborator.from(user))
               collections.addAll(
                 listOf(
                   Collection(

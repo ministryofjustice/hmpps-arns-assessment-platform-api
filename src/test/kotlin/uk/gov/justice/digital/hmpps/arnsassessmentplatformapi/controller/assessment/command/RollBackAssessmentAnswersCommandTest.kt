@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventR
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
@@ -59,12 +58,10 @@ class RollBackAssessmentAnswersCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = UserDetailsEntity("FOO_USER", "Foo User")
-
     eventRepository.saveAll(
       listOf(
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
           data = AssessmentCreatedEvent(
@@ -74,7 +71,7 @@ class RollBackAssessmentAnswersCommandTest(
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentAnswersUpdatedEvent(
@@ -86,7 +83,7 @@ class RollBackAssessmentAnswersCommandTest(
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T13:45:00"),
           data = AssessmentAnswersUpdatedEvent(
@@ -98,7 +95,7 @@ class RollBackAssessmentAnswersCommandTest(
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-02T09:30:00"),
           data = AssessmentAnswersUpdatedEvent(
@@ -116,7 +113,7 @@ class RollBackAssessmentAnswersCommandTest(
 
       commands = listOf(
         RollbackCommand(
-          user = UserDetailsEntity("test-user", "Test User"),
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           pointInTime = LocalDateTime.parse("2025-01-01T13:00:00"),
         ),
@@ -157,7 +154,7 @@ class RollBackAssessmentAnswersCommandTest(
 
       commands = listOf(
         RollbackCommand(
-          user = UserDetailsEntity("test-user", "Test User"),
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           pointInTime = LocalDateTime.parse("2025-01-02T10:00:00"),
         ),

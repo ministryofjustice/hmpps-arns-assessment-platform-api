@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNull
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collaborator
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -54,7 +54,7 @@ class AssessmentAggregateTest {
     val collection2 = creatCollection()
     collections.addAll(listOf(collection1, collection2))
 
-    collaborators.add(mockk<UserDetailsEntity>())
+    collaborators.add(mockk<Collaborator>())
     timeline.add(mockk<TimelineItem>())
   }
 

@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collaborator
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
@@ -29,7 +30,7 @@ class AssessmentRolledBackEventHandlerTest {
   private val mockClock: Clock = mockk()
   private val stateProvider: StateService.StateForType<AssessmentAggregate> = mockk()
   private val stateService: StateService = mockk()
-  private val user = UserDetailsEntity(1, UUID.randomUUID(),"FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
+  private val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   private val timeline = Timeline("test", mapOf("foo" to listOf("bar")))
 
   @BeforeEach
@@ -105,7 +106,7 @@ class AssessmentRolledBackEventHandlerTest {
           assessment = assessment,
           data = AssessmentAggregate().apply {
             formVersion = "1"
-            collaborators.add(user)
+            collaborators.add(Collaborator.from(user))
             answers.put("foo", SingleValue("rolled_back"))
             timeline.add(
               TimelineItem(
@@ -181,7 +182,7 @@ class AssessmentRolledBackEventHandlerTest {
           assessment = assessment,
           data = AssessmentAggregate().apply {
             formVersion = "1"
-            collaborators.add(user)
+            collaborators.add(Collaborator.from(user))
             answers.put("foo", SingleValue("rolled_back"))
           },
         ),

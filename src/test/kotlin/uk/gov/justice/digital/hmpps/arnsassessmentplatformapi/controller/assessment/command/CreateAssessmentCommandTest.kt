@@ -18,7 +18,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
@@ -30,9 +29,6 @@ class CreateAssessmentCommandTest(
   @Autowired
   val eventRepository: EventRepository,
 ) : IntegrationTestBase() {
-
-  val user = UserDetailsEntity("FOO_USER", "Foo User")
-
   @BeforeEach
   fun setUp() {
   }
@@ -46,7 +42,7 @@ class CreateAssessmentCommandTest(
     val randomCrn = UUID.randomUUID().toString()
 
     val command = CreateAssessmentCommand(
-      user = UserDetailsEntity("test-user", "Test User"),
+      user = testUserDetails,
       assessmentType = "TEST",
       identifiers = mapOf(
         IdentifierType.CRN to randomCrn,
@@ -100,7 +96,7 @@ class CreateAssessmentCommandTest(
     val randomCrn = UUID.randomUUID().toString()
 
     val command = CreateAssessmentCommand(
-      user = UserDetailsEntity("test-user", "Test User"),
+      user = testUserDetails,
       assessmentType = "TEST",
       identifiers = mapOf(
         IdentifierType.CRN to randomCrn,

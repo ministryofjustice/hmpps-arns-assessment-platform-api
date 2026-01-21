@@ -27,7 +27,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventR
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertIs
@@ -93,12 +92,10 @@ class RemoveCollectionItemCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = UserDetailsEntity("FOO_USER", "Foo User")
-
     eventRepository.saveAll(
       listOf(
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(
@@ -108,7 +105,7 @@ class RemoveCollectionItemCommandTest(
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
           data = CollectionCreatedEvent(
@@ -119,7 +116,7 @@ class RemoveCollectionItemCommandTest(
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
           data = CollectionItemAddedEvent(
@@ -132,7 +129,7 @@ class RemoveCollectionItemCommandTest(
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:20:00"),
           data = CollectionItemAddedEvent(
@@ -150,7 +147,7 @@ class RemoveCollectionItemCommandTest(
     val request = CommandsRequest(
       commands = listOf(
         RemoveCollectionItemCommand(
-          user = UserDetailsEntity("test-user", "Test User"),
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           collectionItemUuid = collectionItemToRemoveUuid,
         ),

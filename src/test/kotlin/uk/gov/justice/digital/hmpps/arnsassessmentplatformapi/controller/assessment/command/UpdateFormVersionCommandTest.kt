@@ -21,7 +21,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventR
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
@@ -57,12 +56,10 @@ class UpdateFormVersionCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = UserDetailsEntity("FOO_USER", "Foo User")
-
     eventRepository.saveAll(
       listOf(
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(
@@ -75,7 +72,7 @@ class UpdateFormVersionCommandTest(
     )
 
     val updateCommand = UpdateFormVersionCommand(
-      user = user,
+      user = testUserDetails,
       assessmentUuid = assessmentEntity.uuid,
       version = "2",
     )

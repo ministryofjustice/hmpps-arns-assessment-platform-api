@@ -30,7 +30,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventR
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
@@ -67,12 +66,10 @@ class GroupCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = UserDetailsEntity("FOO_USER", "Foo User")
-
     eventRepository.saveAll(
       listOf(
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(
@@ -82,7 +79,7 @@ class GroupCommandTest(
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentAnswersUpdatedEvent(
@@ -95,22 +92,22 @@ class GroupCommandTest(
     )
 
     val updateCommand = GroupCommand(
-      user = user,
+      user = testUserDetails,
       assessmentUuid = assessmentEntity.uuid,
       commands = listOf(
         UpdateFormVersionCommand(
-          user = user,
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           version = "2",
         ),
         UpdateAssessmentAnswersCommand(
-          user = user,
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           added = mapOf("bar" to SingleValue("baz")),
           removed = listOf("foo"),
         ),
         UpdateAssessmentPropertiesCommand(
-          user = user,
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           added = mapOf("foo" to SingleValue("baz")),
           removed = listOf(),

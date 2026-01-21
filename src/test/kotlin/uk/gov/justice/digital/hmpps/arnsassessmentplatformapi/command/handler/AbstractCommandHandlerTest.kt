@@ -39,7 +39,7 @@ abstract class AbstractCommandHandlerTest {
   val userDetailsService: UserDetailsService = mockk()
 
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
-  val user = UserDetailsEntity(1, UUID.randomUUID(),"FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
+  val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val timeline = Timeline(type = "test", data = mapOf("foo" to listOf("bar")))
 
   abstract val handler: KClass<out CommandHandler<out Command>>
@@ -57,6 +57,7 @@ abstract class AbstractCommandHandlerTest {
     eventBus,
     eventService,
     stateService,
+    userDetailsService,
   )
 
   @Test
@@ -86,8 +87,8 @@ abstract class AbstractCommandHandlerTest {
     verify(exactly = 1) { userDetailsService.findOrCreate(commandUser) }
 
     assertThat(handledEvent.captured.assessment.uuid).isEqualTo(assessment.uuid)
-    assertThat(handledEvent.captured.user.userId).isEqualTo(command.user.userId)
-    assertThat(handledEvent.captured.user.displayName).isEqualTo(command.user.displayName)
+    assertThat(handledEvent.captured.user.userId).isEqualTo(command.user.id)
+    assertThat(handledEvent.captured.user.displayName).isEqualTo(command.user.name)
     assertThat(handledEvent.captured.user.authSource).isEqualTo(command.user.authSource)
     assertThat(handledEvent.captured.data).isEqualTo(expectedEvent)
 

@@ -22,7 +22,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventR
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
@@ -64,12 +63,10 @@ class UpdateAssessmentPropertiesCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = UserDetailsEntity("FOO_USER", "Foo User")
-
     eventRepository.saveAll(
       listOf(
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(
@@ -79,7 +76,7 @@ class UpdateAssessmentPropertiesCommandTest(
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentPropertiesUpdatedEvent(
@@ -97,7 +94,7 @@ class UpdateAssessmentPropertiesCommandTest(
     val request = CommandsRequest(
       commands = listOf(
         UpdateAssessmentPropertiesCommand(
-          user = UserDetailsEntity("test-user", "Test User"),
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           added = mapOf("foo" to SingleValue("updated_foo_value"), "baz" to SingleValue("baz_value")),
           removed = listOf("bar"),

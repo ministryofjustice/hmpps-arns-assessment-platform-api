@@ -42,7 +42,7 @@ class CreateAssessmentCommandHandlerTest {
   val userDetailsService: UserDetailsService = mockk()
 
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
-  val user = UserDetailsEntity(1, UUID.randomUUID(),"FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
+  val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
 
   val handler = CreateAssessmentCommandHandler(
     assessmentService = assessmentService,
@@ -121,8 +121,8 @@ class CreateAssessmentCommandHandlerTest {
       assertThat(it.toIdentifier()).isEqualTo(expectedIdentifier)
     }
     assertThat(handledEvent.captured.assessment.uuid).isEqualTo(assessment.captured.uuid)
-    assertThat(handledEvent.captured.user.userId).isEqualTo(command.user.userId)
-    assertThat(handledEvent.captured.user.displayName).isEqualTo(command.user.displayName)
+    assertThat(handledEvent.captured.user.userId).isEqualTo(command.user.id)
+    assertThat(handledEvent.captured.user.displayName).isEqualTo(command.user.name)
     assertThat(handledEvent.captured.user.authSource).isEqualTo(command.user.authSource)
     assertThat(handledEvent.captured.data).isEqualTo(expectedEvent)
 

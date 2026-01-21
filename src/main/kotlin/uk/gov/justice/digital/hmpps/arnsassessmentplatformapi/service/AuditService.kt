@@ -43,14 +43,14 @@ class AuditService(
   }
 
   fun audit(command: RequestableCommand) = AuditableEvent(
-    who = command.user.userId,
+    who = command.user.id,
     what = command::class.simpleName ?: "Unknown",
     service = serviceName,
     details = json(mapOf("assessmentUuid" to command.assessmentUuid)),
   ).run(::sendEvent)
 
   fun audit(query: RequestableQuery) = AuditableEvent(
-    who = query.user.userId,
+    who = query.user.id,
     what = query::class.simpleName ?: "Unknown",
     service = serviceName,
     details = json(mapOf("assessmentIdentifier" to query.assessmentIdentifier)),

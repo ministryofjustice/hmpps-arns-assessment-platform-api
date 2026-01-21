@@ -9,10 +9,10 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 class UserDetailsService(
   private val userDetailsRepository: UserDetailsRepository,
 ) {
-  fun findOrCreate(commandUser: UserDetails) = userDetailsRepository.findByUserIdAndAuthSource(commandUser.userId, commandUser.authSource)
+  fun findOrCreate(commandUser: UserDetails) = userDetailsRepository.findByUserIdAndAuthSource(commandUser.id, commandUser.authSource)
     ?: UserDetailsEntity(
-      userId = commandUser.userId,
-      displayName = commandUser.displayName,
+      userId = commandUser.id,
+      displayName = commandUser.name,
       authSource = commandUser.authSource,
     ).run(userDetailsRepository::save)
 }

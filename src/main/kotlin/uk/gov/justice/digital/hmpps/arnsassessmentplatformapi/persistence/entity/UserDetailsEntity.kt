@@ -2,6 +2,8 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entit
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -32,5 +34,6 @@ data class UserDetailsEntity(
   val displayName: String,
 
   @Column(name = "auth_source", nullable = false)
+  @Enumerated(EnumType.STRING)
   val authSource: AuthSource,
 )

@@ -55,7 +55,7 @@ abstract class AbstractEventHandlerTest<E : Event> {
   protected val aggregateUuid: UUID = UUID.randomUUID()
   protected val assessment = AssessmentEntity(type = "TEST")
   protected val mockClock: Clock = mockk()
-  protected val user = UserDetailsEntity(1, UUID.randomUUID(),"FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
+  protected val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   protected val timeline = Timeline("test", mapOf("foo" to listOf("bar")))
 
   @BeforeEach

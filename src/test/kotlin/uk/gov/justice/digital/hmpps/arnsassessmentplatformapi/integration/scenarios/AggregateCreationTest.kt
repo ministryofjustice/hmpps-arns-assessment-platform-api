@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.respons
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
@@ -22,8 +21,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
 
 class AggregateCreationTest : IntegrationTestBase() {
-  val user = UserDetailsEntity("test-user", "Test User")
-
   private fun command(vararg cmd: RequestableCommand) = webTestClient.post().uri("/command")
     .header(HttpHeaders.CONTENT_TYPE, "application/json")
     .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
@@ -47,19 +44,19 @@ class AggregateCreationTest : IntegrationTestBase() {
   @Test
   fun `new aggregate is created for point-in-time`() {
     val assessmentUuid = assertIs<CreateAssessmentCommandResult>(
-      command(CreateAssessmentCommand(user = user, assessmentType = "TEST", formVersion = "1")).commands[0].result,
+      command(CreateAssessmentCommand(user = testUserDetails, assessmentType = "TEST", formVersion = "1")).commands[0].result,
     ).assessmentUuid
 
     val pointsInTime = mutableMapOf(
       "event-1" to assertIs<AssessmentVersionQueryResult>(
-        query(AssessmentVersionQuery(user = user, assessmentIdentifier = UuidIdentifier(assessmentUuid))).queries[0].result,
+        query(AssessmentVersionQuery(user = testUserDetails, assessmentIdentifier = UuidIdentifier(assessmentUuid))).queries[0].result,
       ),
     )
 
     for (i in 2..51) {
       command(
         UpdateAssessmentAnswersCommand(
-          user = user,
+          user = testUserDetails,
           assessmentUuid = assessmentUuid,
           added = mapOf("event-$i" to SingleValue("answer-$i")),
           removed = emptyList(),
@@ -67,7 +64,7 @@ class AggregateCreationTest : IntegrationTestBase() {
       )
 
       pointsInTime["event-$i"] = assertIs<AssessmentVersionQueryResult>(
-        query(AssessmentVersionQuery(user = user, assessmentIdentifier = UuidIdentifier(assessmentUuid))).queries[0].result,
+        query(AssessmentVersionQuery(user = testUserDetails, assessmentIdentifier = UuidIdentifier(assessmentUuid))).queries[0].result,
       ).also {
         assertEquals(i - 1, it.answers.size)
         assertEquals(SingleValue("answer-$i"), it.answers["event-$i"])
@@ -81,7 +78,7 @@ class AggregateCreationTest : IntegrationTestBase() {
     assertNotEquals(pointsInTime["event-1"]!!.aggregateUuid, pointsInTime["event-51"]!!.aggregateUuid, "New aggregate for event 51")
 
     val recreated = assertIs<AssessmentVersionQueryResult>(
-      query(AssessmentVersionQuery(user = user, assessmentIdentifier = UuidIdentifier(assessmentUuid), timestamp = pointsInTime["event-49"]!!.updatedAt)).queries[0].result,
+      query(AssessmentVersionQuery(user = testUserDetails, assessmentIdentifier = UuidIdentifier(assessmentUuid), timestamp = pointsInTime["event-49"]!!.updatedAt)).queries[0].result,
     )
 
     for (i in 1..51) {
