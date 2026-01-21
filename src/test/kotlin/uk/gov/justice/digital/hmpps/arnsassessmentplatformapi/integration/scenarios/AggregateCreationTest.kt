@@ -5,13 +5,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
@@ -22,7 +22,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
 
 class AggregateCreationTest : IntegrationTestBase() {
-  val user = User("test-user", "Test User")
+  val user = UserDetailsEntity("test-user", "Test User")
 
   private fun command(vararg cmd: RequestableCommand) = webTestClient.post().uri("/command")
     .header(HttpHeaders.CONTENT_TYPE, "application/json")

@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 class UpdateAssessmentAnswersCommandHandlerTest : AbstractCommandHandlerTest() {
   override val handler = UpdateAssessmentAnswersCommandHandler::class
   override val command = UpdateAssessmentAnswersCommand(
-    user = user,
+    user = commandUser,
     assessmentUuid = assessment.uuid,
     added = mapOf("foo" to SingleValue("foo_value")),
     removed = listOf("bar"),

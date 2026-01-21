@@ -16,35 +16,44 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.DuplicateExternalIdentifierException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
+import java.util.UUID
 
 class CreateAssessmentCommandHandlerTest {
   val assessmentService: AssessmentService = mockk()
   val eventBus: EventBus = mockk()
   val eventService: EventService = mockk()
   val stateService: StateService = mockk()
+  val userDetailsService: UserDetailsService = mockk()
+
+  val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
+  val user = UserDetailsEntity(1, UUID.randomUUID(),"FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
 
   val handler = CreateAssessmentCommandHandler(
     assessmentService = assessmentService,
     eventBus = eventBus,
     eventService = eventService,
     stateService = stateService,
+    userDetailsService = userDetailsService,
   )
 
   val command = CreateAssessmentCommand(
-    user = User("FOO_USER", "Foo User"),
+    user = commandUser,
     assessmentType = "TEST",
     formVersion = "1",
     properties = mapOf("foo" to SingleValue("bar")),
@@ -92,6 +101,7 @@ class CreateAssessmentCommandHandlerTest {
     every { eventBus.handle(capture(handledEvent)) } returns state
     every { stateService.persist(state) } just Runs
     every { eventService.save(capture(persistedEvent)) } answers { firstArg() }
+    every { userDetailsService.findOrCreate(commandUser) } returns user
 
     val result = handler.handle(command)
 
@@ -102,6 +112,7 @@ class CreateAssessmentCommandHandlerTest {
     verify(exactly = 1) { eventBus.handle(any<EventEntity<out Event>>()) }
     verify(exactly = 1) { stateService.persist(state) }
     verify(exactly = 1) { eventService.save(any<EventEntity<out Event>>()) }
+    verify(exactly = 1) { userDetailsService.findOrCreate(commandUser) }
 
     assertThat(assessment.captured.uuid).isEqualTo(command.assessmentUuid)
     assertThat(assessment.captured.type).isEqualTo(command.assessmentType)
@@ -110,7 +121,9 @@ class CreateAssessmentCommandHandlerTest {
       assertThat(it.toIdentifier()).isEqualTo(expectedIdentifier)
     }
     assertThat(handledEvent.captured.assessment.uuid).isEqualTo(assessment.captured.uuid)
-    assertThat(handledEvent.captured.user).isEqualTo(command.user)
+    assertThat(handledEvent.captured.user.userId).isEqualTo(command.user.userId)
+    assertThat(handledEvent.captured.user.displayName).isEqualTo(command.user.displayName)
+    assertThat(handledEvent.captured.user.authSource).isEqualTo(command.user.authSource)
     assertThat(handledEvent.captured.data).isEqualTo(expectedEvent)
 
     assertThat(handledEvent.captured).isEqualTo(persistedEvent.captured)
@@ -128,6 +141,8 @@ class CreateAssessmentCommandHandlerTest {
     every { eventBus.handle(any<EventEntity<out Event>>()) } returns mockk()
     every { stateService.persist(any()) } just Runs
     every { eventService.save(any<EventEntity<out Event>>()) } answers { firstArg() }
+
+    every { userDetailsService.findOrCreate(commandUser) } returns user
 
     val exception = assertThrows<DuplicateExternalIdentifierException> { handler.handle(command) }
 

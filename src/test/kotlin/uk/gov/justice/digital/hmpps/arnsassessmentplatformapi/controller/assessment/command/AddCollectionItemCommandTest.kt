@@ -10,7 +10,6 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.AddCollectionItemCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -27,6 +26,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventR
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertIs
@@ -74,7 +74,7 @@ class AddCollectionItemCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = User("FOO_USER", "Foo User")
+    val user = UserDetailsEntity("FOO_USER", "Foo User")
 
     eventRepository.saveAll(
       listOf(
@@ -105,7 +105,7 @@ class AddCollectionItemCommandTest(
     val request = CommandsRequest(
       commands = listOf(
         AddCollectionItemCommand(
-          user = User("test-user", "Test User"),
+          user = UserDetailsEntity("test-user", "Test User"),
           assessmentUuid = assessmentEntity.uuid,
           collectionUuid = collectionUuid,
           answers = mutableMapOf("title" to SingleValue("new_collection")),
@@ -191,7 +191,7 @@ class AddCollectionItemCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = User("FOO_USER", "Foo User")
+    val user = UserDetailsEntity("FOO_USER", "Foo User")
 
     eventRepository.saveAll(
       listOf(
@@ -248,7 +248,7 @@ class AddCollectionItemCommandTest(
     val request = CommandsRequest(
       commands = listOf(
         AddCollectionItemCommand(
-          user = User("test-user", "Test User"),
+          user = UserDetailsEntity("test-user", "Test User"),
           assessmentUuid = assessmentEntity.uuid,
           collectionUuid = collectionUuid,
           answers = mutableMapOf("title" to SingleValue("new_collection")),

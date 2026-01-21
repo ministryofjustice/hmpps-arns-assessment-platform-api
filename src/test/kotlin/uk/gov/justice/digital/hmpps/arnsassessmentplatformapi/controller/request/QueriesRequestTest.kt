@@ -2,9 +2,9 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.reques
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.assertThrows
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidQueryException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import java.util.UUID
@@ -15,7 +15,7 @@ class QueriesRequestTest {
   @Test
   fun `it creates`() {
     val query = AssessmentTimelineQuery(
-      user = User("FOO_USER", "Foo User"),
+      user = UserDetailsEntity("FOO_USER", "Foo User"),
       assessmentIdentifier = UuidIdentifier(UUID.randomUUID()),
       timestamp = Clock.now(),
     )

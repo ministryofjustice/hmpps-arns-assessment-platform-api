@@ -1,15 +1,15 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.util.UUID
 import kotlin.collections.mutableListOf
 
 typealias Timeline = MutableList<TimelineItem>
-typealias Collaborators = MutableSet<User>
+typealias Collaborators = MutableSet<UserDetailsEntity>
 typealias Answers = MutableMap<String, Value>
 typealias Properties = MutableMap<String, Value>
 typealias Collections = MutableList<Collection>

@@ -10,7 +10,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
@@ -19,6 +18,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
@@ -31,7 +31,7 @@ class CreateAssessmentCommandTest(
   val eventRepository: EventRepository,
 ) : IntegrationTestBase() {
 
-  val user = User("FOO_USER", "Foo User")
+  val user = UserDetailsEntity("FOO_USER", "Foo User")
 
   @BeforeEach
   fun setUp() {
@@ -46,7 +46,7 @@ class CreateAssessmentCommandTest(
     val randomCrn = UUID.randomUUID().toString()
 
     val command = CreateAssessmentCommand(
-      user = User("test-user", "Test User"),
+      user = UserDetailsEntity("test-user", "Test User"),
       assessmentType = "TEST",
       identifiers = mapOf(
         IdentifierType.CRN to randomCrn,
@@ -100,7 +100,7 @@ class CreateAssessmentCommandTest(
     val randomCrn = UUID.randomUUID().toString()
 
     val command = CreateAssessmentCommand(
-      user = User("test-user", "Test User"),
+      user = UserDetailsEntity("test-user", "Test User"),
       assessmentType = "TEST",
       identifiers = mapOf(
         IdentifierType.CRN to randomCrn,

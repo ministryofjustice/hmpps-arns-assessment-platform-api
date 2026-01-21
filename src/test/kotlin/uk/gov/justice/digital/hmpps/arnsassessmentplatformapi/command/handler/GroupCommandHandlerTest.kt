@@ -19,15 +19,19 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFormVersionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.GroupCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
+import java.util.UUID
 
 class GroupCommandHandlerTest {
   val assessment = AssessmentEntity(type = "TEST")
@@ -37,7 +41,11 @@ class GroupCommandHandlerTest {
   val stateService: StateService = mockk()
   val commandBus: CommandBus = mockk()
 
-  val user = User("FOO_USER", "Foo User")
+  val userDetailsService: UserDetailsService = mockk()
+
+  val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
+  val user = UserDetailsEntity(1, UUID.randomUUID(),"FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
+
   val timeline = Timeline(type = "test", data = mapOf("foo" to listOf("bar")))
 
   val handler = GroupCommandHandler(
@@ -46,20 +54,21 @@ class GroupCommandHandlerTest {
     eventService,
     stateService,
     commandBus,
+    userDetailsService,
   )
 
   val command = GroupCommand(
-    user = user,
+    user = commandUser,
     assessmentUuid = assessment.uuid,
     commands = listOf(
       UpdateAssessmentAnswersCommand(
-        user = user,
+        user = commandUser,
         assessmentUuid = assessment.uuid,
         added = mapOf(),
         removed = listOf(),
       ),
       UpdateFormVersionCommand(
-        user = user,
+        user = commandUser,
         assessmentUuid = assessment.uuid,
         version = "1.2",
       ),
@@ -94,6 +103,7 @@ class GroupCommandHandlerTest {
     every { stateService.persist(state) } just Runs
     every { eventService.save(capture(persistedEvent)) } answers { firstArg() }
     every { commandBus.dispatch(any<List<RequestableCommand>>()) } answers { commandsResponse }
+    every { userDetailsService.findOrCreate(commandUser) } returns user
 
     val result = handler.execute(command)
 
@@ -109,9 +119,12 @@ class GroupCommandHandlerTest {
       eventService.clearParentEvent()
     }
     verify(exactly = 1) { commandBus.dispatch(command.commands) }
+    verify(exactly = 1) { userDetailsService.findOrCreate(commandUser) }
 
     assertThat(handledEvent.captured.assessment.uuid).isEqualTo(assessment.uuid)
-    assertThat(handledEvent.captured.user).isEqualTo(command.user)
+    assertThat(handledEvent.captured.user.userId).isEqualTo(command.user.userId)
+    assertThat(handledEvent.captured.user.displayName).isEqualTo(command.user.displayName)
+    assertThat(handledEvent.captured.user.authSource).isEqualTo(command.user.authSource)
     assertThat(handledEvent.captured.data).isEqualTo(expectedEvent)
     assertThat(handledEvent.captured).isEqualTo(persistedEvent.captured)
 

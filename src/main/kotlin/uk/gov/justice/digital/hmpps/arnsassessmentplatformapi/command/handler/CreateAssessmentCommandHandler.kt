@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
 
 @Component
@@ -20,6 +21,7 @@ class CreateAssessmentCommandHandler(
   private val eventBus: EventBus,
   private val eventService: EventService,
   private val stateService: StateService,
+  private val userDetailsService: UserDetailsService,
 ) : CommandHandler<CreateAssessmentCommand> {
   override val type = CreateAssessmentCommand::class
   override fun handle(command: CreateAssessmentCommand): CreateAssessmentCommandResult {
@@ -49,7 +51,7 @@ class CreateAssessmentCommandHandler(
 
     val event = with(command) {
       EventEntity(
-        user = user,
+        user = userDetailsService.findOrCreate(user),
         assessment = assessment,
         createdAt = assessment.createdAt,
         data = AssessmentCreatedEvent(

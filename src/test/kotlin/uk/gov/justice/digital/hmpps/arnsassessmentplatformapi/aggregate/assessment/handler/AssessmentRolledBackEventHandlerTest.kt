@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
@@ -17,7 +16,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import java.time.LocalDateTime
 import java.util.UUID
@@ -28,7 +29,7 @@ class AssessmentRolledBackEventHandlerTest {
   private val mockClock: Clock = mockk()
   private val stateProvider: StateService.StateForType<AssessmentAggregate> = mockk()
   private val stateService: StateService = mockk()
-  private val user = User("FOO_USER", "Foo User")
+  private val user = UserDetailsEntity(1, UUID.randomUUID(),"FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   private val timeline = Timeline("test", mapOf("foo" to listOf("bar")))
 
   @BeforeEach

@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
 class AddCollectionItemCommandHandler(
@@ -16,12 +17,13 @@ class AddCollectionItemCommandHandler(
   private val eventBus: EventBus,
   private val eventService: EventService,
   private val stateService: StateService,
+  private val userDetailsService: UserDetailsService,
 ) : CommandHandler<AddCollectionItemCommand> {
   override val type = AddCollectionItemCommand::class
   override fun handle(command: AddCollectionItemCommand): AddCollectionItemCommandResult {
     val event = with(command) {
       EventEntity(
-        user = user,
+        user = userDetailsService.findOrCreate(user),
         assessment = assessmentService.findBy(assessmentUuid),
         data = CollectionItemAddedEvent(collectionItemUuid, collectionUuid, answers, properties, index, timeline),
       )

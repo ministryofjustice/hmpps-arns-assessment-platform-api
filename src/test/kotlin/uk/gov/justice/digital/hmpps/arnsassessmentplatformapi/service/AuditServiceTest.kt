@@ -19,9 +19,9 @@ import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
@@ -111,7 +111,7 @@ class AuditServiceTest {
     assertTrue(request.messageBody().contains("serialized event"))
     assertEquals("serialized event details", capturedEvent.captured.details)
     assertEquals(serviceName, capturedEvent.captured.service)
-    assertEquals(user.id, capturedEvent.captured.who)
+    assertEquals(user.userId, capturedEvent.captured.who)
     assertEquals(auditable::class.simpleName, capturedEvent.captured.what)
 
     when (auditable) {
@@ -132,7 +132,7 @@ class AuditServiceTest {
 
   companion object {
     private val assessmentUuid = UUID.randomUUID()
-    private val user = User("TEST_USER")
+    private val user = UserDetailsEntity("TEST_USER")
 
     @JvmStatic
     fun provideAuditable(): Stream<Any> = Stream.of(
