@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collaborator
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.PropertyNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
@@ -51,7 +50,7 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              collaborators.add(Collaborator.from(user))
+              collaborators.add(user.uuid)
               events.forEach { it.data.added.forEach { (key, value) -> properties[key] = value } }
               timeline.add(TimelineItem("test", LocalDateTime.parse("2025-01-01T12:00:00"), mapOf("foo" to listOf("bar"))))
             },
@@ -95,7 +94,7 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              collaborators.add(Collaborator.from(user))
+              collaborators.add(user.uuid)
               events.forEach { it.data.added.forEach { (key, value) -> properties[key] = value } }
             },
           ),

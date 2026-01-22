@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collaborator
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
@@ -47,7 +46,7 @@ class FormVersionUpdatedEventHandlerTest : AbstractEventHandlerTest<FormVersionU
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = events.last().data.version
-              collaborators.add(Collaborator.from(user))
+              collaborators.add(user.uuid)
               timeline.add(
                 TimelineItem(
                   "test",
@@ -94,7 +93,7 @@ class FormVersionUpdatedEventHandlerTest : AbstractEventHandlerTest<FormVersionU
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = events.last().data.version
-              collaborators.add(Collaborator.from(user))
+              collaborators.add(user.uuid)
             },
           ),
         )

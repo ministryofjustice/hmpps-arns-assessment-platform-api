@@ -9,6 +9,6 @@ import java.util.UUID
 @Repository
 interface UserDetailsRepository : JpaRepository<UserDetailsEntity, Long> {
   fun findByUuid(uuid: UUID): UserDetailsEntity?
-  fun findByUserId(userId: String): List<UserDetailsEntity>
+  fun findAllByUuidIsIn(uuids: Set<UUID>): Set<UserDetailsEntity>
   fun findByUserIdAndAuthSource(userId: String, authSource: AuthSource): UserDetailsEntity?
 }

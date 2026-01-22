@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collaborator
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.PropertyNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
@@ -23,7 +22,7 @@ class AssessmentPropertiesUpdatedEventHandler(
   ): AssessmentState {
     updateProperties(state, event.data)
     state.getForWrite().data.apply {
-      collaborators.add(Collaborator.from(event.user))
+      collaborators.add(event.user.uuid)
       event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 

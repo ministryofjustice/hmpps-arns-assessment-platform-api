@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collaborator
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
@@ -106,7 +105,7 @@ class AssessmentRolledBackEventHandlerTest {
           assessment = assessment,
           data = AssessmentAggregate().apply {
             formVersion = "1"
-            collaborators.add(Collaborator.from(user))
+            collaborators.add(user.uuid)
             answers.put("foo", SingleValue("rolled_back"))
             timeline.add(
               TimelineItem(
@@ -182,7 +181,7 @@ class AssessmentRolledBackEventHandlerTest {
           assessment = assessment,
           data = AssessmentAggregate().apply {
             formVersion = "1"
-            collaborators.add(Collaborator.from(user))
+            collaborators.add(user.uuid)
             answers.put("foo", SingleValue("rolled_back"))
           },
         ),

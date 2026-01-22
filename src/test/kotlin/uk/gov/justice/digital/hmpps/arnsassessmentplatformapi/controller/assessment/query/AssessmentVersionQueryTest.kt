@@ -9,7 +9,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collaborator
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
@@ -83,8 +82,8 @@ class AssessmentVersionQueryTest(
     ).run(eventRepository::saveAll)
 
     val aggregateData = AssessmentAggregate().apply {
-      answers.put("foo", SingleValue("foo_value"))
-      collaborators.add(Collaborator.from(testUserDetailsEntity))
+      answers["foo"] = SingleValue("foo_value")
+      collaborators.add(testUserDetailsEntity.uuid)
       formVersion = "1"
     }
 
@@ -121,7 +120,7 @@ class AssessmentVersionQueryTest(
     val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
 
     assertThat(result.answers).isEqualTo(aggregateData.answers)
-    assertThat(result.collaborators).isEqualTo(aggregateData.collaborators)
+    assertThat(result.collaborators.map { it.id }.toSet()).isEqualTo(aggregateData.collaborators)
     assertThat(result.assessmentType).isEqualTo(assessment.type)
     assertThat(result.formVersion).isEqualTo(aggregateData.formVersion)
     assertThat(result.identifiers).hasSize(1)
@@ -175,14 +174,14 @@ class AssessmentVersionQueryTest(
     ).run(eventRepository::saveAll)
 
     val firstAggregateData = AssessmentAggregate().apply {
-      answers.put("foo", SingleValue("foo_value"))
-      collaborators.add(Collaborator.from(testUserDetailsEntity))
+      answers["foo"] = SingleValue("foo_value")
+      collaborators.add(testUserDetailsEntity.uuid)
       formVersion = "1"
     }
 
     val secondAggregateData = AssessmentAggregate().apply {
-      answers.put("foo", SingleValue("updated_foo_value"))
-      collaborators.add(Collaborator.from(testUserDetailsEntity))
+      answers["foo"] = SingleValue("updated_foo_value")
+      collaborators.add(testUserDetailsEntity.uuid)
       formVersion = "1"
     }
 
@@ -226,7 +225,7 @@ class AssessmentVersionQueryTest(
     val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
 
     assertThat(result.answers).isEqualTo(firstAggregateData.answers)
-    assertThat(result.collaborators).isEqualTo(firstAggregateData.collaborators)
+    assertThat(result.collaborators.map { it.id }.toSet()).isEqualTo(firstAggregateData.collaborators)
     assertThat(result.formVersion).isEqualTo(firstAggregateData.formVersion)
     assertThat(result.assessmentType).isEqualTo(assessment.type)
   }
@@ -298,13 +297,13 @@ class AssessmentVersionQueryTest(
     val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
 
     val expectedAggregate = AssessmentAggregate().apply {
-      answers.put("foo", SingleValue("updated_foo_value"))
-      collaborators.add(Collaborator.from(testUserDetailsEntity))
+      answers["foo"] = SingleValue("updated_foo_value")
+      collaborators.add(testUserDetailsEntity.uuid)
       formVersion = "1"
     }
 
     assertThat(result.answers).isEqualTo(expectedAggregate.answers)
-    assertThat(result.collaborators).isEqualTo(expectedAggregate.collaborators)
+    assertThat(result.collaborators.map { it.id }.toSet()).isEqualTo(expectedAggregate.collaborators)
     assertThat(result.assessmentType).isEqualTo(assessment.type)
     assertThat(result.formVersion).isEqualTo(expectedAggregate.formVersion)
 
@@ -401,13 +400,13 @@ class AssessmentVersionQueryTest(
     val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
 
     val expectedAggregate = AssessmentAggregate().apply {
-      answers.put("foo", SingleValue("updated_foo_value"))
-      collaborators.add(Collaborator.from(testUserDetailsEntity))
+      answers["foo"] = SingleValue("updated_foo_value")
+      collaborators.add(testUserDetailsEntity.uuid)
       formVersion = "2"
     }
 
     assertThat(result.answers).isEqualTo(expectedAggregate.answers)
-    assertThat(result.collaborators).isEqualTo(expectedAggregate.collaborators)
+    assertThat(result.collaborators.map { it.id }.toSet()).isEqualTo(expectedAggregate.collaborators)
     assertThat(result.assessmentType).isEqualTo(assessment.type)
     assertThat(result.formVersion).isEqualTo(expectedAggregate.formVersion)
 
@@ -458,7 +457,7 @@ class AssessmentVersionQueryTest(
     ).run(eventRepository::save)
 
     val aggregateData = AssessmentAggregate().apply {
-      collaborators.add(Collaborator.from(event.user))
+      collaborators.add(event.user.uuid)
       formVersion = event.data.formVersion
     }
 

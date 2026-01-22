@@ -5,13 +5,16 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
 class AssessmentVersionQueryHandler(
   private val assessmentService: AssessmentService,
   private val stateService: StateService,
+  private val userDetailsService: UserDetailsService,
 ) : QueryHandler<AssessmentVersionQuery> {
   override val type = AssessmentVersionQuery::class
   override fun handle(query: AssessmentVersionQuery): AssessmentVersionQueryResult {
@@ -23,6 +26,14 @@ class AssessmentVersionQueryHandler(
     val aggregate = state.getForRead()
     val data = aggregate.data
 
+    val collaborators = userDetailsService.findUsersByUuids(data.collaborators)
+      .map(User::from)
+      .toSet()
+    val assignedUser = data.assignedUser?.let { userUuid ->
+      collaborators.find { collaborator -> userUuid == collaborator.id }
+        ?: userDetailsService.findByUserUuid(userUuid).run(User::from)
+    }
+
     return AssessmentVersionQueryResult(
       assessmentUuid = assessment.uuid,
       aggregateUuid = aggregate.uuid,
@@ -33,8 +44,9 @@ class AssessmentVersionQueryHandler(
       answers = data.answers,
       properties = data.properties,
       collections = data.collections,
-      collaborators = data.collaborators,
+      collaborators = collaborators,
       identifiers = assessment.identifiersMap(),
+      assignedUser = assignedUser,
     )
   }
 }

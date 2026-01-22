@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNull
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collaborator
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
@@ -54,7 +53,7 @@ class AssessmentAggregateTest {
     val collection2 = creatCollection()
     collections.addAll(listOf(collection1, collection2))
 
-    collaborators.add(mockk<Collaborator>())
+    collaborators.add(mockk<UUID>())
     timeline.add(mockk<TimelineItem>())
   }
 

@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.DuplicateExternalIdentifierException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUserEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
@@ -49,21 +50,37 @@ class CreateAssessmentCommandHandler(
 
     assessmentService.save(assessment)
 
-    val event = with(command) {
+    val user = userDetailsService.findOrCreate(command.user)
+
+    val events = listOf(
+      with(command) {
+        EventEntity(
+          user = user,
+          assessment = assessment,
+          createdAt = assessment.createdAt,
+          data = AssessmentCreatedEvent(
+            formVersion = formVersion,
+            properties = properties ?: emptyMap(),
+            timeline = timeline,
+          ),
+        )
+      },
       EventEntity(
-        user = userDetailsService.findOrCreate(user),
+        user = user,
         assessment = assessment,
         createdAt = assessment.createdAt,
-        data = AssessmentCreatedEvent(
-          formVersion = formVersion,
-          properties = properties ?: emptyMap(),
-          timeline = timeline,
+        data = AssignedToUserEvent(
+          userUuid = user.uuid,
+          timeline = null,
         ),
-      )
+      ),
+    )
+
+    events.forEach { event ->
+      eventBus.handle(event).run(stateService::persist)
     }
 
-    eventBus.handle(event).run(stateService::persist)
-    eventService.save(event)
+    eventService.saveAll(events)
 
     return CreateAssessmentCommandResult(assessment.uuid)
   }

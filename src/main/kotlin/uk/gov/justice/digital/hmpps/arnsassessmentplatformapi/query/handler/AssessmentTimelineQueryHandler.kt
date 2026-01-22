@@ -7,11 +7,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentTimelineQueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
 class AssessmentTimelineQueryHandler(
   private val assessmentService: AssessmentService,
   private val stateService: StateService,
+  private val _unused: UserDetailsService,
 ) : QueryHandler<AssessmentTimelineQuery> {
   override val type = AssessmentTimelineQuery::class
   override fun handle(query: AssessmentTimelineQuery): AssessmentTimelineQueryResult {

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.model.Collaborator
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
@@ -9,7 +8,7 @@ import java.util.UUID
 import kotlin.collections.mutableListOf
 
 typealias Timeline = MutableList<TimelineItem>
-typealias Collaborators = MutableSet<Collaborator>
+typealias Collaborators = MutableSet<UUID>
 typealias Answers = MutableMap<String, Value>
 typealias Properties = MutableMap<String, Value>
 typealias Collections = MutableList<Collection>
@@ -19,6 +18,7 @@ class AssessmentAggregate :
   Aggregate<AssessmentAggregate>,
   AssessmentAggregateView {
   override lateinit var formVersion: FormVersion
+  override var assignedUser: UUID? = null
 
   override val properties: Properties = mutableMapOf()
   override val answers: Answers = mutableMapOf()

@@ -53,7 +53,7 @@ class AggregateCreationTest : IntegrationTestBase() {
       ),
     )
 
-    for (i in 2..51) {
+    for (i in 3..51) {
       command(
         UpdateAssessmentAnswersCommand(
           user = testUserDetails,
@@ -66,12 +66,12 @@ class AggregateCreationTest : IntegrationTestBase() {
       pointsInTime["event-$i"] = assertIs<AssessmentVersionQueryResult>(
         query(AssessmentVersionQuery(user = testUserDetails, assessmentIdentifier = UuidIdentifier(assessmentUuid))).queries[0].result,
       ).also {
-        assertEquals(i - 1, it.answers.size)
+        assertEquals(i - 2, it.answers.size)
         assertEquals(SingleValue("answer-$i"), it.answers["event-$i"])
       }
     }
 
-    for (i in 2..50) {
+    for (i in 3..50) {
       assertEquals(pointsInTime["event-1"]!!.aggregateUuid, pointsInTime["event-$i"]!!.aggregateUuid, "Same aggregate for event $i")
     }
 
@@ -81,7 +81,7 @@ class AggregateCreationTest : IntegrationTestBase() {
       query(AssessmentVersionQuery(user = testUserDetails, assessmentIdentifier = UuidIdentifier(assessmentUuid), timestamp = pointsInTime["event-49"]!!.updatedAt)).queries[0].result,
     )
 
-    for (i in 1..51) {
+    for (i in 3..51) {
       assertNotEquals(recreated.aggregateUuid, pointsInTime["event-$i"]!!.aggregateUuid, "Aggregate for point in time [49] - different from previous aggregate for event $i")
     }
   }
