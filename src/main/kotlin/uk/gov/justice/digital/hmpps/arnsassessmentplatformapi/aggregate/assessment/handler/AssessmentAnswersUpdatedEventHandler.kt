@@ -23,7 +23,7 @@ class AssessmentAnswersUpdatedEventHandler(
   ): AssessmentState {
     updateAnswers(state, event.data.added, event.data.removed)
     state.getForWrite().data.apply {
-      collaborators.add(event.user)
+      collaborators.add(event.user.uuid)
       event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 

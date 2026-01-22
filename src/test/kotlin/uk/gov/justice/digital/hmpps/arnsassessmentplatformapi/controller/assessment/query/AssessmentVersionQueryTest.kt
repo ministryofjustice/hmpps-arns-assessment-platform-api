@@ -9,7 +9,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
@@ -25,8 +24,10 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventR
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
@@ -53,7 +54,7 @@ class AssessmentVersionQueryTest(
 
     val events = listOf(
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = UserDetailsEntity(userId = "FOO_USER", displayName = "Foo User", authSource = AuthSource.DELIUS),
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = AssessmentCreatedEvent(
@@ -63,13 +64,13 @@ class AssessmentVersionQueryTest(
         ),
       ),
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent(version = "1", timeline = null),
       ),
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
         data = AssessmentAnswersUpdatedEvent(
@@ -81,8 +82,8 @@ class AssessmentVersionQueryTest(
     ).run(eventRepository::saveAll)
 
     val aggregateData = AssessmentAggregate().apply {
-      answers.put("foo", SingleValue("foo_value"))
-      collaborators.add(User("FOO_USER", "Foo User"))
+      answers["foo"] = SingleValue("foo_value")
+      collaborators.add(testUserDetailsEntity.uuid)
       formVersion = "1"
     }
 
@@ -98,7 +99,7 @@ class AssessmentVersionQueryTest(
     val request = QueriesRequest(
       queries = listOf(
         AssessmentVersionQuery(
-          user = User("test-user", "Test User"),
+          user = testUserDetails,
           assessmentIdentifier = identifier,
         ),
       ),
@@ -119,7 +120,7 @@ class AssessmentVersionQueryTest(
     val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
 
     assertThat(result.answers).isEqualTo(aggregateData.answers)
-    assertThat(result.collaborators).isEqualTo(aggregateData.collaborators)
+    assertThat(result.collaborators.map { it.id }.toSet()).isEqualTo(aggregateData.collaborators)
     assertThat(result.assessmentType).isEqualTo(assessment.type)
     assertThat(result.formVersion).isEqualTo(aggregateData.formVersion)
     assertThat(result.identifiers).hasSize(1)
@@ -135,7 +136,7 @@ class AssessmentVersionQueryTest(
 
     listOf(
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = assessment.createdAt,
         data = AssessmentCreatedEvent(
@@ -145,13 +146,13 @@ class AssessmentVersionQueryTest(
         ),
       ),
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent(version = "1", timeline = null),
       ),
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
         data = AssessmentAnswersUpdatedEvent(
@@ -161,7 +162,7 @@ class AssessmentVersionQueryTest(
         ),
       ),
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
         data = AssessmentAnswersUpdatedEvent(
@@ -173,14 +174,14 @@ class AssessmentVersionQueryTest(
     ).run(eventRepository::saveAll)
 
     val firstAggregateData = AssessmentAggregate().apply {
-      answers.put("foo", SingleValue("foo_value"))
-      collaborators.add(User("FOO_USER", "Foo User"))
+      answers["foo"] = SingleValue("foo_value")
+      collaborators.add(testUserDetailsEntity.uuid)
       formVersion = "1"
     }
 
     val secondAggregateData = AssessmentAggregate().apply {
-      answers.put("foo", SingleValue("updated_foo_value"))
-      collaborators.add(User("FOO_USER", "Foo User"))
+      answers["foo"] = SingleValue("updated_foo_value")
+      collaborators.add(testUserDetailsEntity.uuid)
       formVersion = "1"
     }
 
@@ -202,7 +203,7 @@ class AssessmentVersionQueryTest(
     val request = QueriesRequest(
       queries = listOf(
         AssessmentVersionQuery(
-          user = User("test-user", "Test User"),
+          user = testUserDetails,
           assessmentIdentifier = UuidIdentifier(assessment.uuid),
           timestamp = LocalDateTime.parse("2025-01-01T12:15:00"),
         ),
@@ -224,7 +225,7 @@ class AssessmentVersionQueryTest(
     val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
 
     assertThat(result.answers).isEqualTo(firstAggregateData.answers)
-    assertThat(result.collaborators).isEqualTo(firstAggregateData.collaborators)
+    assertThat(result.collaborators.map { it.id }.toSet()).isEqualTo(firstAggregateData.collaborators)
     assertThat(result.formVersion).isEqualTo(firstAggregateData.formVersion)
     assertThat(result.assessmentType).isEqualTo(assessment.type)
   }
@@ -235,7 +236,7 @@ class AssessmentVersionQueryTest(
 
     listOf(
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = AssessmentCreatedEvent(
@@ -245,13 +246,13 @@ class AssessmentVersionQueryTest(
         ),
       ),
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent(version = "1", timeline = null),
       ),
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
         data = AssessmentAnswersUpdatedEvent(
@@ -261,7 +262,7 @@ class AssessmentVersionQueryTest(
         ),
       ),
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
         data = AssessmentAnswersUpdatedEvent(
@@ -275,7 +276,7 @@ class AssessmentVersionQueryTest(
     val request = QueriesRequest(
       queries = listOf(
         AssessmentVersionQuery(
-          user = User("test-user", "Test User"),
+          user = testUserDetails,
           assessmentIdentifier = UuidIdentifier(assessment.uuid),
         ),
       ),
@@ -296,13 +297,13 @@ class AssessmentVersionQueryTest(
     val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
 
     val expectedAggregate = AssessmentAggregate().apply {
-      answers.put("foo", SingleValue("updated_foo_value"))
-      collaborators.add(User("FOO_USER", "Foo User"))
+      answers["foo"] = SingleValue("updated_foo_value")
+      collaborators.add(testUserDetailsEntity.uuid)
       formVersion = "1"
     }
 
     assertThat(result.answers).isEqualTo(expectedAggregate.answers)
-    assertThat(result.collaborators).isEqualTo(expectedAggregate.collaborators)
+    assertThat(result.collaborators.map { it.id }.toSet()).isEqualTo(expectedAggregate.collaborators)
     assertThat(result.assessmentType).isEqualTo(assessment.type)
     assertThat(result.formVersion).isEqualTo(expectedAggregate.formVersion)
 
@@ -323,7 +324,7 @@ class AssessmentVersionQueryTest(
     ).run(assessmentRepository::save)
 
     val assessmentCreatedEvent = EventEntity(
-      user = User("FOO_USER", "Foo User"),
+      user = testUserDetailsEntity,
       assessment = assessment,
       createdAt = assessment.createdAt,
       data = AssessmentCreatedEvent(
@@ -334,7 +335,7 @@ class AssessmentVersionQueryTest(
     )
 
     val groupEvent = EventEntity(
-      user = User("FOO_USER", "Foo User"),
+      user = testUserDetailsEntity,
       assessment = assessment,
       createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
       data = GroupEvent(timeline = null),
@@ -344,14 +345,14 @@ class AssessmentVersionQueryTest(
       assessmentCreatedEvent,
       groupEvent,
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
         data = FormVersionUpdatedEvent(version = "2", timeline = null),
         parent = groupEvent,
       ),
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:20:00"),
         data = AssessmentAnswersUpdatedEvent(
@@ -362,7 +363,7 @@ class AssessmentVersionQueryTest(
         parent = groupEvent,
       ),
       EventEntity(
-        user = User("FOO_USER", "Foo User"),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
         data = AssessmentAnswersUpdatedEvent(
@@ -377,7 +378,7 @@ class AssessmentVersionQueryTest(
     val request = QueriesRequest(
       queries = listOf(
         AssessmentVersionQuery(
-          user = User("test-user", "Test User"),
+          user = testUserDetails,
           assessmentIdentifier = UuidIdentifier(assessment.uuid),
           timestamp = LocalDateTime.parse("2025-01-01T12:25:00"),
         ),
@@ -399,13 +400,13 @@ class AssessmentVersionQueryTest(
     val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
 
     val expectedAggregate = AssessmentAggregate().apply {
-      answers.put("foo", SingleValue("updated_foo_value"))
-      collaborators.add(User("FOO_USER", "Foo User"))
+      answers["foo"] = SingleValue("updated_foo_value")
+      collaborators.add(testUserDetailsEntity.uuid)
       formVersion = "2"
     }
 
     assertThat(result.answers).isEqualTo(expectedAggregate.answers)
-    assertThat(result.collaborators).isEqualTo(expectedAggregate.collaborators)
+    assertThat(result.collaborators.map { it.id }.toSet()).isEqualTo(expectedAggregate.collaborators)
     assertThat(result.assessmentType).isEqualTo(assessment.type)
     assertThat(result.formVersion).isEqualTo(expectedAggregate.formVersion)
 
@@ -423,7 +424,7 @@ class AssessmentVersionQueryTest(
     val request = QueriesRequest(
       queries = listOf(
         AssessmentVersionQuery(
-          user = User("test-user", "Test User"),
+          user = testUserDetails,
           assessmentIdentifier = UuidIdentifier(UUID.randomUUID()),
         ),
       ),
@@ -445,7 +446,7 @@ class AssessmentVersionQueryTest(
     ).run(assessmentRepository::save)
 
     val event = EventEntity(
-      user = User("FOO_USER", "Foo User"),
+      user = testUserDetailsEntity,
       assessment = assessment,
       createdAt = assessment.createdAt,
       data = AssessmentCreatedEvent(
@@ -456,7 +457,7 @@ class AssessmentVersionQueryTest(
     ).run(eventRepository::save)
 
     val aggregateData = AssessmentAggregate().apply {
-      collaborators.add(event.user)
+      collaborators.add(event.user.uuid)
       formVersion = event.data.formVersion
     }
 
@@ -472,7 +473,7 @@ class AssessmentVersionQueryTest(
     val request = QueriesRequest(
       queries = listOf(
         AssessmentVersionQuery(
-          user = User("test-user", "Test User"),
+          user = testUserDetails,
           assessmentIdentifier = UuidIdentifier(assessment.uuid),
           timestamp = LocalDateTime.parse("2025-01-01T08:00:01"),
         ),

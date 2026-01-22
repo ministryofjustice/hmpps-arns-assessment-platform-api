@@ -9,8 +9,12 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.wiremock.HmppsAuthApiExtension
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.wiremock.HmppsAuthApiExtension.Companion.hmppsAuth
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
 @ExtendWith(HmppsAuthApiExtension::class)
@@ -23,12 +27,21 @@ abstract class IntegrationTestBase {
 
   protected lateinit var webTestClient: WebTestClient
 
+  protected val testUserDetails =
+    UserDetails(id = "FOO_USER", name = "Foo User", authSource = AuthSource.DELIUS)
+
+  protected lateinit var testUserDetailsEntity: UserDetailsEntity
+
   @BeforeEach
   fun setupWebTestClient() {
+    testUserDetailsEntity = userDetailsService.findOrCreate(testUserDetails)
     webTestClient = WebTestClient.bindToServer()
       .baseUrl("http://localhost:$port")
       .build()
   }
+
+  @Autowired
+  private lateinit var userDetailsService: UserDetailsService
 
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthorisationHelper

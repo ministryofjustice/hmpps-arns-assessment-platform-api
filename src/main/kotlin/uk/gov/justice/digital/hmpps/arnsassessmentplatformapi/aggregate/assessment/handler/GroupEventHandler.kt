@@ -21,7 +21,7 @@ class GroupEventHandler(
     val aggregate = state.getForWrite()
 
     aggregate.data.apply {
-      collaborators.add(event.user)
+      collaborators.add(event.user.uuid)
       event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 

@@ -8,7 +8,7 @@ import java.util.UUID
 class ReorderCollectionItemCommandHandlerTest : AbstractCommandHandlerTest() {
   override val handler = ReorderCollectionItemCommandHandler::class
   override val command = ReorderCollectionItemCommand(
-    user = user,
+    user = commandUser,
     assessmentUuid = assessment.uuid,
     collectionItemUuid = UUID.randomUUID(),
     index = 0,

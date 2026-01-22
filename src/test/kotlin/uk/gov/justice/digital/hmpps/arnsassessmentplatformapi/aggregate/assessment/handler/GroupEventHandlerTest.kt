@@ -42,7 +42,7 @@ class GroupEventHandlerTest : AbstractEventHandlerTest<GroupEvent>() {
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
-              collaborators.add(user)
+              collaborators.add(user.uuid)
               timeline.add(
                 TimelineItem(
                   "test",
@@ -85,7 +85,7 @@ class GroupEventHandlerTest : AbstractEventHandlerTest<GroupEvent>() {
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
-              collaborators.add(user)
+              collaborators.add(user.uuid)
             },
           ),
         )

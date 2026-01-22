@@ -48,7 +48,7 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              collaborators.add(user)
+              collaborators.add(user.uuid)
               events.forEach { it.data.added.forEach { (key, value) -> answers.put(key, value) } }
               timeline.add(
                 TimelineItem(
@@ -96,7 +96,7 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              collaborators.add(user)
+              collaborators.add(user.uuid)
               events.forEach { it.data.added.forEach { (key, value) -> answers.put(key, value) } }
             },
           ),

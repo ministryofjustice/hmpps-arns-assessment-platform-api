@@ -13,12 +13,13 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -54,7 +55,7 @@ abstract class AbstractEventHandlerTest<E : Event> {
   protected val aggregateUuid: UUID = UUID.randomUUID()
   protected val assessment = AssessmentEntity(type = "TEST")
   protected val mockClock: Clock = mockk()
-  protected val user = User("FOO_USER", "Foo User")
+  protected val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   protected val timeline = Timeline("test", mapOf("foo" to listOf("bar")))
 
   @BeforeEach

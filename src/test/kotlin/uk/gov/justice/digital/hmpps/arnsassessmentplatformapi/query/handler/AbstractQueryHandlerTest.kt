@@ -12,15 +12,18 @@ import org.junit.jupiter.params.provider.Arguments
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.QueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
@@ -30,9 +33,10 @@ abstract class AbstractQueryHandlerTest {
   val assessment = AssessmentEntity(type = "TEST")
   val assessmentService: AssessmentService = mockk()
   val stateService: StateService = mockk()
+  val userDetailsService: UserDetailsService = mockk()
   val stateProvider: StateService.StateForType<AssessmentAggregate> = mockk()
 
-  val user = User("FOO_USER", "Foo User")
+  val user = UserDetails("FOO_USER", "Foo User")
 
   abstract val handler: KClass<out QueryHandler<out Query>>
 
@@ -48,10 +52,20 @@ abstract class AbstractQueryHandlerTest {
     every { state.getForRead() } returns aggregate
     every { stateProvider.fetchOrCreateState(assessment, query.timestamp) } returns state
     every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
+    every { userDetailsService.findUsersByUuids(aggregate.data.collaborators) } returns aggregate.data.collaborators.mapIndexed { index, uuid ->
+      UserDetailsEntity(
+        index.toLong(),
+        uuid,
+        "user-$index",
+        "User $index",
+        AuthSource.NOT_SPECIFIED,
+      )
+    }.toSet()
 
     val handlerInstance = handler.primaryConstructor!!.call(
       assessmentService,
       stateService,
+      userDetailsService,
     )
 
     assertThat(handlerInstance.type).isEqualTo(query::class)
@@ -66,7 +80,11 @@ abstract class AbstractQueryHandlerTest {
     assertThat(result).isEqualTo(expectedResult)
   }
 
-  fun testThrows(query: RequestableQuery, aggregate: AggregateEntity<AssessmentAggregate>, expectedError: AssessmentPlatformException) {
+  fun testThrows(
+    query: RequestableQuery,
+    aggregate: AggregateEntity<AssessmentAggregate>,
+    expectedError: AssessmentPlatformException,
+  ) {
     every { assessmentService.findBy(UuidIdentifier(assessment.uuid)) } returns assessment
 
     val state: AssessmentState = mockk()
@@ -77,6 +95,7 @@ abstract class AbstractQueryHandlerTest {
     val handlerInstance = handler.primaryConstructor!!.call(
       assessmentService,
       stateService,
+      userDetailsService,
     )
 
     assertThat(handlerInstance.type).isEqualTo(query::class)

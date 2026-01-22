@@ -10,7 +10,6 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateCollectionCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -63,12 +62,10 @@ class CreateCollectionCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = User("FOO_USER", "Foo User")
-
     eventRepository.saveAll(
       listOf(
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(
@@ -83,7 +80,7 @@ class CreateCollectionCommandTest(
     val request = CommandsRequest(
       commands = listOf(
         CreateCollectionCommand(
-          user = User("test-user", "Test User"),
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           name = "NEW_COLLECTION",
           parentCollectionItemUuid = null,
@@ -159,12 +156,10 @@ class CreateCollectionCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = User("FOO_USER", "Foo User")
-
     eventRepository.saveAll(
       listOf(
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(
@@ -179,7 +174,7 @@ class CreateCollectionCommandTest(
     val request = CommandsRequest(
       commands = listOf(
         CreateCollectionCommand(
-          user = User("test-user", "Test User"),
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           name = "NEW_CHILD_COLLECTION",
           parentCollectionItemUuid = collectionItemUuid,

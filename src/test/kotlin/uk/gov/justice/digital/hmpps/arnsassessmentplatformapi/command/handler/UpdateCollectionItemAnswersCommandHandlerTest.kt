@@ -9,7 +9,7 @@ import java.util.UUID
 class UpdateCollectionItemAnswersCommandHandlerTest : AbstractCommandHandlerTest() {
   override val handler = UpdateCollectionItemAnswersCommandHandler::class
   override val command = UpdateCollectionItemAnswersCommand(
-    user = user,
+    user = commandUser,
     assessmentUuid = assessment.uuid,
     collectionItemUuid = UUID.randomUUID(),
     added = mapOf("foo" to SingleValue("foo_value")),

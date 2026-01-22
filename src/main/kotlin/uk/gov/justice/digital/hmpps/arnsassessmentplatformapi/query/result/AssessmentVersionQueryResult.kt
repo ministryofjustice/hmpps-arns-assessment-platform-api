@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AnswersView
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.CollaboratorsView
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.CollectionsView
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.FormVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.PropertiesView
@@ -19,6 +18,7 @@ data class AssessmentVersionQueryResult(
   val answers: AnswersView,
   val properties: PropertiesView,
   val collections: CollectionsView,
-  val collaborators: CollaboratorsView,
+  val collaborators: Set<User>,
   val identifiers: Map<IdentifierType, String>,
+  val assignedUser: User?,
 ) : QueryResult
