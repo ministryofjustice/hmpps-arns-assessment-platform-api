@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -25,19 +27,19 @@ class UserDetailsServiceTest {
     val commandUser = UserDetails(
       id = "user-123",
       name = "Test User",
-      authSource = AuthSource.DELIUS
+      authSource = AuthSource.DELIUS,
     )
 
     val existingEntity = UserDetailsEntity(
       userId = "user-123",
       displayName = "Existing User",
-      authSource = AuthSource.DELIUS
+      authSource = AuthSource.DELIUS,
     )
 
     every {
       userDetailsRepository.findByUserIdAndAuthSource(
         commandUser.id,
-        commandUser.authSource
+        commandUser.authSource,
       )
     } returns existingEntity
 
@@ -49,7 +51,7 @@ class UserDetailsServiceTest {
     verify(exactly = 1) {
       userDetailsRepository.findByUserIdAndAuthSource(
         commandUser.id,
-        commandUser.authSource
+        commandUser.authSource,
       )
     }
     verify(exactly = 0) {
@@ -63,13 +65,13 @@ class UserDetailsServiceTest {
     val commandUser = UserDetails(
       id = "user-456",
       name = "New User",
-      authSource = AuthSource.DELIUS
+      authSource = AuthSource.DELIUS,
     )
 
     every {
       userDetailsRepository.findByUserIdAndAuthSource(
         commandUser.id,
-        commandUser.authSource
+        commandUser.authSource,
       )
     } returns null
 
@@ -88,7 +90,7 @@ class UserDetailsServiceTest {
     verify(exactly = 1) {
       userDetailsRepository.findByUserIdAndAuthSource(
         commandUser.id,
-        commandUser.authSource
+        commandUser.authSource,
       )
     }
 
@@ -98,7 +100,7 @@ class UserDetailsServiceTest {
           it.userId == commandUser.id &&
             it.displayName == commandUser.name &&
             it.authSource == commandUser.authSource
-        }
+        },
       )
     }
   }
