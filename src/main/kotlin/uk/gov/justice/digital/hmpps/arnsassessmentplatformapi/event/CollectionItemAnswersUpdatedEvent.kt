@@ -9,4 +9,6 @@ data class CollectionItemAnswersUpdatedEvent(
   val added: Map<String, Value>,
   val removed: List<String>,
   override val timeline: Timeline?,
+  val collectionName: String,
+  val index: Int,
 ) : Event

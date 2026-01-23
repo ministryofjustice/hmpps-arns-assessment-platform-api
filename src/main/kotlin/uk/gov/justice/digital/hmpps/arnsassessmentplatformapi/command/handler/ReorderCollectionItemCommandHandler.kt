@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.ReorderCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemReorderedEvent
@@ -22,12 +24,24 @@ class ReorderCollectionItemCommandHandler(
   override val type = ReorderCollectionItemCommand::class
   override fun handle(command: ReorderCollectionItemCommand): CommandSuccessCommandResult {
     val event = with(command) {
+      val assessment = assessmentService.findBy(command.assessmentUuid)
+      val state: AssessmentState = stateService
+        .stateForType(AssessmentAggregate::class)
+        .fetchOrCreateLatestState(assessment)
+      val collection = state.getForRead().data.getCollection(command.collectionItemUuid)
+        ?: throw Error("Collection ${command.collectionItemUuid} not found")
+      val itemIndex = collection.items.size
+      val collectionName = collection.name
+      val previousIndex = collection.items.indexOfFirst { it.uuid == command.collectionItemUuid }
+
       EventEntity(
         user = userDetailsService.findOrCreate(user),
         assessment = assessmentService.findBy(assessmentUuid),
         data = CollectionItemReorderedEvent(
+          collectionName = collectionName,
           collectionItemUuid = collectionItemUuid,
-          index = index,
+          index = itemIndex,
+          previousIndex = previousIndex,
           timeline = timeline,
         ),
       )

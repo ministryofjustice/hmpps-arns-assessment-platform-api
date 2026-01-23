@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
 import java.util.UUID
 
 data class CollectionItemAddedEvent(
+  val collectionName: String,
   val collectionItemUuid: UUID,
   val collectionUuid: UUID,
   val answers: Map<String, Value>,

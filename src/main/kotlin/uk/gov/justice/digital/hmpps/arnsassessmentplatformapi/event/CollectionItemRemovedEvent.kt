@@ -6,4 +6,6 @@ import java.util.UUID
 data class CollectionItemRemovedEvent(
   val collectionItemUuid: UUID,
   override val timeline: Timeline?,
+  val collectionName: String,
+  val index: Int,
 ) : Event

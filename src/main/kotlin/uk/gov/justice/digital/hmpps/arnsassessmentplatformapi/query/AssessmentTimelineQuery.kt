@@ -8,4 +8,4 @@ data class AssessmentTimelineQuery(
   override val assessmentIdentifier: AssessmentIdentifier,
   override val timestamp: LocalDateTime? = null,
   val timelineTypes: List<String>? = null,
-) : RequestableQuery
+) : AssessmentQuery

@@ -5,21 +5,16 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentTimelineQueryResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
 class AssessmentTimelineQueryHandler(
-  private val assessmentService: AssessmentService,
-  private val stateService: StateService,
-  private val _unused: UserDetailsService,
+  private val services: QueryHandlerServiceBundle,
 ) : QueryHandler<AssessmentTimelineQuery> {
   override val type = AssessmentTimelineQuery::class
   override fun handle(query: AssessmentTimelineQuery): AssessmentTimelineQueryResult {
-    val assessment = assessmentService.findBy(query.assessmentIdentifier)
+    val assessment = services.assessmentService.findBy(query.assessmentIdentifier)
 
-    val state = stateService.stateForType(AssessmentAggregate::class)
+    val state = services.stateService.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
 
     val timeline = state.getForRead().data.timeline
