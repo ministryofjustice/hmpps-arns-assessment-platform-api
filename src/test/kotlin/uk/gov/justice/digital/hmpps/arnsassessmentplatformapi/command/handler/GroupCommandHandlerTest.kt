@@ -76,9 +76,7 @@ class GroupCommandHandlerTest {
     timeline = timeline,
   )
 
-  val expectedEvent = GroupEvent(
-    timeline = command.timeline,
-  )
+  val expectedEvent = GroupEvent()
 
   @BeforeEach
   fun setUp() {

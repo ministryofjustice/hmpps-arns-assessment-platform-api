@@ -8,9 +8,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemRemovedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
@@ -20,33 +22,39 @@ class RemoveCollectionItemCommandHandler(
   private val eventService: EventService,
   private val stateService: StateService,
   private val userDetailsService: UserDetailsService,
+  private val timelineService: TimelineService,
 ) : CommandHandler<RemoveCollectionItemCommand> {
   override val type = RemoveCollectionItemCommand::class
   override fun handle(command: RemoveCollectionItemCommand): CommandSuccessCommandResult {
     val assessment = assessmentService.findBy(command.assessmentUuid)
-    val state: AssessmentState = stateService
+    val state = stateService
       .stateForType(AssessmentAggregate::class)
-      .fetchOrCreateLatestState(assessment)
+      .fetchOrCreateLatestState(assessment) as AssessmentState
     val collection = state.getForRead().data.getCollection(command.collectionItemUuid)
       ?: throw Error("Collection ${command.collectionItemUuid} not found")
-    val itemIndex = collection.items.size
-    val collectionName = collection.name
 
     val event = with(command) {
       EventEntity(
         user = userDetailsService.findOrCreate(user),
         assessment = assessmentService.findBy(assessmentUuid),
         data = CollectionItemRemovedEvent(
-          collectionName = collectionName,
           collectionItemUuid = collectionItemUuid,
-          index = itemIndex,
-          timeline = timeline,
         ),
       )
     }
 
     eventBus.handle(event).run(stateService::persist)
     eventService.save(event)
+    timelineService.save(
+      TimelineEntity.from(
+        command,
+        event,
+        mapOf(
+          "collection" to collection.name,
+          "index" to collection.items.indexOf(collection.findItem(command.collectionItemUuid)),
+        ),
+      ),
+    )
 
     return CommandSuccessCommandResult()
   }

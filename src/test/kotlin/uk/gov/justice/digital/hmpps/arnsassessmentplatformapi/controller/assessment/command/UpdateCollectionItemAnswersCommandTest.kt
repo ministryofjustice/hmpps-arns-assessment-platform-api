@@ -106,7 +106,6 @@ class UpdateCollectionItemAnswersCommandTest(
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -117,7 +116,6 @@ class UpdateCollectionItemAnswersCommandTest(
             collectionUuid = collectionUuid,
             name = "COLLECTION_NAME",
             parentCollectionItemUuid = null,
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -130,7 +128,6 @@ class UpdateCollectionItemAnswersCommandTest(
             answers = mutableMapOf("title" to SingleValue("unchanged_1")),
             properties = mutableMapOf(),
             index = null,
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -146,7 +143,6 @@ class UpdateCollectionItemAnswersCommandTest(
             ),
             properties = mutableMapOf(),
             index = null,
-            timeline = null,
           ),
         ),
       ),

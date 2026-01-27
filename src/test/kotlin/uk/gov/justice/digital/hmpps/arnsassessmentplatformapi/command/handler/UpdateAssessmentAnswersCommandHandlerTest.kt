@@ -17,7 +17,6 @@ class UpdateAssessmentAnswersCommandHandlerTest : AbstractCommandHandlerTest() {
   override val expectedEvent = AssessmentAnswersUpdatedEvent(
     added = command.added,
     removed = command.removed,
-    timeline = command.timeline,
   )
   override val expectedResult = CommandSuccessCommandResult()
 }

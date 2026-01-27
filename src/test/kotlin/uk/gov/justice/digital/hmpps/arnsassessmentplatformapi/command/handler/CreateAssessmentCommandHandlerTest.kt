@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIden
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
 import java.util.UUID
@@ -42,6 +43,7 @@ class CreateAssessmentCommandHandlerTest {
   val eventService: EventService = mockk()
   val stateService: StateService = mockk()
   val userDetailsService: UserDetailsService = mockk()
+  val timelineService: TimelineService = mockk()
 
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
@@ -52,6 +54,7 @@ class CreateAssessmentCommandHandlerTest {
     eventService = eventService,
     stateService = stateService,
     userDetailsService = userDetailsService,
+    timelineService = timelineService,
   )
 
   val command = CreateAssessmentCommand(
@@ -72,11 +75,9 @@ class CreateAssessmentCommandHandlerTest {
     AssessmentCreatedEvent(
       formVersion = "1",
       properties = command.properties!!,
-      timeline = command.timeline,
     ),
     AssignedToUserEvent(
       userUuid = user.uuid,
-      timeline = null,
     ),
   )
 

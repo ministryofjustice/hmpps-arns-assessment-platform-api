@@ -20,7 +20,6 @@ class UpdateCollectionItemAnswersCommandHandlerTest : AbstractCommandHandlerTest
     collectionItemUuid = command.collectionItemUuid,
     added = command.added,
     removed = command.removed,
-    timeline = command.timeline,
   )
   override val expectedResult = CommandSuccessCommandResult()
 }

@@ -17,7 +17,6 @@ class ReorderCollectionItemCommandHandlerTest : AbstractCommandHandlerTest() {
   override val expectedEvent = CollectionItemReorderedEvent(
     collectionItemUuid = command.collectionItemUuid,
     index = command.index,
-    timeline = command.timeline,
   )
   override val expectedResult = CommandSuccessCommandResult()
 }

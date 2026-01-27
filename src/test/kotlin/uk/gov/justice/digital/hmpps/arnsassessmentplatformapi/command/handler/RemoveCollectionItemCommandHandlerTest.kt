@@ -15,7 +15,6 @@ class RemoveCollectionItemCommandHandlerTest : AbstractCommandHandlerTest() {
   )
   override val expectedEvent = CollectionItemRemovedEvent(
     collectionItemUuid = command.collectionItemUuid,
-    timeline = command.timeline,
   )
   override val expectedResult = CommandSuccessCommandResult()
 }

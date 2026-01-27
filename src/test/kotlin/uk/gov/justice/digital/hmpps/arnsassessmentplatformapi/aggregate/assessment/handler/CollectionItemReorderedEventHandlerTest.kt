@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionIt
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
 import java.util.UUID
@@ -25,7 +24,6 @@ class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<Collect
         CollectionItemReorderedEvent(
           collectionItemUuid = firstCollectionItemUuid,
           index = 0,
-          timeline = timeline,
         ),
       )
 
@@ -112,15 +110,6 @@ class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<Collect
                   ),
                 ),
               )
-              timeline.addAll(
-                listOf(
-                  TimelineItem(
-                    "test",
-                    LocalDateTime.parse("2025-01-01T12:00:00"),
-                    mapOf("foo" to listOf("bar")),
-                  ),
-                ),
-              )
             },
           ),
         )
@@ -134,7 +123,6 @@ class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<Collect
         CollectionItemReorderedEvent(
           collectionItemUuid = firstCollectionItemUuid,
           index = 0,
-          timeline = null,
         ),
       )
 
@@ -233,7 +221,6 @@ class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<Collect
             CollectionItemReorderedEvent(
               collectionItemUuid = UUID.randomUUID(),
               index = 0,
-              timeline = null,
             ),
           ),
         )

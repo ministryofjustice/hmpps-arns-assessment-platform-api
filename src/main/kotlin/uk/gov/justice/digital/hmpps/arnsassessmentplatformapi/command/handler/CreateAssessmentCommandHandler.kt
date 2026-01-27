@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.DuplicateExternalIdentifierException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
@@ -10,9 +12,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
 
@@ -23,6 +27,7 @@ class CreateAssessmentCommandHandler(
   private val eventService: EventService,
   private val stateService: StateService,
   private val userDetailsService: UserDetailsService,
+  private val timelineService: TimelineService,
 ) : CommandHandler<CreateAssessmentCommand> {
   override val type = CreateAssessmentCommand::class
   override fun handle(command: CreateAssessmentCommand): CreateAssessmentCommandResult {
@@ -45,42 +50,60 @@ class CreateAssessmentCommandHandler(
       try {
         assessmentService.findBy(it.toIdentifier())
         throw DuplicateExternalIdentifierException(it.toIdentifier())
-      } catch (_: AssessmentNotFoundException) {}
+      } catch (_: AssessmentNotFoundException) {
+      }
     }
 
     assessmentService.save(assessment)
 
     val user = userDetailsService.findOrCreate(command.user)
 
-    val events = listOf(
-      with(command) {
-        EventEntity(
-          user = user,
-          assessment = assessment,
-          createdAt = assessment.createdAt,
-          data = AssessmentCreatedEvent(
-            formVersion = formVersion,
-            properties = properties ?: emptyMap(),
-            timeline = timeline,
-          ),
-        )
-      },
+    val createEvent = with(command) {
       EventEntity(
         user = user,
         assessment = assessment,
         createdAt = assessment.createdAt,
-        data = AssignedToUserEvent(
-          userUuid = user.uuid,
-          timeline = null,
+        data = AssessmentCreatedEvent(
+          formVersion = formVersion,
+          properties = properties ?: emptyMap(),
         ),
+      )
+    }
+
+    val assignEvent = EventEntity(
+      user = user,
+      assessment = assessment,
+      createdAt = assessment.createdAt,
+      data = AssignedToUserEvent(
+        userUuid = user.uuid,
       ),
     )
 
-    events.forEach { event ->
-      eventBus.handle(event).run(stateService::persist)
+    val events = listOf(createEvent, assignEvent)
+
+    events.map { event ->
+      eventBus.handle(event)
+        .also { updatedState -> stateService.persist(updatedState) }
+        .run { get(AssessmentAggregate::class) as AssessmentState }
     }
 
     eventService.saveAll(events)
+    timelineService.saveAll(
+      listOf(
+        TimelineEntity.from(
+          command,
+          createEvent,
+          mapOf(),
+        ),
+        TimelineEntity.from(
+          command,
+          assignEvent,
+          mapOf(
+            "assignee" to user,
+          ),
+        ),
+      ),
+    )
 
     return CreateAssessmentCommandResult(assessment.uuid)
   }

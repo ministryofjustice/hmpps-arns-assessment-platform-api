@@ -28,7 +28,7 @@ class GroupCommandHandler(
       EventEntity(
         user = userDetailsService.findOrCreate(user),
         assessment = assessmentService.findBy(assessmentUuid),
-        data = GroupEvent(timeline),
+        data = GroupEvent(),
       )
     }
     eventBus.handle(event).run(stateService::persist)

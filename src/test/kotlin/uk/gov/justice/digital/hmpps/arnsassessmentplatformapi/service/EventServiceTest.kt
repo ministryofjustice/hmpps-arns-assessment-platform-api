@@ -29,7 +29,7 @@ class EventServiceTest {
     EventEntity(
       user = user,
       assessment = assessment,
-      data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap(), timeline = null),
+      data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap()),
     ),
     EventEntity(
       user = user,
@@ -37,7 +37,6 @@ class EventServiceTest {
       data = AssessmentAnswersUpdatedEvent(
         added = mapOf("foo" to SingleValue("foo_value")),
         removed = emptyList(),
-        timeline = null,
       ),
     ),
   )

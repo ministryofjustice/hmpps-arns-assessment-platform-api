@@ -71,7 +71,6 @@ class CreateCollectionCommandTest(
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
-            timeline = null,
           ),
         ),
       ),
@@ -165,7 +164,6 @@ class CreateCollectionCommandTest(
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
-            timeline = null,
           ),
         ),
       ),

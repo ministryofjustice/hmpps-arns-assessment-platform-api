@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentTimelineQueryResult
 import java.time.LocalDateTime
 
 class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
@@ -42,7 +41,6 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
     assessment = assessment,
     data = AssessmentAggregate().apply {
       formVersion = "1"
-      timeline.addAll(allTimelineItems)
     },
   )
 
@@ -51,11 +49,11 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns unfiltered timeline data for a point in time`(timestamp: LocalDateTime?) {
     val query = AssessmentTimelineQuery(
       user = user,
-      assessmentIdentifier = UuidIdentifier(assessment.uuid),
+      identifier = UuidIdentifier(assessment.uuid),
       timestamp = timestamp,
     )
 
-    val expectedResult = AssessmentTimelineQueryResult(
+    val expectedResult = TimelineItem(
       timeline = allTimelineItems.toMutableList(),
     )
 
@@ -67,12 +65,12 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns filtered timeline data for a single timeline type and a point in time`(timestamp: LocalDateTime?) {
     val query = AssessmentTimelineQuery(
       user = user,
-      assessmentIdentifier = UuidIdentifier(assessment.uuid),
+      identifier = UuidIdentifier(assessment.uuid),
       timestamp = timestamp,
       timelineTypes = listOf("FOO"),
     )
 
-    val expectedResult = AssessmentTimelineQueryResult(
+    val expectedResult = TimelineItem(
       timeline = mutableListOf(
         TimelineItem(
           type = "FOO",
@@ -95,12 +93,12 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns filtered timeline data for multiple timeline types and a point in time`(timestamp: LocalDateTime?) {
     val query = AssessmentTimelineQuery(
       user = user,
-      assessmentIdentifier = UuidIdentifier(assessment.uuid),
+      identifier = UuidIdentifier(assessment.uuid),
       timestamp = timestamp,
       timelineTypes = listOf("BAR", "BAZ"),
     )
 
-    val expectedResult = AssessmentTimelineQueryResult(
+    val expectedResult = TimelineItem(
       timeline = mutableListOf(
         TimelineItem(
           type = "BAR",
@@ -123,12 +121,12 @@ class AssessmentTimelineQueryHandlerTest : AbstractQueryHandlerTest() {
   fun `returns empty timeline data for a non-existent timeline type and a point in time`(timestamp: LocalDateTime?) {
     val query = AssessmentTimelineQuery(
       user = user,
-      assessmentIdentifier = UuidIdentifier(assessment.uuid),
+      identifier = UuidIdentifier(assessment.uuid),
       timestamp = timestamp,
       timelineTypes = listOf("TEST"),
     )
 
-    val expectedResult = AssessmentTimelineQueryResult(
+    val expectedResult = TimelineItem(
       timeline = mutableListOf(),
     )
 

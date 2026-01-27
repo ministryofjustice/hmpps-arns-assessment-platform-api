@@ -8,9 +8,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemReorderedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
@@ -20,35 +22,42 @@ class ReorderCollectionItemCommandHandler(
   private val eventService: EventService,
   private val stateService: StateService,
   private val userDetailsService: UserDetailsService,
+  private val timelineService: TimelineService,
 ) : CommandHandler<ReorderCollectionItemCommand> {
   override val type = ReorderCollectionItemCommand::class
   override fun handle(command: ReorderCollectionItemCommand): CommandSuccessCommandResult {
-    val event = with(command) {
-      val assessment = assessmentService.findBy(command.assessmentUuid)
-      val state: AssessmentState = stateService
-        .stateForType(AssessmentAggregate::class)
-        .fetchOrCreateLatestState(assessment)
-      val collection = state.getForRead().data.getCollection(command.collectionItemUuid)
-        ?: throw Error("Collection ${command.collectionItemUuid} not found")
-      val itemIndex = collection.items.size
-      val collectionName = collection.name
-      val previousIndex = collection.items.indexOfFirst { it.uuid == command.collectionItemUuid }
+    val assessment = assessmentService.findBy(command.assessmentUuid)
+    val state = stateService
+      .stateForType(AssessmentAggregate::class)
+      .fetchOrCreateLatestState(assessment) as AssessmentState
+    val collection = state.getForRead().data.getCollection(command.collectionItemUuid)
+      ?: throw Error("Collection ${command.collectionItemUuid} not found")
 
+    val event = with(command) {
       EventEntity(
         user = userDetailsService.findOrCreate(user),
         assessment = assessmentService.findBy(assessmentUuid),
         data = CollectionItemReorderedEvent(
-          collectionName = collectionName,
           collectionItemUuid = collectionItemUuid,
-          index = itemIndex,
-          previousIndex = previousIndex,
-          timeline = timeline,
+          index = command.index,
         ),
       )
     }
 
     eventBus.handle(event).run(stateService::persist)
     eventService.save(event)
+    timelineService.save(
+      TimelineEntity.from(
+        command,
+        event,
+        mapOf(
+          "collection" to collection.name,
+          "collectionItemUuid" to command.collectionItemUuid,
+          "index" to command.index,
+          "previousIndex" to collection.items.indexOf(collection.findItem(command.collectionItemUuid)),
+        ),
+      ),
+    )
 
     return CommandSuccessCommandResult()
   }

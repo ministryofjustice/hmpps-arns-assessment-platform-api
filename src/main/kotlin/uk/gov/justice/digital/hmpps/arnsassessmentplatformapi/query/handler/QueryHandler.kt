@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
@@ -16,6 +17,7 @@ class QueryHandlerServiceBundle(
   val stateService: StateService,
   val userDetailsService: UserDetailsService,
   val eventService: EventService,
+  val timelineService: TimelineService,
 )
 
 interface QueryHandler<C : Query> {

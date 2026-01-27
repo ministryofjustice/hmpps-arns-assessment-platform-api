@@ -82,7 +82,6 @@ class AddCollectionItemCommandTest(
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -93,7 +92,6 @@ class AddCollectionItemCommandTest(
             collectionUuid = collectionUuid,
             name = "COLLECTION_NAME",
             parentCollectionItemUuid = null,
-            timeline = null,
           ),
         ),
       ),
@@ -197,7 +195,6 @@ class AddCollectionItemCommandTest(
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -208,7 +205,6 @@ class AddCollectionItemCommandTest(
             collectionUuid = collectionUuid,
             name = "COLLECTION_NAME",
             parentCollectionItemUuid = null,
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -221,7 +217,6 @@ class AddCollectionItemCommandTest(
             answers = mutableMapOf("title" to SingleValue("existing_collection_1")),
             properties = mutableMapOf(),
             index = null,
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -234,7 +229,6 @@ class AddCollectionItemCommandTest(
             answers = mutableMapOf("title" to SingleValue("existing_collection_2")),
             properties = mutableMapOf(),
             index = null,
-            timeline = null,
           ),
         ),
       ),

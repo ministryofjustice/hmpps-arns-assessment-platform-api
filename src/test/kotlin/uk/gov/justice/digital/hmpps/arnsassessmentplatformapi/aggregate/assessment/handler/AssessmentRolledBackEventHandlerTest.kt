@@ -13,7 +13,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
@@ -58,7 +57,6 @@ class AssessmentRolledBackEventHandlerTest {
       eventEntityFor(
         AssessmentRolledBackEvent(
           rolledBackTo = LocalDateTime.parse("2025-01-01T09:00:00"),
-          timeline = timeline,
         ),
       )
 
@@ -69,7 +67,7 @@ class AssessmentRolledBackEventHandlerTest {
           eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
           data = AssessmentAggregate().apply {
             formVersion = "1"
-            answers.put("foo", SingleValue("rolled_back"))
+            answers["foo"] = SingleValue("rolled_back")
           },
           assessment = assessment,
         ),
@@ -106,14 +104,7 @@ class AssessmentRolledBackEventHandlerTest {
           data = AssessmentAggregate().apply {
             formVersion = "1"
             collaborators.add(user.uuid)
-            answers.put("foo", SingleValue("rolled_back"))
-            timeline.add(
-              TimelineItem(
-                "test",
-                LocalDateTime.parse("2025-01-01T12:00:00"),
-                mapOf("foo" to listOf("bar")),
-              ),
-            )
+            answers["foo"] = SingleValue("rolled_back")
           },
         ),
       )
@@ -135,7 +126,6 @@ class AssessmentRolledBackEventHandlerTest {
       eventEntityFor(
         AssessmentRolledBackEvent(
           rolledBackTo = LocalDateTime.parse("2025-01-01T09:00:00"),
-          timeline = null,
         ),
       )
 
@@ -146,7 +136,7 @@ class AssessmentRolledBackEventHandlerTest {
           eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
           data = AssessmentAggregate().apply {
             formVersion = "1"
-            answers.put("foo", SingleValue("rolled_back"))
+            answers["foo"] = SingleValue("rolled_back")
           },
           assessment = assessment,
         ),
@@ -182,7 +172,7 @@ class AssessmentRolledBackEventHandlerTest {
           data = AssessmentAggregate().apply {
             formVersion = "1"
             collaborators.add(user.uuid)
-            answers.put("foo", SingleValue("rolled_back"))
+            answers["foo"] = SingleValue("rolled_back")
           },
         ),
       )

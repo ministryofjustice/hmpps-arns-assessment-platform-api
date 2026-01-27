@@ -18,7 +18,6 @@ class CreateCollectionCommandHandlerTest : AbstractCommandHandlerTest() {
     collectionUuid = command.collectionUuid,
     name = command.name,
     parentCollectionItemUuid = command.parentCollectionItemUuid,
-    timeline = command.timeline,
   )
   override val expectedResult = CreateCollectionCommandResult(
     collectionUuid = command.collectionUuid,

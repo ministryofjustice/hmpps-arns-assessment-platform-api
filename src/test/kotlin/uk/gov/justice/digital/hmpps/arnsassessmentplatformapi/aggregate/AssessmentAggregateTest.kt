@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -54,7 +53,6 @@ class AssessmentAggregateTest {
     collections.addAll(listOf(collection1, collection2))
 
     collaborators.add(mockk<UUID>())
-    timeline.add(mockk<TimelineItem>())
   }
 
   @Nested
@@ -73,7 +71,6 @@ class AssessmentAggregateTest {
       assertEquals(aggregate.answers, clone.answers)
       assertEquals(aggregate.collections, clone.collections)
       assertEquals(aggregate.collaborators, clone.collaborators)
-      assertEquals(aggregate.timeline, clone.timeline)
     }
 
     @Test
@@ -86,20 +83,17 @@ class AssessmentAggregateTest {
       assertNotSame(aggregate.answers, clone.answers)
       assertNotSame(aggregate.collections, clone.collections)
       assertNotSame(aggregate.collaborators, clone.collaborators)
-      assertNotSame(aggregate.timeline, clone.timeline)
 
       // modifying clone's top-level containers does not affect original container sizes
       clone.properties["p2"] = SingleValue("v2")
       clone.collections.clear()
       clone.collaborators.clear()
-      clone.timeline.clear()
 
       assertTrue(aggregate.properties.containsKey("p1"))
       assertFalse(aggregate.properties.containsKey("p2"))
 
       assertTrue(aggregate.collections.isNotEmpty())
       assertTrue(aggregate.collaborators.isNotEmpty())
-      assertTrue(aggregate.timeline.isNotEmpty())
     }
   }
 

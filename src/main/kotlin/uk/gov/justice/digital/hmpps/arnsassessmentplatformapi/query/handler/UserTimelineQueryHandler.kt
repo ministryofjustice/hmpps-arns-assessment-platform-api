@@ -1,27 +1,27 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Events
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Timeframe
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UserTimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.PageInfo
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.TimelineQueryResult
 
 @Component
-class AssessmentTimelineQueryHandler(
+class UserTimelineQueryHandler(
   private val services: QueryHandlerServiceBundle,
-) : QueryHandler<AssessmentTimelineQuery> {
-  override val type = AssessmentTimelineQuery::class
+) : QueryHandler<UserTimelineQuery> {
+  override val type = UserTimelineQuery::class
 
-  override fun handle(query: AssessmentTimelineQuery) = when (query.window) {
-    is Timeframe -> services.timelineService.findAllBetweenByAssessmentUuid(
-      services.assessmentService.findBy(query.identifier).uuid,
+  override fun handle(query: UserTimelineQuery) = when (query.window) {
+    is Timeframe -> services.timelineService.findAllBetweenByUserUuid(
+      services.userDetailsService.find(query.subject).uuid,
       query.window.from,
       query.window.to,
     ).let { timeline -> TimelineQueryResult(timeline) }
 
-    is Events -> services.timelineService.findAllPageableByAssessmentUuid(
-      services.assessmentService.findBy(query.identifier).uuid,
+    is Events -> services.timelineService.findAllPageableByUserUuid(
+      services.userDetailsService.find(query.subject).uuid,
       query.window.count,
       query.window.page,
     ).let { page ->

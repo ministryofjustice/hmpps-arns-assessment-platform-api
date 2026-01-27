@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 data class AssessmentTimelineQuery(
   override val user: UserDetails,
-  override val assessmentIdentifier: AssessmentIdentifier,
-  override val timestamp: LocalDateTime? = null,
-  val timelineTypes: List<String>? = null,
-) : AssessmentQuery
+  override val timestamp: LocalDateTime?,
+  val identifier: AssessmentIdentifier,
+  val window: Window,
+) : RequestableQuery

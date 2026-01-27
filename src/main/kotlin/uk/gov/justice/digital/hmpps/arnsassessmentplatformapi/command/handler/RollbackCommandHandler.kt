@@ -6,9 +6,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
@@ -18,6 +20,7 @@ class RollbackCommandHandler(
   private val eventService: EventService,
   private val stateService: StateService,
   private val userDetailsService: UserDetailsService,
+  private val timelineService: TimelineService,
 ) : CommandHandler<RollbackCommand> {
   override val type = RollbackCommand::class
   override fun handle(command: RollbackCommand): CommandSuccessCommandResult {
@@ -27,13 +30,21 @@ class RollbackCommandHandler(
         assessment = assessmentService.findBy(assessmentUuid),
         data = AssessmentRolledBackEvent(
           rolledBackTo = command.pointInTime,
-          timeline = timeline,
         ),
       )
     }
 
     eventBus.handle(event).run(stateService::persist)
     eventService.save(event)
+    timelineService.save(
+      TimelineEntity.from(
+        command,
+        event,
+        mapOf(
+          "rolledBackTo" to command.pointInTime,
+        ),
+      ),
+    )
 
     return CommandSuccessCommandResult()
   }
