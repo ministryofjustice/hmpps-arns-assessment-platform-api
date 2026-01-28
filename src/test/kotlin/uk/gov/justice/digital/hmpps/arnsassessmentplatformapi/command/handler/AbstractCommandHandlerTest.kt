@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
@@ -25,18 +26,33 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
 abstract class AbstractCommandHandlerTest {
+
   val assessment = AssessmentEntity(type = "TEST")
+
   val assessmentService: AssessmentService = mockk()
-  val eventBus: EventBus = mockk()
   val eventService: EventService = mockk()
   val stateService: StateService = mockk()
   val userDetailsService: UserDetailsService = mockk()
+  val timelineService: TimelineService = mockk()
+  val eventBus: EventBus = mockk()
+  val commandBus: CommandBus = mockk()
+
+  val services = CommandHandlerServiceBundle(
+    assessment = assessmentService,
+    event = eventService,
+    state = stateService,
+    userDetails = userDetailsService,
+    timeline = timelineService,
+    eventBus = eventBus,
+    commandBus = commandBus,
+  )
 
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
@@ -52,13 +68,7 @@ abstract class AbstractCommandHandlerTest {
     clearAllMocks()
   }
 
-  private fun getHandler() = handler.primaryConstructor!!.call(
-    assessmentService,
-    eventBus,
-    eventService,
-    stateService,
-    userDetailsService,
-  )
+  private fun getHandler() = handler.primaryConstructor!!.call(services)
 
   @Test
   fun `it stores the type of the command it is built to handle`() {

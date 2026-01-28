@@ -15,7 +15,6 @@ class RollbackAssessmentAnswersCommandHandlerTest : AbstractCommandHandlerTest()
   )
   override val expectedEvent = AssessmentRolledBackEvent(
     rolledBackTo = command.pointInTime,
-    timeline = command.timeline,
   )
   override val expectedResult = CommandSuccessCommandResult()
 }

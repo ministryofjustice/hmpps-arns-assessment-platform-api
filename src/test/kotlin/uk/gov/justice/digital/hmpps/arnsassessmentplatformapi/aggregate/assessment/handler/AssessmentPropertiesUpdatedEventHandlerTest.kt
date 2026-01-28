@@ -5,7 +5,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.PropertyNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
 
@@ -20,7 +19,6 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
           AssessmentPropertiesUpdatedEvent(
             added = mapOf("foo" to SingleValue("foo_value")),
             removed = listOf("bar"),
-            timeline = timeline,
           ),
         ),
       )
@@ -52,7 +50,6 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
               formVersion = "1"
               collaborators.add(user.uuid)
               events.forEach { it.data.added.forEach { (key, value) -> properties[key] = value } }
-              timeline.add(TimelineItem("test", LocalDateTime.parse("2025-01-01T12:00:00"), mapOf("foo" to listOf("bar"))))
             },
           ),
         )
@@ -64,7 +61,6 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
           AssessmentPropertiesUpdatedEvent(
             added = mapOf("foo" to SingleValue("foo_value")),
             removed = listOf("bar"),
-            timeline = null,
           ),
         ),
       )
@@ -107,7 +103,6 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
           AssessmentPropertiesUpdatedEvent(
             added = mapOf(),
             removed = listOf("bar"),
-            timeline = null,
           ),
         ),
       )

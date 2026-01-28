@@ -23,7 +23,6 @@ class AssessmentPropertiesUpdatedEventHandler(
     updateProperties(state, event.data)
     state.getForWrite().data.apply {
       collaborators.add(event.user.uuid)
-      event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
     state.getForWrite().apply {

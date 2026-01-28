@@ -14,9 +14,7 @@ class EventHandlerRegistry(
 ) {
   private val registry = handlers.groupBy { it.eventType }
 
-  fun <E : Event> getHandlersFor(eventType: KClass<out E>): List<EventHandler<E, AggregateState<out Aggregate<*>>>> = registry[eventType]?.map {
-    it as EventHandler<E, AggregateState<out Aggregate<*>>>
-  } ?: throw EventHandlerNotImplementedException(
-    "No handlers registered for event ${eventType.simpleName}",
-  )
+  fun <E : Event> getHandlersFor(eventType: KClass<out E>): List<EventHandler<E, AggregateState<out Aggregate<*>>>> = @Suppress("UNCHECKED_CAST")
+  registry[eventType]?.mapNotNull { it as? EventHandler<E, AggregateState<out Aggregate<*>>> }
+    ?: throw EventHandlerNotImplementedException("No handlers registered for event ${eventType.simpleName}")
 }

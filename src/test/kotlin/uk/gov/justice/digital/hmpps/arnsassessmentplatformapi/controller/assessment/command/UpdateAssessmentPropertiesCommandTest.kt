@@ -72,7 +72,6 @@ class UpdateAssessmentPropertiesCommandTest(
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -85,7 +84,6 @@ class UpdateAssessmentPropertiesCommandTest(
               "bar" to SingleValue("bar_value"),
             ),
             removed = emptyList(),
-            timeline = null,
           ),
         ),
       ),

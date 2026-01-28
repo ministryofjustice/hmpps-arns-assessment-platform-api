@@ -14,7 +14,6 @@ class UpdateFormVersionCommandHandlerTest : AbstractCommandHandlerTest() {
   )
   override val expectedEvent = FormVersionUpdatedEvent(
     version = "2",
-    timeline = command.timeline,
   )
   override val expectedResult = CommandSuccessCommandResult()
 }

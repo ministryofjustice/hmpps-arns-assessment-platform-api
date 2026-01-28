@@ -22,7 +22,6 @@ class AssessmentCreatedEventHandler(
     state.getForWrite().data.apply {
       formVersion = event.data.formVersion
       collaborators.add(event.user.uuid)
-      event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
     state.getForWrite().apply {

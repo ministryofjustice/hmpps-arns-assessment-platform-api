@@ -13,10 +13,13 @@ class UserDetailsService(
   fun findByUserUuid(userUuid: UUID) = userDetailsRepository.findByUuid(userUuid)
   fun findUsersByUuids(userUuids: Collection<UUID>) = userDetailsRepository.findAllByUuidIsIn(userUuids.toSet())
 
-  fun findOrCreate(commandUser: UserDetails) = userDetailsRepository.findByUserIdAndAuthSource(commandUser.id, commandUser.authSource)
+  fun find(user: UserDetails) = userDetailsRepository.findByUserIdAndAuthSource(user.id, user.authSource)
+    ?: throw RuntimeException("Unable to find user ${user.id}")
+
+  fun findOrCreate(user: UserDetails) = userDetailsRepository.findByUserIdAndAuthSource(user.id, user.authSource)
     ?: UserDetailsEntity(
-      userId = commandUser.id,
-      displayName = commandUser.name,
-      authSource = commandUser.authSource,
+      userId = user.id,
+      displayName = user.name,
+      authSource = user.authSource,
     ).run(userDetailsRepository::save)
 }

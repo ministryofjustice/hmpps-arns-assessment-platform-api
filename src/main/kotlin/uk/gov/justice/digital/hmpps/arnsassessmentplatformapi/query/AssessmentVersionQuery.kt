@@ -7,4 +7,4 @@ data class AssessmentVersionQuery(
   override val user: UserDetails,
   override val assessmentIdentifier: AssessmentIdentifier,
   override val timestamp: LocalDateTime? = null,
-) : RequestableQuery
+) : AssessmentQuery

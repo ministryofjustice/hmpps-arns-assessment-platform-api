@@ -23,7 +23,6 @@ class AddCollectionItemCommandHandlerTest : AbstractCommandHandlerTest() {
     answers = command.answers,
     properties = command.properties,
     index = command.index,
-    timeline = command.timeline,
   )
   override val expectedResult = AddCollectionItemCommandResult(
     collectionItemUuid = command.collectionItemUuid,

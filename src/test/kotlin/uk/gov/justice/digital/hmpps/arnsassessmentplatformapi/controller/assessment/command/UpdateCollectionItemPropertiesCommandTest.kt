@@ -106,7 +106,6 @@ class UpdateCollectionItemPropertiesCommandTest(
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -117,7 +116,6 @@ class UpdateCollectionItemPropertiesCommandTest(
             collectionUuid = collectionUuid,
             name = "COLLECTION_NAME",
             parentCollectionItemUuid = null,
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -130,7 +128,6 @@ class UpdateCollectionItemPropertiesCommandTest(
             answers = mutableMapOf(),
             properties = mutableMapOf("prop" to SingleValue("unchanged_1")),
             index = null,
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -146,7 +143,6 @@ class UpdateCollectionItemPropertiesCommandTest(
               "prop_to_remove" to SingleValue("should_not_exist"),
             ),
             index = null,
-            timeline = null,
           ),
         ),
       ),
