@@ -6,30 +6,19 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAnswersUpdatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
 class UpdateCollectionItemAnswersCommandHandler(
-  private val assessmentService: AssessmentService,
-  private val eventBus: EventBus,
-  private val eventService: EventService,
-  private val stateService: StateService,
-  private val userDetailsService: UserDetailsService,
-  private val timelineService: TimelineService,
+  private val services: CommandHandlerServiceBundle,
 ) : CommandHandler<UpdateCollectionItemAnswersCommand> {
   override val type = UpdateCollectionItemAnswersCommand::class
   override fun handle(command: UpdateCollectionItemAnswersCommand): CommandSuccessCommandResult {
     val event = with(command) {
       EventEntity(
-        user = userDetailsService.findOrCreate(user),
-        assessment = assessmentService.findBy(assessmentUuid),
+        user = services.userDetails.findOrCreate(user),
+        assessment = services.assessment.findBy(assessmentUuid),
         data = CollectionItemAnswersUpdatedEvent(
           collectionItemUuid = collectionItemUuid,
           added = added,
@@ -38,14 +27,14 @@ class UpdateCollectionItemAnswersCommandHandler(
       )
     }
 
-    val collection = eventBus.handle(event)
-      .also { updatedState -> stateService.persist(updatedState) }
+    val collection = services.eventBus.handle(event)
+      .also { updatedState -> services.state.persist(updatedState) }
       .run { get(AssessmentAggregate::class) as AssessmentState }
       .getForRead().data.getCollection(command.collectionItemUuid)
       ?: throw Error("Collection $command.collectionItemUuid not found")
 
-    eventService.save(event)
-    timelineService.save(
+    services.event.save(event)
+    services.timeline.save(
       TimelineEntity.from(
         command,
         event,

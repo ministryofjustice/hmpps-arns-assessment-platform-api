@@ -14,14 +14,14 @@ class AssessmentTimelineQueryHandler(
   override val type = AssessmentTimelineQuery::class
 
   override fun handle(query: AssessmentTimelineQuery) = when (query.window) {
-    is Timeframe -> services.timelineService.findAllBetweenByAssessmentUuid(
-      services.assessmentService.findBy(query.identifier).uuid,
+    is Timeframe -> services.timeline.findAllBetweenByAssessmentUuid(
+      services.assessment.findBy(query.identifier).uuid,
       query.window.from,
       query.window.to,
     ).let { timeline -> TimelineQueryResult(timeline) }
 
-    is Events -> services.timelineService.findAllPageableByAssessmentUuid(
-      services.assessmentService.findBy(query.identifier).uuid,
+    is Events -> services.timeline.findAllPageableByAssessmentUuid(
+      services.assessment.findBy(query.identifier).uuid,
       query.window.count,
       query.window.page,
     ).let { page ->

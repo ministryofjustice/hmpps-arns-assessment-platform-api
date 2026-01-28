@@ -13,20 +13,20 @@ class AssessmentVersionQueryHandler(
 ) : QueryHandler<AssessmentVersionQuery> {
   override val type = AssessmentVersionQuery::class
   override fun handle(query: AssessmentVersionQuery): AssessmentVersionQueryResult {
-    val assessment = services.assessmentService.findBy(query.assessmentIdentifier)
+    val assessment = services.assessment.findBy(query.assessmentIdentifier)
 
-    val state = services.stateService.stateForType(AssessmentAggregate::class)
+    val state = services.state.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
 
     val aggregate = state.getForRead()
     val data = aggregate.data
 
-    val collaborators = services.userDetailsService.findUsersByUuids(data.collaborators)
+    val collaborators = services.userDetails.findUsersByUuids(data.collaborators)
       .map(User::from)
       .toSet()
     val assignedUser = data.assignedUser?.let { userUuid ->
       collaborators.find { collaborator -> userUuid == collaborator.id }
-        ?: services.userDetailsService.findByUserUuid(userUuid).run(User::from)
+        ?: services.userDetails.findByUserUuid(userUuid).run(User::from)
     }
 
     return AssessmentVersionQueryResult(

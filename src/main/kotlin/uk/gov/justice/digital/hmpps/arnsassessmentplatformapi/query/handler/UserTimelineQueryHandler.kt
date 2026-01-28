@@ -14,14 +14,14 @@ class UserTimelineQueryHandler(
   override val type = UserTimelineQuery::class
 
   override fun handle(query: UserTimelineQuery) = when (query.window) {
-    is Timeframe -> services.timelineService.findAllBetweenByUserUuid(
-      services.userDetailsService.find(query.subject).uuid,
+    is Timeframe -> services.timeline.findAllBetweenByUserUuid(
+      services.userDetails.find(query.subject).uuid,
       query.window.from,
       query.window.to,
     ).let { timeline -> TimelineQueryResult(timeline) }
 
-    is Events -> services.timelineService.findAllPageableByUserUuid(
-      services.userDetailsService.find(query.subject).uuid,
+    is Events -> services.timeline.findAllPageableByUserUuid(
+      services.userDetails.find(query.subject).uuid,
       query.window.count,
       query.window.page,
     ).let { page ->

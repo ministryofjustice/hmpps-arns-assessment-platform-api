@@ -4,37 +4,26 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
 class UpdateAssessmentPropertiesCommandHandler(
-  private val assessmentService: AssessmentService,
-  private val eventBus: EventBus,
-  private val eventService: EventService,
-  private val stateService: StateService,
-  private val userDetailsService: UserDetailsService,
-  private val timelineService: TimelineService,
+  private val services: CommandHandlerServiceBundle,
 ) : CommandHandler<UpdateAssessmentPropertiesCommand> {
   override val type = UpdateAssessmentPropertiesCommand::class
   override fun handle(command: UpdateAssessmentPropertiesCommand): CommandSuccessCommandResult {
     val event = with(command) {
       EventEntity(
-        user = userDetailsService.findOrCreate(user),
-        assessment = assessmentService.findBy(assessmentUuid),
+        user = services.userDetails.findOrCreate(user),
+        assessment = services.assessment.findBy(assessmentUuid),
         data = AssessmentPropertiesUpdatedEvent(added, removed),
       )
     }
 
-    eventBus.handle(event).run(stateService::persist)
-    eventService.save(event)
-    timelineService.save(
+    services.eventBus.handle(event).run(services.state::persist)
+    services.event.save(event)
+    services.timeline.save(
       TimelineEntity.from(
         command,
         event,

@@ -8,26 +8,15 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUserEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
 
 @Component
 class CreateAssessmentCommandHandler(
-  private val assessmentService: AssessmentService,
-  private val eventBus: EventBus,
-  private val eventService: EventService,
-  private val stateService: StateService,
-  private val userDetailsService: UserDetailsService,
-  private val timelineService: TimelineService,
+  private val services: CommandHandlerServiceBundle,
 ) : CommandHandler<CreateAssessmentCommand> {
   override val type = CreateAssessmentCommand::class
   override fun handle(command: CreateAssessmentCommand): CreateAssessmentCommandResult {
@@ -48,15 +37,15 @@ class CreateAssessmentCommandHandler(
 
     assessment.identifiers.forEach {
       try {
-        assessmentService.findBy(it.toIdentifier())
+        services.assessment.findBy(it.toIdentifier())
         throw DuplicateExternalIdentifierException(it.toIdentifier())
       } catch (_: AssessmentNotFoundException) {
       }
     }
 
-    assessmentService.save(assessment)
+    services.assessment.save(assessment)
 
-    val user = userDetailsService.findOrCreate(command.user)
+    val user = services.userDetails.findOrCreate(command.user)
 
     val createEvent = with(command) {
       EventEntity(
@@ -82,13 +71,13 @@ class CreateAssessmentCommandHandler(
     val events = listOf(createEvent, assignEvent)
 
     events.map { event ->
-      eventBus.handle(event)
-        .also { updatedState -> stateService.persist(updatedState) }
+      services.eventBus.handle(event)
+        .also { updatedState -> services.state.persist(updatedState) }
         .run { get(AssessmentAggregate::class) as AssessmentState }
     }
 
-    eventService.saveAll(events)
-    timelineService.saveAll(
+    services.event.saveAll(events)
+    services.timeline.saveAll(
       listOf(
         TimelineEntity.from(
           command,

@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.QueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
@@ -13,11 +12,10 @@ import kotlin.reflect.cast
 
 @Component
 class QueryHandlerServiceBundle(
-  val assessmentService: AssessmentService,
-  val stateService: StateService,
-  val userDetailsService: UserDetailsService,
-  val eventService: EventService,
-  val timelineService: TimelineService,
+  val assessment: AssessmentService,
+  val state: StateService,
+  val userDetails: UserDetailsService,
+  val timeline: TimelineService,
 )
 
 interface QueryHandler<C : Query> {

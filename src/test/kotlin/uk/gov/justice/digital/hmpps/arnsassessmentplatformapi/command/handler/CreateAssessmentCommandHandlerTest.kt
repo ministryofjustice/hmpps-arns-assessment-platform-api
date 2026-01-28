@@ -11,10 +11,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.aot.hint.TypeReference.listOf
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.DuplicateExternalIdentifierException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
@@ -39,23 +39,27 @@ import java.util.UUID
 
 class CreateAssessmentCommandHandlerTest {
   val assessmentService: AssessmentService = mockk()
-  val eventBus: EventBus = mockk()
   val eventService: EventService = mockk()
   val stateService: StateService = mockk()
   val userDetailsService: UserDetailsService = mockk()
   val timelineService: TimelineService = mockk()
+  val eventBus: EventBus = mockk()
+  val commandBus: CommandBus = mockk()
+
+  val services = CommandHandlerServiceBundle(
+    assessment = assessmentService,
+    event = eventService,
+    state = stateService,
+    userDetails = userDetailsService,
+    timeline = timelineService,
+    eventBus = eventBus,
+    commandBus = commandBus,
+  )
 
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
 
-  val handler = CreateAssessmentCommandHandler(
-    assessmentService = assessmentService,
-    eventBus = eventBus,
-    eventService = eventService,
-    stateService = stateService,
-    userDetailsService = userDetailsService,
-    timelineService = timelineService,
-  )
+  val handler = CreateAssessmentCommandHandler(services)
 
   val command = CreateAssessmentCommand(
     user = commandUser,
