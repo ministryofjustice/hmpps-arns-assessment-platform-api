@@ -1,18 +1,11 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.scenarios
 
-import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
 import kotlin.test.Test
@@ -21,25 +14,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
 
 class AggregateCreationTest : IntegrationTestBase() {
-  private fun command(vararg cmd: RequestableCommand) = webTestClient.post().uri("/command")
-    .header(HttpHeaders.CONTENT_TYPE, "application/json")
-    .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
-    .bodyValue(CommandsRequest(cmd.toList()))
-    .exchange()
-    .expectStatus().isOk
-    .expectBody(CommandsResponse::class.java)
-    .returnResult()
-    .responseBody!!
-
-  private fun query(vararg query: RequestableQuery) = webTestClient.post().uri("/query")
-    .header(HttpHeaders.CONTENT_TYPE, "application/json")
-    .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
-    .bodyValue(QueriesRequest(query.toList()))
-    .exchange()
-    .expectStatus().isOk
-    .expectBody(QueriesResponse::class.java)
-    .returnResult()
-    .responseBody!!
 
   @Test
   fun `new aggregate is created for point-in-time`() {

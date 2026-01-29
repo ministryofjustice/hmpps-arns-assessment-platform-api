@@ -125,6 +125,7 @@ class TimelineQueryHandlerTest {
             TimelineItem(
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
+              assessment = assessment.uuid,
               event = TestableEvent::class.simpleName!!,
               data = mapOf("foo" to "bar"),
             ),
@@ -182,6 +183,7 @@ class TimelineQueryHandlerTest {
             TimelineItem(
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
+              assessment = assessment.uuid,
               event = TestableEvent::class.simpleName!!,
               data = mapOf("foo" to "bar"),
             ),
@@ -248,6 +250,7 @@ class TimelineQueryHandlerTest {
             TimelineItem(
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
+              assessment = assessment.uuid,
               event = TestableEvent::class.simpleName!!,
               data = mapOf("foo" to "bar"),
             ),
@@ -305,6 +308,7 @@ class TimelineQueryHandlerTest {
             TimelineItem(
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
+              assessment = assessment.uuid,
               event = TestableEvent::class.simpleName!!,
               data = mapOf("foo" to "bar"),
             ),

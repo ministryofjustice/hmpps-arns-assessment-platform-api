@@ -9,11 +9,17 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.wiremock.HmppsAuthApiExtension
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.wiremock.HmppsAuthApiExtension.Companion.hmppsAuth
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 
@@ -55,4 +61,24 @@ abstract class IntegrationTestBase {
   protected fun stubPingWithResponse(status: Int) {
     hmppsAuth.stubHealthPing(status)
   }
+
+  protected fun command(vararg cmd: RequestableCommand) = webTestClient.post().uri("/command")
+    .header(HttpHeaders.CONTENT_TYPE, "application/json")
+    .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+    .bodyValue(CommandsRequest(cmd.toList()))
+    .exchange()
+    .expectStatus().isOk
+    .expectBody(CommandsResponse::class.java)
+    .returnResult()
+    .responseBody!!
+
+  protected fun query(vararg query: RequestableQuery) = webTestClient.post().uri("/query")
+    .header(HttpHeaders.CONTENT_TYPE, "application/json")
+    .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+    .bodyValue(QueriesRequest(query.toList()))
+    .exchange()
+    .expectStatus().isOk
+    .expectBody(QueriesResponse::class.java)
+    .returnResult()
+    .responseBody!!
 }
