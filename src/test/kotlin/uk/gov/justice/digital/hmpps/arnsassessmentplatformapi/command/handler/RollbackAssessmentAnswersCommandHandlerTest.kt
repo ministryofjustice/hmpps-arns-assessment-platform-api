@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
 
 class RollbackAssessmentAnswersCommandHandlerTest : AbstractCommandHandlerTest() {
+
   override val handler = RollbackCommandHandler::class
   override val command = RollbackCommand(
     user = commandUser,

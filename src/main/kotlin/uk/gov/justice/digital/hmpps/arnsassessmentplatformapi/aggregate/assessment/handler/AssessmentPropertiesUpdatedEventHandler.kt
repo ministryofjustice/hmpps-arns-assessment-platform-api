@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 class AssessmentPropertiesUpdatedEventHandler(
   private val clock: Clock,
 ) : AssessmentEventHandler<AssessmentPropertiesUpdatedEvent> {
-
   override val eventType = AssessmentPropertiesUpdatedEvent::class
   override val stateType = AssessmentState::class
 

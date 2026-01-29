@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAn
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 
 class UpdateAssessmentAnswersCommandHandlerTest : AbstractCommandHandlerTest() {
+
   override val handler = UpdateAssessmentAnswersCommandHandler::class
   override val command = UpdateAssessmentAnswersCommand(
     user = commandUser,

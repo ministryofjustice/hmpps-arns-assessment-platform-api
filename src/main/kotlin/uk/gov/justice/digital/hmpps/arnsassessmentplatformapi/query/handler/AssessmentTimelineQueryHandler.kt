@@ -2,8 +2,8 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Events
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Timeframe
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.PageWindow
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimeframeWindow
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.PageInfo
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.TimelineQueryResult
 
@@ -14,13 +14,13 @@ class AssessmentTimelineQueryHandler(
   override val type = AssessmentTimelineQuery::class
 
   override fun handle(query: AssessmentTimelineQuery) = when (query.window) {
-    is Timeframe -> services.timeline.findAllBetweenByAssessmentUuid(
+    is TimeframeWindow -> services.timeline.findAllBetweenByAssessmentUuid(
       services.assessment.findBy(query.identifier).uuid,
       query.window.from,
       query.window.to,
     ).let { timeline -> TimelineQueryResult(timeline) }
 
-    is Events -> services.timeline.findAllPageableByAssessmentUuid(
+    is PageWindow -> services.timeline.findAllPageableByAssessmentUuid(
       services.assessment.findBy(query.identifier).uuid,
       query.window.count,
       query.window.page,

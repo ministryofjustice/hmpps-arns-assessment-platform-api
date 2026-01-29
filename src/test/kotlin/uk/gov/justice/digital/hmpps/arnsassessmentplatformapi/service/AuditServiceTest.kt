@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Events
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.PageWindow
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.hmpps.sqs.HmppsQueue
@@ -117,7 +117,7 @@ class AuditServiceTest {
 
     when (auditable) {
       is RequestableCommand -> assertEquals(mapOf("assessmentUuid" to assessmentUuid), capturedEventDetails.captured)
-      is RequestableQuery -> assertEquals(mapOf("assessmentIdentifier" to UuidIdentifier(assessmentUuid)), capturedEventDetails.captured)
+      is RequestableQuery -> assertEquals(mapOf("assessmentUuid" to assessmentUuid), capturedEventDetails.captured)
       else -> fail("Unexpected auditable type $auditable")
     }
   }
@@ -144,7 +144,7 @@ class AuditServiceTest {
         removed = emptyList(),
         timeline = null,
       ),
-      AssessmentTimelineQuery(user, Clock.now(), UuidIdentifier(assessmentUuid), window = Events(10, 0)), // RequestableQuery
+      AssessmentTimelineQuery(user, Clock.now(), UuidIdentifier(assessmentUuid), window = PageWindow(10, 0)), // RequestableQuery
     )
   }
 }

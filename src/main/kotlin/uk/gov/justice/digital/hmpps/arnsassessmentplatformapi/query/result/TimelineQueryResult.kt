@@ -28,7 +28,7 @@ data class PageInfo(
   val totalPages: Int,
 )
 
-class TimelineQueryResult(
+data class TimelineQueryResult(
   val timeline: List<TimelineItem>,
   val pageInfo: PageInfo? = null,
 ) : QueryResult

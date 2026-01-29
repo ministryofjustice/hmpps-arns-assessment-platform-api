@@ -6,11 +6,11 @@ import java.time.LocalDateTime
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes(
-  JsonSubTypes.Type(value = Timeframe::class, name = "TIMEFRAME"),
-  JsonSubTypes.Type(value = Events::class, name = "EVENTS"),
+  JsonSubTypes.Type(value = TimeframeWindow::class, name = "TIMEFRAME"),
+  JsonSubTypes.Type(value = PageWindow::class, name = "EVENTS"),
 )
 sealed interface Window
 
-data class Timeframe(val from: LocalDateTime, val to: LocalDateTime) : Window
+data class TimeframeWindow(val from: LocalDateTime, val to: LocalDateTime) : Window
 
-data class Events(val count: Int, val page: Int) : Window
+data class PageWindow(val count: Int, val page: Int) : Window

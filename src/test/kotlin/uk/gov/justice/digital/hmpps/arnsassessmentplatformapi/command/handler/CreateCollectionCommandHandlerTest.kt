@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionCr
 import java.util.UUID
 
 class CreateCollectionCommandHandlerTest : AbstractCommandHandlerTest() {
+
   override val handler = CreateCollectionCommandHandler::class
   override val command = CreateCollectionCommand(
     user = commandUser,

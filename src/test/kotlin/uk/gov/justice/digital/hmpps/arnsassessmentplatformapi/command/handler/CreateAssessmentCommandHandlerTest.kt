@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
@@ -23,6 +25,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUs
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -45,6 +48,7 @@ class CreateAssessmentCommandHandlerTest {
   val timelineService: TimelineService = mockk()
   val eventBus: EventBus = mockk()
   val commandBus: CommandBus = mockk()
+  val assessmentAggregate: AssessmentAggregate = mockk()
 
   val services = CommandHandlerServiceBundle(
     assessment = assessmentService,
@@ -58,6 +62,13 @@ class CreateAssessmentCommandHandlerTest {
 
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
+
+  val assessmentState: AssessmentState = AssessmentState(
+    AggregateEntity(
+      assessment = AssessmentEntity(type = "TEST"),
+      data = assessmentAggregate,
+    ),
+  )
 
   val handler = CreateAssessmentCommandHandler(services)
 
@@ -117,6 +128,8 @@ class CreateAssessmentCommandHandlerTest {
     every { stateService.persist(state) } just Runs
     every { eventService.saveAll(capture(persistedEvent)) } answers { firstArg() }
     every { userDetailsService.findOrCreate(commandUser) } returns user
+    every { state[AssessmentAggregate::class] } returns assessmentState
+    every { timelineService.saveAll(any()) } answers { firstArg() }
 
     val result = handler.handle(command)
 

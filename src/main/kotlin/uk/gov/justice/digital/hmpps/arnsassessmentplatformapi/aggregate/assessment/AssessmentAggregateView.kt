@@ -21,5 +21,6 @@ interface AssessmentAggregateView : AggregateView {
   val collaborators: CollaboratorsView
 
   fun getCollection(collectionUuid: UUID): Collection?
+  fun getCollectionWithItem(collectionItemUuid: UUID): Collection?
   fun getCollectionItem(collectionItemUuid: UUID): CollectionItem?
 }

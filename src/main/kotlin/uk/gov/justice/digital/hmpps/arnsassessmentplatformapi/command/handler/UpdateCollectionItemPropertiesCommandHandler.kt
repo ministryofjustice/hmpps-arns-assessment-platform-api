@@ -30,8 +30,8 @@ class UpdateCollectionItemPropertiesCommandHandler(
     val collection = services.eventBus.handle(event)
       .also { updatedState -> services.state.persist(updatedState) }
       .run { get(AssessmentAggregate::class) as AssessmentState }
-      .getForRead().data.getCollection(command.collectionItemUuid)
-      ?: throw Error("Collection $command.collectionItemUuid not found")
+      .getForRead().data.getCollectionWithItem(command.collectionItemUuid)
+      ?: throw Error("Collection with item ${command.collectionItemUuid} not found")
 
     services.event.save(event)
     services.timeline.save(

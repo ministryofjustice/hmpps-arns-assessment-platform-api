@@ -19,8 +19,8 @@ class ReorderCollectionItemCommandHandler(
     val state = services.state
       .stateForType(AssessmentAggregate::class)
       .fetchOrCreateLatestState(assessment) as AssessmentState
-    val collection = state.getForRead().data.getCollection(command.collectionItemUuid)
-      ?: throw Error("Collection ${command.collectionItemUuid} not found")
+    val collection = state.getForRead().data.getCollectionWithItem(command.collectionItemUuid)
+      ?: throw Error("Collection with item ${command.collectionItemUuid} not found")
 
     val event = with(command) {
       EventEntity(

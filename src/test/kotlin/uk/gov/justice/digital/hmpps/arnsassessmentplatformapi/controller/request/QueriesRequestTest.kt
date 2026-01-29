@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidQueryException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Timeframe
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimeframeWindow
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import java.time.LocalDateTime
 import java.util.UUID
@@ -19,7 +19,7 @@ class QueriesRequestTest {
     val query = AssessmentTimelineQuery(
       user = UserDetails("test-user", "Test User"),
       identifier = UuidIdentifier(UUID.randomUUID()),
-      window = Timeframe(
+      window = TimeframeWindow(
         from = LocalDateTime.parse("2021-07-01T00:00:00"),
         to = Clock.now(),
       ),

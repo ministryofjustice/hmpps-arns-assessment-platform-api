@@ -15,7 +15,6 @@ class AssessmentRolledBackEventHandler(
   private val clock: Clock,
   @param:Lazy private val stateService: StateService,
 ) : AssessmentEventHandler<AssessmentRolledBackEvent> {
-
   override val eventType = AssessmentRolledBackEvent::class
   override val stateType = AssessmentState::class
 

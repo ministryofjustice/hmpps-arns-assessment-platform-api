@@ -21,13 +21,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.UserDetailsRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
@@ -46,15 +45,18 @@ class AssessmentVersionQueryTest(
   private val aggregateRepository: AggregateRepository,
   @Autowired
   private val eventRepository: EventRepository,
+  @Autowired
+  private val userDetailsRepository: UserDetailsRepository,
 ) : IntegrationTestBase() {
   @ParameterizedTest
   @MethodSource("assessmentAndIdentifierProvider")
   fun `it fetches the latest aggregate for an assessment`(assessment: AssessmentEntity, identifier: AssessmentIdentifier) {
     assessmentRepository.save(assessment)
+    userDetailsRepository.save(testUserDetailsEntity)
 
     val events = listOf(
       EventEntity(
-        user = UserDetailsEntity(userId = "FOO_USER", displayName = "Foo User", authSource = AuthSource.DELIUS),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = AssessmentCreatedEvent(

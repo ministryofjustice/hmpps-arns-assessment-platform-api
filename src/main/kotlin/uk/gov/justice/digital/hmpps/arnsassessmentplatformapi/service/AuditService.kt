@@ -68,8 +68,7 @@ class AuditService(
           )
 
           is UuidIdentifier -> mapOf(
-            "assessmentIdentifier" to query.identifier.uuid,
-            "assessmentIdentifierType" to "UUID",
+            "assessmentUuid" to query.identifier.uuid,
           )
         }
 

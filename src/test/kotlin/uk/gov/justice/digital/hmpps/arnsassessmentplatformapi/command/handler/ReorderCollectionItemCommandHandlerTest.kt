@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionIt
 import java.util.UUID
 
 class ReorderCollectionItemCommandHandlerTest : AbstractCommandHandlerTest() {
+
   override val handler = ReorderCollectionItemCommandHandler::class
   override val command = ReorderCollectionItemCommand(
     user = commandUser,

@@ -32,7 +32,15 @@ class AssessmentAggregate :
   }
 
   override fun getCollection(collectionUuid: UUID) = collections.firstOrNull { it.uuid == collectionUuid }
-    ?: collections.firstNotNullOfOrNull { collection -> collection.items.firstNotNullOfOrNull { it.findCollection(collectionUuid) } }
+    ?: collections.firstNotNullOfOrNull { collection ->
+      collection.items.firstNotNullOfOrNull {
+        it.findCollection(
+          collectionUuid,
+        )
+      }
+    }
+
+  override fun getCollectionWithItem(collectionItemUuid: UUID) = collections.firstOrNull { collection -> collection.items.any { item -> item.uuid == collectionItemUuid } }
 
   override fun getCollectionItem(collectionItemUuid: UUID) = collections.firstNotNullOfOrNull { it.findItem(collectionItemUuid) }
 }

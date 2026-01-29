@@ -104,6 +104,8 @@ class GroupCommandHandlerTest {
     every { eventBus.handle(capture(handledEvent)) } returns state
     every { stateService.persist(state) } just Runs
     every { eventService.save(capture(persistedEvent)) } answers { firstArg() }
+    every { eventService.setParentEvent(any<EventEntity<GroupEvent>>()) } just Runs
+    every { eventService.clearParentEvent() } just Runs
     every { commandBus.dispatch(any<List<RequestableCommand>>()) } answers { commandsResponse }
     every { userDetailsService.findOrCreate(commandUser) } returns user
 
