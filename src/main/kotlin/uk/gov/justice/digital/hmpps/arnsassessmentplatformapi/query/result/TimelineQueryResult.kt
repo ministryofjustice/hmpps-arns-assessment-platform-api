@@ -11,7 +11,7 @@ data class TimelineQueryResult(
   PageableQueryResult {
   companion object {
     fun from(page: Page<TimelineEntity>) = TimelineQueryResult(
-      timeline = page.map(TimelineItem::from).toList(),
+      timeline = page.content.map(TimelineItem::from).toList(),
       pageInfo = PageInfo(
         pageNumber = page.number,
         totalPages = page.totalPages,

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.TestableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
@@ -60,12 +61,13 @@ class TimelineQueryHandlerTest {
     authSource = AuthSource.NOT_SPECIFIED,
   )
 
-  val fromTimestamp = LocalDateTime.parse("2026-01-01T12:00:00")
-  val toTimestamp = LocalDateTime.parse("2026-01-28T12:00:00")
+  val fromTimestamp: LocalDateTime = LocalDateTime.parse("2026-01-01T12:00:00")
+  val toTimestamp: LocalDateTime = LocalDateTime.parse("2026-01-28T12:00:00")
 
   val count: Int = 10
   val totalPages: Int = 5
   val pageNumber: Int = 0
+  val pageRequest: PageRequest = PageRequest.of(pageNumber, count, Sort.by(Sort.Direction.DESC, "created_at"))
 
   @BeforeEach
   fun setup() {
@@ -98,7 +100,7 @@ class TimelineQueryHandlerTest {
       )
 
       every {
-        services.timeline.findAll(expectedCriteria, PageRequest.of(pageNumber, count))
+        services.timeline.findAll(expectedCriteria, pageRequest)
       } returns timelinePage
 
       every {
@@ -111,6 +113,8 @@ class TimelineQueryHandlerTest {
         assessmentIdentifier = identifier,
         from = fromTimestamp,
         to = toTimestamp,
+        pageNumber = pageNumber,
+        pageSize = count,
       )
 
       val result = handler.execute(query)
@@ -154,7 +158,7 @@ class TimelineQueryHandlerTest {
           TimelineCriteria(
             assessmentUuid = assessment.uuid,
           ),
-          PageRequest.of(pageNumber, count),
+          pageRequest,
         )
       } returns timelinePage
 
@@ -166,8 +170,8 @@ class TimelineQueryHandlerTest {
         user = user,
         timestamp = now,
         assessmentIdentifier = identifier,
-        from = fromTimestamp,
-        to = toTimestamp,
+        pageNumber = pageNumber,
+        pageSize = count,
       )
 
       val result = handler.execute(query)
@@ -218,7 +222,7 @@ class TimelineQueryHandlerTest {
             from = fromTimestamp,
             to = toTimestamp,
           ),
-          PageRequest.of(pageNumber, count),
+          pageRequest,
         )
       } returns timelinePage
 
@@ -232,6 +236,8 @@ class TimelineQueryHandlerTest {
         assessmentIdentifier = identifier,
         from = fromTimestamp,
         to = toTimestamp,
+        pageNumber = pageNumber,
+        pageSize = count,
       )
 
       val result = handler.execute(query)
@@ -275,7 +281,7 @@ class TimelineQueryHandlerTest {
           TimelineCriteria(
             assessmentUuid = assessment.uuid,
           ),
-          PageRequest.of(pageNumber, count),
+          pageRequest,
         )
       } returns timelinePage
 
@@ -287,8 +293,8 @@ class TimelineQueryHandlerTest {
         user = user,
         timestamp = now,
         assessmentIdentifier = identifier,
-        from = fromTimestamp,
-        to = toTimestamp,
+        pageNumber = pageNumber,
+        pageSize = count,
       )
 
       val result = handler.execute(query)
