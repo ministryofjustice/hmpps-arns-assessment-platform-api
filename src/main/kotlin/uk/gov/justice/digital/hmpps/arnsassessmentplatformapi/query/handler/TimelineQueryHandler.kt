@@ -19,6 +19,10 @@ class TimelineQueryHandler(
       userUuid = query.subject?.let { services.userDetails.find(it).uuid },
       from = query.from,
       to = query.to,
+      includeEventTypes = query.includeEventTypes,
+      excludeEventTypes = query.excludeEventTypes,
+      includeCustomTypes = query.includeCustomTypes,
+      excludeCustomTypes = query.excludeCustomTypes,
     ),
     PageRequest.of(
       query.pageNumber,

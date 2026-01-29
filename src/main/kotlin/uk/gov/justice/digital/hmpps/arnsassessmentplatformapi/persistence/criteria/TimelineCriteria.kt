@@ -58,18 +58,18 @@ data class TimelineCriteria(
   }
 
   private fun includeEventTypes() = Specification<TimelineEntity> { root, _, builder ->
-    includeEventTypes?.takeIf { it.isNotEmpty() }?.let { builder.and(root.get(TimelineEntity_.eventType).`in`(includeEventTypes)) }
+    includeEventTypes?.takeIf { it.isNotEmpty() }?.let { builder.and(root.get(TimelineEntity_.eventType).`in`(it)) }
   }
 
   private fun excludeEventTypes() = Specification<TimelineEntity> { root, _, builder ->
-    excludeEventTypes?.takeIf { it.isNotEmpty() }?.let { builder.not(root.get(TimelineEntity_.eventType).`in`(excludeEventTypes)) }
+    excludeEventTypes?.takeIf { it.isNotEmpty() }?.let { builder.not(root.get(TimelineEntity_.eventType).`in`(it)) }
   }
 
   private fun includeCustomTypes() = Specification<TimelineEntity> { root, _, builder ->
-    includeCustomTypes?.takeIf { it.isNotEmpty() }?.let { builder.and(root.get(TimelineEntity_.customType).`in`(includeCustomTypes)) }
+    includeCustomTypes?.takeIf { it.isNotEmpty() }?.let { builder.and(root.get(TimelineEntity_.customType).`in`(it)) }
   }
 
   private fun excludeCustomTypes() = Specification<TimelineEntity> { root, _, builder ->
-    excludeCustomTypes?.takeIf { it.isNotEmpty() }?.let { builder.not(root.get(TimelineEntity_.customType).`in`(excludeCustomTypes)) }
+    excludeCustomTypes?.takeIf { it.isNotEmpty() }?.let { builder.not(root.get(TimelineEntity_.customType).`in`(it)) }
   }
 }
