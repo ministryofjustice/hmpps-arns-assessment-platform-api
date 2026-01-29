@@ -4,9 +4,4 @@ import java.util.UUID
 
 data class AssignedToUserEvent(
   val userUuid: UUID,
-
-) : Event {
-  override fun toTimeLineItemData(): Map<String, Any> = mapOf(
-    "assignee" to userUuid,
-  )
-}
+) : Event

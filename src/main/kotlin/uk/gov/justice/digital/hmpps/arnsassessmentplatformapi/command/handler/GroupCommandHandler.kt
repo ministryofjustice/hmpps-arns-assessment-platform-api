@@ -16,7 +16,7 @@ class GroupCommandHandler(
       EventEntity(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid),
-        data = GroupEvent(),
+        data = GroupEvent(command.commands.count()),
       )
     }
     services.eventBus.handle(event).run(services.state::persist)

@@ -8,11 +8,8 @@ import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentQuery
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UserTimelineQuery
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimelineQuery
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import kotlin.also
 import kotlin.jvm.java
@@ -61,18 +58,10 @@ class AuditService(
     details = json(
       when (query) {
         is AssessmentQuery -> mapOf("assessmentIdentifier" to query.assessmentIdentifier)
-        is AssessmentTimelineQuery -> when (query.identifier) {
-          is ExternalIdentifier -> mapOf(
-            "assessmentIdentifier" to query.identifier.identifier,
-            "assessmentIdentifierType" to query.identifier.identifierType,
-          )
-
-          is UuidIdentifier -> mapOf(
-            "assessmentUuid" to query.identifier.uuid,
-          )
-        }
-
-        is UserTimelineQuery -> mapOf("userIdentifier" to query.user.id)
+        is TimelineQuery -> mapOf(
+          "assessmentIdentifier" to query.assessmentIdentifier,
+          "subject" to query.subject?.id,
+        ).filter { it.value != null }
       },
     ),
   ).run(::sendEvent)

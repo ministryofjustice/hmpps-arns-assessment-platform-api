@@ -331,7 +331,7 @@ class AssessmentVersionQueryTest(
       user = testUserDetailsEntity,
       assessment = assessment,
       createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
-      data = GroupEvent(),
+      data = GroupEvent(3),
     )
 
     listOf(

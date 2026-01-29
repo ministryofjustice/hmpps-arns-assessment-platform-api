@@ -3,9 +3,9 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.User
 
 @Component
 class AssessmentVersionQueryHandler(

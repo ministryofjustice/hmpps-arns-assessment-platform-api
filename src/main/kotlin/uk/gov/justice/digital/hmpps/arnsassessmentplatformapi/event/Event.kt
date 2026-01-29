@@ -18,6 +18,4 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
   JsonSubTypes.Type(value = FormVersionUpdatedEvent::class, name = "FormVersionUpdatedEvent"),
   JsonSubTypes.Type(value = GroupEvent::class, name = "GroupEvent"),
 )
-sealed interface Event {
-  fun toTimeLineItemData(): Map<String, Any> = emptyMap()
-}
+sealed interface Event

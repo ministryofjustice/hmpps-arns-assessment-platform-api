@@ -4,6 +4,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.CollectionsView
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.FormVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.PropertiesView
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
 import java.time.LocalDateTime
 import java.util.UUID

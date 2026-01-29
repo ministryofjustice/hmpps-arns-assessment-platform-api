@@ -7,8 +7,4 @@ data class CollectionCreatedEvent(
   val name: String,
   val parentCollectionItemUuid: UUID?,
 
-) : Event {
-  override fun toTimeLineItemData(): Map<String, Any> = mapOf(
-    "name" to name,
-  )
-}
+) : Event

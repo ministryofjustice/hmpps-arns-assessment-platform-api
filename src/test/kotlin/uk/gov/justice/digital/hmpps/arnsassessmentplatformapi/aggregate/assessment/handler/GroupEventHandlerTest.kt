@@ -14,7 +14,7 @@ class GroupEventHandlerTest : AbstractEventHandlerTest<GroupEvent>() {
     Scenario.Executes<GroupEvent>("handles the event").apply {
       events = listOf(
         eventEntityFor(
-          GroupEvent(),
+          GroupEvent(2),
         ),
       )
 
@@ -48,7 +48,7 @@ class GroupEventHandlerTest : AbstractEventHandlerTest<GroupEvent>() {
     Scenario.Executes<GroupEvent>("handles when no timeline provided").apply {
       events = listOf(
         eventEntityFor(
-          GroupEvent(),
+          GroupEvent(2),
         ),
       )
 

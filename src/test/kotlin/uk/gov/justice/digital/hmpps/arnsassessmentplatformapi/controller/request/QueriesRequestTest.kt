@@ -5,8 +5,7 @@ import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidQueryException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimeframeWindow
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import java.time.LocalDateTime
 import java.util.UUID
@@ -16,13 +15,11 @@ import kotlin.test.assertEquals
 class QueriesRequestTest {
   @Test
   fun `it creates`() {
-    val query = AssessmentTimelineQuery(
+    val query = TimelineQuery(
       user = UserDetails("test-user", "Test User"),
-      identifier = UuidIdentifier(UUID.randomUUID()),
-      window = TimeframeWindow(
-        from = LocalDateTime.parse("2021-07-01T00:00:00"),
-        to = Clock.now(),
-      ),
+      assessmentIdentifier = UuidIdentifier(UUID.randomUUID()),
+      from = LocalDateTime.parse("2021-07-01T00:00:00"),
+      to = Clock.now(),
       timestamp = Clock.now(),
     )
 
