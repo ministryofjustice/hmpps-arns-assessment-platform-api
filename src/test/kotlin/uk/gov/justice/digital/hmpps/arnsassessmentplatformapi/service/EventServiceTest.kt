@@ -23,7 +23,7 @@ class EventServiceTest {
     eventRepository = eventRepository,
   )
   val assessment = AssessmentEntity(type = "TEST")
-  val user = UserDetailsEntity(userId = "FOO_USER", displayName = "Foo User", authSource = AuthSource.DELIUS)
+  val user = UserDetailsEntity(userId = "FOO_USER", displayName = "Foo User", authSource = AuthSource.HMPPS_AUTH)
 
   val events = listOf(
     EventEntity(

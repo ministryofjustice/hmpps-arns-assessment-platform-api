@@ -12,8 +12,7 @@ import java.util.UUID
 
 enum class AuthSource {
   OASYS,
-  DELIUS,
-  NOMIS,
+  HMPPS_AUTH,
   NOT_SPECIFIED,
 }
 

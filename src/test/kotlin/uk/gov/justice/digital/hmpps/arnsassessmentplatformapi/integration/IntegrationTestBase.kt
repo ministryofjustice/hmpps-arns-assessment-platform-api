@@ -36,7 +36,7 @@ abstract class IntegrationTestBase {
   protected lateinit var webTestClient: WebTestClient
 
   protected val testUserDetails =
-    UserDetails(id = "FOO_USER", name = "Foo User", authSource = AuthSource.DELIUS)
+    UserDetails(id = "FOO_USER", name = "Foo User", authSource = AuthSource.HMPPS_AUTH)
 
   protected lateinit var testUserDetailsEntity: UserDetailsEntity
 

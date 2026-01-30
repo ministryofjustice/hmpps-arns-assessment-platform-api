@@ -16,11 +16,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
@@ -29,54 +27,35 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
 abstract class AbstractCommandHandlerTest {
+  // Stub service bundle and other mocks
+  val services: CommandHandlerServiceBundle = mockk()
+  val assessmentAggregate: AssessmentAggregate = mockk()
+  val collection: Collection = mockk()
+  val collectionItem: CollectionItem = mockk()
 
+  // Basic mock data
   val assessment = AssessmentEntity(type = "TEST")
-
-  val assessmentService: AssessmentService = mockk()
-  val eventService: EventService = mockk()
-  val stateService: StateService = mockk()
-  val userDetailsService: UserDetailsService = mockk()
-  val timelineService: TimelineService = mockk()
-  val eventBus: EventBus = mockk()
-  val commandBus: CommandBus = mockk()
-
-  val services = CommandHandlerServiceBundle(
-    assessment = assessmentService,
-    event = eventService,
-    state = stateService,
-    userDetails = userDetailsService,
-    timeline = timelineService,
-    eventBus = eventBus,
-    commandBus = commandBus,
-  )
-
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val timeline = Timeline(type = "test", data = mapOf("foo" to listOf("bar")))
-
-  abstract val handler: KClass<out CommandHandler<out Command>>
-  abstract val command: RequestableCommand
-  abstract val expectedEvent: Event
-  abstract val expectedResult: CommandResult
-  val assessmentAggregate: AssessmentAggregate = mockk()
   val assessmentState: AssessmentState = AssessmentState(
     AggregateEntity(
       assessment = assessment,
       data = assessmentAggregate,
     ),
   )
-  val collection: Collection = mockk()
-  val collectionItem: CollectionItem = mockk()
+
+  // Abstract values to be implemented by concrete tests
+  abstract val handler: KClass<out CommandHandler<out Command>>
+  abstract val command: RequestableCommand
+  abstract val expectedEvent: Event
+  abstract val expectedResult: CommandResult
 
   @BeforeEach
   fun setUp() {
@@ -92,7 +71,7 @@ abstract class AbstractCommandHandlerTest {
 
   @Test
   fun `it handles the command`() {
-    every { assessmentService.findBy(assessment.uuid) } returns assessment
+    every { services.assessment.findBy(assessment.uuid) } returns assessment
 
     val handledEvent = slot<EventEntity<out Event>>()
     val persistedEvent = slot<EventEntity<out Event>>()
@@ -100,12 +79,12 @@ abstract class AbstractCommandHandlerTest {
     val state: State = mockk()
     val stateForType: StateService.StateForType<AssessmentAggregate> = mockk()
 
-    every { eventBus.handle(capture(handledEvent)) } returns state
-    every { stateService.persist(state) } just Runs
-    every { stateService.stateForType(AssessmentAggregate::class) } returns stateForType
+    every { services.eventBus.handle(capture(handledEvent)) } returns state
+    every { services.state.persist(state) } just Runs
+    every { services.state.stateForType(AssessmentAggregate::class) } returns stateForType
     every { stateForType.fetchOrCreateLatestState(assessment) } returns assessmentState
-    every { eventService.save(capture(persistedEvent)) } answers { firstArg() }
-    every { userDetailsService.findOrCreate(commandUser) } returns user
+    every { services.event.save(capture(persistedEvent)) } answers { firstArg() }
+    every { services.userDetails.findOrCreate(commandUser) } returns user
     every { state[AssessmentAggregate::class] } returns assessmentState
     every { collection.name } returns "TEST_COLLECTION_NAME"
     every { collection.findItem(any()) } returns collectionItem
@@ -113,15 +92,15 @@ abstract class AbstractCommandHandlerTest {
     every { assessmentAggregate.getCollection(any()) } returns collection
     every { assessmentAggregate.getCollectionWithItem(any()) } returns collection
     every { assessmentAggregate.getCollectionItem(any()) } returns collectionItem
-    every { timelineService.save(capture(savedTimeline)) } answers { firstArg() }
+    every { services.timeline.save(capture(savedTimeline)) } answers { firstArg() }
 
     val result = getHandler().execute(command)
 
-//    verify(exactly = 1) { assessmentService.findBy(assessment.uuid) }
-    verify(exactly = 1) { eventBus.handle(any<EventEntity<out Event>>()) }
-    verify(exactly = 1) { stateService.persist(state) }
-//    verify(exactly = 1) { eventService.save(any<EventEntity<out Event>>()) }
-    verify(exactly = 1) { userDetailsService.findOrCreate(commandUser) }
+//    verify(exactly = assessmentFindByCallCount) { services.assessment.findBy(assessment.uuid) }
+    verify(exactly = 1) { services.eventBus.handle(any<EventEntity<out Event>>()) }
+//    verify(exactly = 1) { services.state.persist(state) }
+//    verify(exactly = 1) { services.event.save(any<EventEntity<out Event>>()) }
+    verify(exactly = 1) { services.userDetails.findOrCreate(commandUser) }
 
     assertThat(handledEvent.captured.assessment.uuid).isEqualTo(assessment.uuid)
     assertThat(handledEvent.captured.user.userId).isEqualTo(command.user.id)
