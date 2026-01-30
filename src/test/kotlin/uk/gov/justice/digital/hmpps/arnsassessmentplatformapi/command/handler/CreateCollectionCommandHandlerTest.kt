@@ -8,7 +8,7 @@ import java.util.UUID
 class CreateCollectionCommandHandlerTest : AbstractCommandHandlerTest() {
   override val handler = CreateCollectionCommandHandler::class
   override val command = CreateCollectionCommand(
-    user = user,
+    user = commandUser,
     name = "TEST_COLLECTION",
     parentCollectionItemUuid = UUID.randomUUID(),
     assessmentUuid = assessment.uuid,

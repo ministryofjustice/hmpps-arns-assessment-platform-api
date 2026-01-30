@@ -9,7 +9,7 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
@@ -64,12 +64,10 @@ class UpdateAssessmentAnswersCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = User("FOO_USER", "Foo User")
-
     eventRepository.saveAll(
       listOf(
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(
@@ -79,7 +77,7 @@ class UpdateAssessmentAnswersCommandTest(
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentAnswersUpdatedEvent(
@@ -125,7 +123,7 @@ class UpdateAssessmentAnswersCommandTest(
       .responseBody
 
     val expectedCommandRequest = UpdateAssessmentAnswersCommand(
-      user = User("test-user", "Test User"),
+      user = UserDetails(id = "test-user", name = "Test User"),
       assessmentUuid = assessmentEntity.uuid,
       added = mapOf("foo" to SingleValue("updated_foo_value"), "baz" to MultiValue.of("baz_value_1", "baz_value_2")),
       removed = listOf("bar"),

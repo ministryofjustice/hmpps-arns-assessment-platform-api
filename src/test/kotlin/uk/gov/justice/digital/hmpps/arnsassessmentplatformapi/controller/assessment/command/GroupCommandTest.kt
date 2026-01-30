@@ -14,7 +14,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFormVersionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.GroupCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -67,12 +66,10 @@ class GroupCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = User("FOO_USER", "Foo User")
-
     eventRepository.saveAll(
       listOf(
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(
@@ -82,7 +79,7 @@ class GroupCommandTest(
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentAnswersUpdatedEvent(
@@ -95,22 +92,22 @@ class GroupCommandTest(
     )
 
     val updateCommand = GroupCommand(
-      user = user,
+      user = testUserDetails,
       assessmentUuid = assessmentEntity.uuid,
       commands = listOf(
         UpdateFormVersionCommand(
-          user = user,
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           version = "2",
         ),
         UpdateAssessmentAnswersCommand(
-          user = user,
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           added = mapOf("bar" to SingleValue("baz")),
           removed = listOf("foo"),
         ),
         UpdateAssessmentPropertiesCommand(
-          user = user,
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           added = mapOf("foo" to SingleValue("baz")),
           removed = listOf(),

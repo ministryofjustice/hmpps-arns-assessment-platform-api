@@ -4,29 +4,25 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUserEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 
 @Component
-class FormVersionUpdatedEventHandler(
+class AssignedToUserEventHandler(
   private val clock: Clock,
-) : AssessmentEventHandler<FormVersionUpdatedEvent> {
-  override val eventType = FormVersionUpdatedEvent::class
+) : AssessmentEventHandler<AssignedToUserEvent> {
+  override val eventType = AssignedToUserEvent::class
   override val stateType = AssessmentState::class
 
   override fun handle(
-    event: EventEntity<FormVersionUpdatedEvent>,
+    event: EventEntity<AssignedToUserEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    val aggregate = state.getForWrite()
-
-    aggregate.data.apply {
-      formVersion = event.data.version
-      collaborators.add(event.user.uuid)
-      event.data.timeline?.let { timeline.add(it.item(event)) }
+    state.getForWrite().data.apply {
+      assignedUser = event.data.userUuid
     }
 
-    aggregate.apply {
+    state.getForWrite().apply {
       eventsTo = event.createdAt
       updatedAt = clock.now()
       numberOfEventsApplied += 1

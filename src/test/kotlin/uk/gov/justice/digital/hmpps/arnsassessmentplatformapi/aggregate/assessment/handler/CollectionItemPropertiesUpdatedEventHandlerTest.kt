@@ -74,7 +74,7 @@ class CollectionItemPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              collaborators.add(user)
+              collaborators.add(user.uuid)
               collections.addAll(
                 listOf(
                   Collection(
@@ -167,7 +167,7 @@ class CollectionItemPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              collaborators.add(user)
+              collaborators.add(user.uuid)
               collections.addAll(
                 listOf(
                   Collection(

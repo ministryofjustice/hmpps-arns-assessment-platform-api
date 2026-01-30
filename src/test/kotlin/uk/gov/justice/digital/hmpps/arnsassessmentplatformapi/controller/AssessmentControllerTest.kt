@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
@@ -73,12 +73,12 @@ class AssessmentControllerTest(
       val request = CommandsRequest(
         commands = listOf(
           CreateAssessmentCommand(
-            User("test-user-1", "Test User"),
+            UserDetails("test-user-1", "Test User"),
             assessmentType = "TEST",
             formVersion = "1",
           ),
           CreateAssessmentCommand(
-            User("test-user-2", "Test User"),
+            UserDetails("test-user-2", "Test User"),
             assessmentType = "TEST",
             formVersion = "1",
           ),
@@ -144,12 +144,12 @@ class AssessmentControllerTest(
     @Test
     fun `it can process multiple queries`() {
       val assessment1 = CreateAssessmentCommand(
-        User("test-user-1", "Test User"),
+        UserDetails("test-user-1", "Test User"),
         assessmentType = "TEST",
         formVersion = "1",
       )
       val assessment2 = CreateAssessmentCommand(
-        User("test-user-2", "Test User"),
+        UserDetails("test-user-2", "Test User"),
         assessmentType = "TEST",
         formVersion = "1",
       )
@@ -167,11 +167,11 @@ class AssessmentControllerTest(
       val request = QueriesRequest(
         queries = listOf(
           AssessmentVersionQuery(
-            user = User("test-user-1", "Test User"),
+            user = UserDetails("test-user-1", "Test User"),
             assessmentIdentifier = UuidIdentifier(assessment1.assessmentUuid),
           ),
           AssessmentVersionQuery(
-            user = User("test-user-2", "Test User"),
+            user = UserDetails("test-user-2", "Test User"),
             assessmentIdentifier = UuidIdentifier(assessment2.assessmentUuid),
           ),
         ),
@@ -213,7 +213,7 @@ class AssessmentControllerTest(
         val request = CommandsRequest(
           commands = listOf(
             CreateAssessmentCommand(
-              user = User("test-user", "Test User"),
+              user = UserDetails("test-user", "Test User"),
               assessmentType = "TEST",
               formVersion = "1",
             ),
@@ -233,7 +233,7 @@ class AssessmentControllerTest(
         val request = CommandsRequest(
           commands = listOf(
             CreateAssessmentCommand(
-              user = User("test-user", "Test User"),
+              user = UserDetails("test-user", "Test User"),
               assessmentType = "TEST",
               formVersion = "1",
             ),
@@ -254,7 +254,7 @@ class AssessmentControllerTest(
       @Test
       fun `it allows access with ROLE_AAP__FRONTEND_RW`() {
         val assessment = CreateAssessmentCommand(
-          user = User("test-user", "Test User"),
+          user = UserDetails("test-user", "Test User"),
           assessmentType = "TEST",
           formVersion = "1",
         )
@@ -271,7 +271,7 @@ class AssessmentControllerTest(
         val request = QueriesRequest(
           queries = listOf(
             AssessmentVersionQuery(
-              user = User("test-user", "Test User"),
+              user = UserDetails("test-user", "Test User"),
               assessmentIdentifier = UuidIdentifier(assessment.assessmentUuid),
             ),
           ),
@@ -290,7 +290,7 @@ class AssessmentControllerTest(
         val request = QueriesRequest(
           queries = listOf(
             AssessmentVersionQuery(
-              user = User("test-user", "Test User"),
+              user = UserDetails("test-user", "Test User"),
               assessmentIdentifier = UuidIdentifier(UUID.randomUUID()),
             ),
           ),

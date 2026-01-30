@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
 class GroupCommandHandler(
@@ -19,12 +20,13 @@ class GroupCommandHandler(
   private val eventService: EventService,
   private val stateService: StateService,
   @param:Lazy private val commandBus: CommandBus,
+  private val userDetailsService: UserDetailsService,
 ) : CommandHandler<GroupCommand> {
   override val type = GroupCommand::class
   override fun handle(command: GroupCommand): GroupCommandResult {
     val event = with(command) {
       EventEntity(
-        user = user,
+        user = userDetailsService.findOrCreate(user),
         assessment = assessmentService.findBy(assessmentUuid),
         data = GroupEvent(timeline),
       )

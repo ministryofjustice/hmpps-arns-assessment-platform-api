@@ -10,11 +10,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.exception.Co
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.CollectionQueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
 class CollectionQueryHandler(
   private val assessmentService: AssessmentService,
   private val stateService: StateService,
+  private val _unused: UserDetailsService,
 ) : QueryHandler<CollectionQuery> {
   override val type = CollectionQuery::class
   override fun handle(query: CollectionQuery): CollectionQueryResult {

@@ -43,7 +43,7 @@ class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCre
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = events.last().data.formVersion
-              collaborators.add(user)
+              collaborators.add(user.uuid)
               timeline.add(
                 TimelineItem(
                   "test",
@@ -87,7 +87,7 @@ class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCre
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = events.last().data.formVersion
-              collaborators.add(user)
+              collaborators.add(user.uuid)
             },
           ),
         )

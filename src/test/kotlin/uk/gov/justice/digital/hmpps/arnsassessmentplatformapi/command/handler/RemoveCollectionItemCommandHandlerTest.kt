@@ -8,7 +8,7 @@ import java.util.UUID
 class RemoveCollectionItemCommandHandlerTest : AbstractCommandHandlerTest() {
   override val handler = RemoveCollectionItemCommandHandler::class
   override val command = RemoveCollectionItemCommand(
-    user = user,
+    user = commandUser,
     collectionItemUuid = UUID.randomUUID(),
     assessmentUuid = assessment.uuid,
     timeline = timeline,

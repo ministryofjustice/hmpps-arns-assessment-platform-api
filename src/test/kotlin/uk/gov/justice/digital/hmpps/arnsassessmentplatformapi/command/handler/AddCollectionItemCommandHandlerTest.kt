@@ -13,7 +13,7 @@ class AddCollectionItemCommandHandlerTest : AbstractCommandHandlerTest() {
     answers = mapOf("foo" to SingleValue("bar")),
     properties = mapOf("bar" to SingleValue("baz")),
     index = 2,
-    user = user,
+    user = commandUser,
     assessmentUuid = assessment.uuid,
     timeline = timeline,
   )
