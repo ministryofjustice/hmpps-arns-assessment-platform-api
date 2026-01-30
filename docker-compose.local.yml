@@ -7,9 +7,9 @@ services:
     ports:
       - "4566:4566"
 
-  auth:
+  hmpps-auth:
     ports:
-      - "9090:8080"
+      - "9090:9090"
 
   api:
     ports:
