@@ -1,15 +1,34 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.criteria
 
-import io.mockk.*
-import jakarta.persistence.criteria.*
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
+import jakarta.persistence.criteria.CriteriaBuilder
+import jakarta.persistence.criteria.CriteriaQuery
+import jakarta.persistence.criteria.Expression
+import jakarta.persistence.criteria.Path
+import jakarta.persistence.criteria.Predicate
+import jakarta.persistence.criteria.Root
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.FieldSource
 import org.springframework.data.jpa.domain.Specification
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.*
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity_
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity_
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity_
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 @DisplayName("TimelineCriteria Specification tests")
 class TimelineCriteriaTest {
@@ -161,7 +180,7 @@ class TimelineCriteriaTest {
     val emptyAndNonEmptySets = listOf(
       emptySet(),
       setOf("A"),
-      setOf("A", "B")
+      setOf("A", "B"),
     )
 
     @ParameterizedTest(name = "includeEventTypes = {0}")

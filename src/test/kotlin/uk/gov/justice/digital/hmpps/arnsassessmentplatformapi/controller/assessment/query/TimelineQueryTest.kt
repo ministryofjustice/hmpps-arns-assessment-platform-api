@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.transaction.support.TransactionTemplate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
@@ -14,7 +15,10 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Cre
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimelineQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.TimelineQueryResult
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -24,14 +28,19 @@ import kotlin.test.assertIs
 class TimelineQueryTest(
   @Autowired
   val entityManager: EntityManager,
-): IntegrationTestBase() {
-  private val user1 = UserDetails(id = "FOO_USER_1", name = "Foo User 1")
-  private val user2 = UserDetails(id = "FOO_USER_2", name = "Foo User 2")
+) : IntegrationTestBase() {
+  private val user1 = UserDetails(id = UUID.randomUUID().toString(), name = "Foo User 1")
+  private val user2 = UserDetails(id = UUID.randomUUID().toString(), name = "Foo User 2")
 
   private lateinit var user1Assessment1Uuid: UUID
   private lateinit var user1Assessment2Uuid: UUID
   private lateinit var user2Assessment1Uuid: UUID
   private lateinit var user2Assessment2Uuid: UUID
+
+  private val testCrn = UUID.randomUUID().toString() // TODO: If we validate CRN then we may be required to improve this test data
+
+  @Autowired
+  lateinit var transactionTemplate: TransactionTemplate
 
   @BeforeAll
   fun setUp() {
@@ -39,14 +48,23 @@ class TimelineQueryTest(
       command(CreateAssessmentCommand(user = user1, assessmentType = "TEST", formVersion = "1")).commands[0].result,
     ).assessmentUuid
     user1Assessment2Uuid = assertIs<CreateAssessmentCommandResult>(
-      command(CreateAssessmentCommand(user = user1, assessmentType = "TEST", formVersion = "1")).commands[0].result,
+      command(
+        CreateAssessmentCommand(
+          user = user1,
+          assessmentType = "TEST",
+          formVersion = "1",
+          identifiers = mapOf(
+            IdentifierType.CRN to testCrn,
+          ),
+        ),
+      ).commands[0].result,
     ).assessmentUuid
 
     user2Assessment1Uuid = assertIs<CreateAssessmentCommandResult>(
-      command(CreateAssessmentCommand(user = user1, assessmentType = "TEST", formVersion = "1")).commands[0].result,
+      command(CreateAssessmentCommand(user = user2, assessmentType = "TEST", formVersion = "1")).commands[0].result,
     ).assessmentUuid
     user2Assessment2Uuid = assertIs<CreateAssessmentCommandResult>(
-      command(CreateAssessmentCommand(user = user1, assessmentType = "TEST", formVersion = "1")).commands[0].result,
+      command(CreateAssessmentCommand(user = user2, assessmentType = "TEST", formVersion = "1")).commands[0].result,
     ).assessmentUuid
 
     listOf(
@@ -77,8 +95,9 @@ class TimelineQueryTest(
       )
     }.let { command(*it.toTypedArray()) }
 
-    // backdate timeline entries
-    val sql = """
+    transactionTemplate.execute {
+      // backdate timeline entries
+      val sql = """
       WITH ordered AS (
           SELECT
               id,
@@ -92,26 +111,59 @@ class TimelineQueryTest(
       SET created_at = NOW() - INTERVAL '1 day' * (o.total_count - o.rn)
       FROM ordered o
       WHERE t.id = o.id;
-    """.trimIndent()
-    val query = entityManager.createNativeQuery(sql)
-    query.setParameter("user1assessment", user1Assessment1Uuid)
-    query.setParameter("user2assessment", user2Assessment1Uuid)
+      """.trimIndent()
+      val query = entityManager.createNativeQuery(sql)
+      query.setParameter("user1assessment", user1Assessment1Uuid)
+      query.setParameter("user2assessment", user2Assessment1Uuid)
 
-    val rowsUpdated = query.executeUpdate()
-    assertEquals(12, rowsUpdated)
+      val rowsUpdated = query.executeUpdate()
+      assertEquals(8, rowsUpdated)
+    }
   }
 
   @Test
   fun `get timeline for user`() {
     val result = assertIs<TimelineQueryResult>(
-      query(TimelineQuery(
-        user = testUserDetails,
-        subject = user1,
-      )).queries[0].result,
+      query(
+        TimelineQuery(
+          user = testUserDetails,
+          subject = user1,
+        ),
+      ).queries[0].result,
     )
 
     assertEquals(6, result.timeline.size)
     assertThat(result.timeline.all { t -> t.user == user1 })
     assertEquals(setOf(user1Assessment1Uuid, user1Assessment2Uuid), result.timeline.map { it.assessment }.toSet())
+  }
+
+  @Test
+  fun `get timeline for an assessment UUID`() {
+    val result = assertIs<TimelineQueryResult>(
+      query(
+        TimelineQuery(
+          user = testUserDetails,
+          assessmentIdentifier = UuidIdentifier(user1Assessment1Uuid),
+        ),
+      ).queries[0].result,
+    )
+
+    assertEquals(4, result.timeline.size)
+    assertEquals(setOf(user1Assessment1Uuid), result.timeline.map { it.assessment }.toSet())
+  }
+
+  @Test
+  fun `get timeline for an assessment identifier`() {
+    val result = assertIs<TimelineQueryResult>(
+      query(
+        TimelineQuery(
+          user = testUserDetails,
+          assessmentIdentifier = ExternalIdentifier(identifierType = IdentifierType.CRN, identifier = testCrn, assessmentType = "TEST"),
+        ),
+      ).queries[0].result,
+    )
+
+    assertEquals(2, result.timeline.size)
+    assertEquals(setOf(user1Assessment2Uuid), result.timeline.map { it.assessment }.toSet())
   }
 }

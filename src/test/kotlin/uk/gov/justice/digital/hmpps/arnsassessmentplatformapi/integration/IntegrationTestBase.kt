@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration
 
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -26,6 +27,7 @@ import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
 @ExtendWith(HmppsAuthApiExtension::class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ActiveProfiles("postgres", "test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class IntegrationTestBase {
 
   @LocalServerPort
@@ -38,7 +40,7 @@ abstract class IntegrationTestBase {
 
   protected lateinit var testUserDetailsEntity: UserDetailsEntity
 
-  @BeforeEach
+  @BeforeAll
   fun setupWebTestClient() {
     testUserDetailsEntity = userDetailsService.findOrCreate(testUserDetails)
     webTestClient = WebTestClient.bindToServer()
