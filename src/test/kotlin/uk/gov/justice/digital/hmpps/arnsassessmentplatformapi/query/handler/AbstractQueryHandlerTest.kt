@@ -23,6 +23,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.QueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
@@ -33,10 +34,21 @@ abstract class AbstractQueryHandlerTest {
   val assessment = AssessmentEntity(type = "TEST")
   val assessmentService: AssessmentService = mockk()
   val stateService: StateService = mockk()
-  val userDetailsService: UserDetailsService = mockk()
   val stateProvider: StateService.StateForType<AssessmentAggregate> = mockk()
+  val userDetailsService: UserDetailsService = mockk()
+  val timelineService: TimelineService = mockk()
 
-  val user = UserDetails("FOO_USER", "Foo User")
+  val services = QueryHandlerServiceBundle(
+    assessment = assessmentService,
+    state = stateService,
+    userDetails = userDetailsService,
+    timeline = timelineService,
+  )
+
+  val user = UserDetails(
+    id = "FOO_USER",
+    name = "Foo User",
+  )
 
   abstract val handler: KClass<out QueryHandler<out Query>>
 
@@ -62,11 +74,7 @@ abstract class AbstractQueryHandlerTest {
       )
     }.toSet()
 
-    val handlerInstance = handler.primaryConstructor!!.call(
-      assessmentService,
-      stateService,
-      userDetailsService,
-    )
+    val handlerInstance = handler.primaryConstructor!!.call(services)
 
     assertThat(handlerInstance.type).isEqualTo(query::class)
 
@@ -92,11 +100,7 @@ abstract class AbstractQueryHandlerTest {
     every { stateProvider.fetchOrCreateState(assessment, query.timestamp) } returns state
     every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
 
-    val handlerInstance = handler.primaryConstructor!!.call(
-      assessmentService,
-      stateService,
-      userDetailsService,
-    )
+    val handlerInstance = handler.primaryConstructor!!.call(services)
 
     assertThat(handlerInstance.type).isEqualTo(query::class)
 

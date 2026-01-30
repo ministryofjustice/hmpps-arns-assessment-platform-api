@@ -27,7 +27,6 @@ class CollectionItemReorderedEventHandler(
 
     aggregate.data.apply {
       collaborators.add(event.user.uuid)
-      event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
     aggregate.apply {

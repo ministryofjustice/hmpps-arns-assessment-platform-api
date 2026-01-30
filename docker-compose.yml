@@ -10,7 +10,7 @@ services:
       retries: 100
     environment:
       - SERVER_PORT=8080
-      - HMPPS_AUTH_URL=http://auth:8080/auth
+      - HMPPS_AUTH_URL=http://hmpps-auth:9090/auth
       - SPRING_PROFILES_ACTIVE=dev,postgres
       - DATABASE_ENDPOINT=postgres:5432
       - HMPPS_SQS_PROVIDER=localstack
@@ -18,7 +18,7 @@ services:
       - HMPPS_SQS_QUEUES_AUDIT_QUEUE_NAME=audit-queue
     depends_on:
       - postgres
-      - auth
+      - hmpps-auth
       - localstack
 
   postgres:
@@ -32,17 +32,18 @@ services:
     tmpfs:
       - /var/lib/postgresql
 
-  auth:
+  hmpps-auth:
     image: ghcr.io/ministryofjustice/hmpps-auth:latest
     networks:
       - hmpps
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/auth/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:9090/auth/health" ]
       interval: 5s
       retries: 60
     volumes:
       - ./auth_db:/auth_db
     environment:
+      SERVER_PORT: 9090
       SPRING_PROFILES_ACTIVE: dev
       APPLICATION_AUTHENTICATION_UI_ALLOWLIST: 0.0.0.0/0
       SPRING_FLYWAY_LOCATIONS: classpath:db/auth,db/auth_{vendor},db/dev/data/auth_{vendor},db/dev/data/auth,filesystem:/auth_db

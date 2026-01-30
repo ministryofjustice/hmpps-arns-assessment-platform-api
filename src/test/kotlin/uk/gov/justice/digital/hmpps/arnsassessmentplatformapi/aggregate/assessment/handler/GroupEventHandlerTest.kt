@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
 
@@ -15,9 +14,7 @@ class GroupEventHandlerTest : AbstractEventHandlerTest<GroupEvent>() {
     Scenario.Executes<GroupEvent>("handles the event").apply {
       events = listOf(
         eventEntityFor(
-          GroupEvent(
-            timeline = timeline,
-          ),
+          GroupEvent(2),
         ),
       )
 
@@ -43,13 +40,6 @@ class GroupEventHandlerTest : AbstractEventHandlerTest<GroupEvent>() {
             assessment = assessment,
             data = AssessmentAggregate().apply {
               collaborators.add(user.uuid)
-              timeline.add(
-                TimelineItem(
-                  "test",
-                  LocalDateTime.parse("2025-01-01T12:00:00"),
-                  mapOf("foo" to listOf("bar")),
-                ),
-              )
             },
           ),
         )
@@ -58,9 +48,7 @@ class GroupEventHandlerTest : AbstractEventHandlerTest<GroupEvent>() {
     Scenario.Executes<GroupEvent>("handles when no timeline provided").apply {
       events = listOf(
         eventEntityFor(
-          GroupEvent(
-            timeline = null,
-          ),
+          GroupEvent(2),
         ),
       )
 

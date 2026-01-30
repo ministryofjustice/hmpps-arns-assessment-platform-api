@@ -8,21 +8,16 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionIt
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.CollectionItemQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.exception.CollectionDepthOutOfBoundsException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.CollectionItemQueryResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
 class CollectionItemQueryHandler(
-  private val assessmentService: AssessmentService,
-  private val stateService: StateService,
-  private val _unused: UserDetailsService,
+  private val services: QueryHandlerServiceBundle,
 ) : QueryHandler<CollectionItemQuery> {
   override val type = CollectionItemQuery::class
   override fun handle(query: CollectionItemQuery): CollectionItemQueryResult {
-    val assessment = assessmentService.findBy(query.assessmentIdentifier)
+    val assessment = services.assessment.findBy(query.assessmentIdentifier)
 
-    val state = stateService.stateForType(AssessmentAggregate::class)
+    val state = services.state.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
 
     val aggregate = state.getForRead()

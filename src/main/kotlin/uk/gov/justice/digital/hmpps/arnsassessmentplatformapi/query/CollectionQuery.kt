@@ -10,4 +10,4 @@ data class CollectionQuery(
   override val timestamp: LocalDateTime? = null,
   val collectionUuid: UUID,
   val depth: Int = 0,
-) : RequestableQuery
+) : AssessmentQuery

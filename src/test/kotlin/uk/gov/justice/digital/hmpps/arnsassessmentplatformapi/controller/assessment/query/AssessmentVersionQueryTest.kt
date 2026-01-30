@@ -21,13 +21,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.UserDetailsRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
@@ -46,28 +45,30 @@ class AssessmentVersionQueryTest(
   private val aggregateRepository: AggregateRepository,
   @Autowired
   private val eventRepository: EventRepository,
+  @Autowired
+  private val userDetailsRepository: UserDetailsRepository,
 ) : IntegrationTestBase() {
   @ParameterizedTest
   @MethodSource("assessmentAndIdentifierProvider")
   fun `it fetches the latest aggregate for an assessment`(assessment: AssessmentEntity, identifier: AssessmentIdentifier) {
     assessmentRepository.save(assessment)
+    userDetailsRepository.save(testUserDetailsEntity)
 
     val events = listOf(
       EventEntity(
-        user = UserDetailsEntity(userId = "FOO_USER", displayName = "Foo User", authSource = AuthSource.DELIUS),
+        user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = AssessmentCreatedEvent(
           formVersion = "1",
           properties = emptyMap(),
-          timeline = null,
         ),
       ),
       EventEntity(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-        data = FormVersionUpdatedEvent(version = "1", timeline = null),
+        data = FormVersionUpdatedEvent(version = "1"),
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -76,7 +77,6 @@ class AssessmentVersionQueryTest(
         data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
-          timeline = null,
         ),
       ),
     ).run(eventRepository::saveAll)
@@ -142,14 +142,13 @@ class AssessmentVersionQueryTest(
         data = AssessmentCreatedEvent(
           formVersion = "1",
           properties = mapOf(),
-          timeline = null,
         ),
       ),
       EventEntity(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-        data = FormVersionUpdatedEvent(version = "1", timeline = null),
+        data = FormVersionUpdatedEvent(version = "1"),
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -158,7 +157,6 @@ class AssessmentVersionQueryTest(
         data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
-          timeline = null,
         ),
       ),
       EventEntity(
@@ -168,7 +166,6 @@ class AssessmentVersionQueryTest(
         data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to SingleValue("updated_foo_value")),
           removed = emptyList(),
-          timeline = null,
         ),
       ),
     ).run(eventRepository::saveAll)
@@ -242,14 +239,13 @@ class AssessmentVersionQueryTest(
         data = AssessmentCreatedEvent(
           formVersion = "1",
           properties = mapOf(),
-          timeline = null,
         ),
       ),
       EventEntity(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-        data = FormVersionUpdatedEvent(version = "1", timeline = null),
+        data = FormVersionUpdatedEvent(version = "1"),
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -258,7 +254,6 @@ class AssessmentVersionQueryTest(
         data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
-          timeline = null,
         ),
       ),
       EventEntity(
@@ -268,7 +263,6 @@ class AssessmentVersionQueryTest(
         data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to SingleValue("updated_foo_value")),
           removed = emptyList(),
-          timeline = null,
         ),
       ),
     ).run(eventRepository::saveAll)
@@ -330,7 +324,6 @@ class AssessmentVersionQueryTest(
       data = AssessmentCreatedEvent(
         formVersion = "1",
         properties = mapOf(),
-        timeline = null,
       ),
     )
 
@@ -338,7 +331,7 @@ class AssessmentVersionQueryTest(
       user = testUserDetailsEntity,
       assessment = assessment,
       createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
-      data = GroupEvent(timeline = null),
+      data = GroupEvent(3),
     )
 
     listOf(
@@ -348,7 +341,7 @@ class AssessmentVersionQueryTest(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
-        data = FormVersionUpdatedEvent(version = "2", timeline = null),
+        data = FormVersionUpdatedEvent(version = "2"),
         parent = groupEvent,
       ),
       EventEntity(
@@ -358,7 +351,6 @@ class AssessmentVersionQueryTest(
         data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
-          timeline = null,
         ),
         parent = groupEvent,
       ),
@@ -369,7 +361,6 @@ class AssessmentVersionQueryTest(
         data = AssessmentAnswersUpdatedEvent(
           added = mapOf("foo" to SingleValue("updated_foo_value")),
           removed = emptyList(),
-          timeline = null,
         ),
         parent = groupEvent,
       ),
@@ -452,7 +443,6 @@ class AssessmentVersionQueryTest(
       data = AssessmentCreatedEvent(
         formVersion = "1",
         properties = emptyMap(),
-        timeline = null,
       ),
     ).run(eventRepository::save)
 

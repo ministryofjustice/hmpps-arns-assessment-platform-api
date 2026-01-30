@@ -30,32 +30,36 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import java.util.UUID
 
 class GroupCommandHandlerTest {
   val assessment = AssessmentEntity(type = "TEST")
   val assessmentService: AssessmentService = mockk()
-  val eventBus: EventBus = mockk()
-  val eventService: EventService = mockk(relaxed = true)
+  val eventService: EventService = mockk()
   val stateService: StateService = mockk()
+  val userDetailsService: UserDetailsService = mockk()
+  val timelineService: TimelineService = mockk()
+  val eventBus: EventBus = mockk()
   val commandBus: CommandBus = mockk()
 
-  val userDetailsService: UserDetailsService = mockk()
+  val services = CommandHandlerServiceBundle(
+    assessment = assessmentService,
+    event = eventService,
+    state = stateService,
+    userDetails = userDetailsService,
+    timeline = timelineService,
+    eventBus = eventBus,
+    commandBus = commandBus,
+  )
 
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
 
   val timeline = Timeline(type = "test", data = mapOf("foo" to listOf("bar")))
 
-  val handler = GroupCommandHandler(
-    assessmentService,
-    eventBus,
-    eventService,
-    stateService,
-    commandBus,
-    userDetailsService,
-  )
+  val handler = GroupCommandHandler(services)
 
   val command = GroupCommand(
     user = commandUser,
@@ -76,9 +80,7 @@ class GroupCommandHandlerTest {
     timeline = timeline,
   )
 
-  val expectedEvent = GroupEvent(
-    timeline = command.timeline,
-  )
+  val expectedEvent = GroupEvent(2)
 
   @BeforeEach
   fun setUp() {
@@ -102,6 +104,8 @@ class GroupCommandHandlerTest {
     every { eventBus.handle(capture(handledEvent)) } returns state
     every { stateService.persist(state) } just Runs
     every { eventService.save(capture(persistedEvent)) } answers { firstArg() }
+    every { eventService.setParentEvent(any<EventEntity<GroupEvent>>()) } just Runs
+    every { eventService.clearParentEvent() } just Runs
     every { commandBus.dispatch(any<List<RequestableCommand>>()) } answers { commandsResponse }
     every { userDetailsService.findOrCreate(commandUser) } returns user
 

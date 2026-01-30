@@ -27,13 +27,13 @@ class UserDetailsServiceTest {
     val commandUser = UserDetails(
       id = "user-123",
       name = "Test User",
-      authSource = AuthSource.DELIUS,
+      authSource = AuthSource.HMPPS_AUTH,
     )
 
     val existingEntity = UserDetailsEntity(
       userId = "user-123",
       displayName = "Existing User",
-      authSource = AuthSource.DELIUS,
+      authSource = AuthSource.HMPPS_AUTH,
     )
 
     every {
@@ -65,7 +65,7 @@ class UserDetailsServiceTest {
     val commandUser = UserDetails(
       id = "user-456",
       name = "New User",
-      authSource = AuthSource.DELIUS,
+      authSource = AuthSource.HMPPS_AUTH,
     )
 
     every {

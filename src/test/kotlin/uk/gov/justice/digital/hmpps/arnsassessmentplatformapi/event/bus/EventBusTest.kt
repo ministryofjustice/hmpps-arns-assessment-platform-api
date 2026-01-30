@@ -39,7 +39,6 @@ class EventBusTest {
       data = AssessmentCreatedEvent(
         formVersion = "1",
         properties = emptyMap(),
-        timeline = null,
       ),
     )
 
