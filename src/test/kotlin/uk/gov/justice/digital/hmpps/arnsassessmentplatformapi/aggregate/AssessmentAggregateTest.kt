@@ -268,4 +268,80 @@ class AssessmentAggregateTest {
       assertNull(result)
     }
   }
+
+  @Nested
+  inner class GetCollectionWithItem {
+
+    @Test
+    fun `returns the collection UUID when found in top-level collection`() {
+      val targetCollectionItem = createCollectionItem()
+      val collection = creatCollection(
+        items = mutableListOf(targetCollectionItem),
+      )
+
+      val aggregate = AssessmentAggregate().apply {
+        formVersion = "v1"
+        collections.add(collection)
+      }
+
+      val result = aggregate.getCollectionWithItem(targetCollectionItem.uuid)
+
+      assertSame(collection.uuid, result?.uuid)
+    }
+
+    @Test
+    fun `returns the collection UUID when found in nested collections`() {
+      val targetCollectionItem = createCollectionItem()
+
+      val childCollection = creatCollection(
+        items = mutableListOf(targetCollectionItem),
+      )
+      val parentCollectionItem = createCollectionItem(
+        collections = mutableListOf(childCollection),
+      )
+      val parentCollection = creatCollection(
+        items = mutableListOf(parentCollectionItem),
+      )
+
+      val aggregate = AssessmentAggregate().apply {
+        formVersion = "v1"
+        collections.add(parentCollection)
+      }
+
+      val result = aggregate.getCollectionWithItem(targetCollectionItem.uuid)
+
+      assertSame(childCollection.uuid, result?.uuid)
+    }
+
+    @Test
+    fun `returns null when item not found`() {
+      val missingItemUuid = UUID.randomUUID()
+      val existingItem = createCollectionItem()
+
+      val collection = creatCollection(
+        items = mutableListOf(existingItem),
+      )
+
+      val aggregate = AssessmentAggregate().apply {
+        formVersion = "v1"
+        collections.add(collection)
+      }
+
+      val result = aggregate.getCollectionWithItem(missingItemUuid)
+
+      assertNull(result)
+    }
+
+    @Test
+    fun `returns null when collections list is empty`() {
+      val aggregate = AssessmentAggregate().apply {
+        formVersion = "v1"
+      }
+      val itemUuid = UUID.randomUUID()
+
+      val result = aggregate.getCollectionWithItem(itemUuid)
+
+      assertNull(result)
+    }
+  }
 }
