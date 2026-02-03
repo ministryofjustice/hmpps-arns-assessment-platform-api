@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
@@ -15,7 +16,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.wiremock.HmppsAuthApiExtension
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.wiremock.HmppsAuthApiExtension.Companion.hmppsAuth
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
@@ -69,7 +69,7 @@ abstract class IntegrationTestBase {
     .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
     .bodyValue(CommandsRequest(cmd.toList()))
     .exchange()
-    .expectStatus().isOk
+    .expectStatus().isEqualTo(HttpStatus.OK)
     .expectBody(CommandsResponse::class.java)
     .returnResult()
     .responseBody!!
@@ -79,8 +79,4 @@ abstract class IntegrationTestBase {
     .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
     .bodyValue(QueriesRequest(query.toList()))
     .exchange()
-    .expectStatus().isOk
-    .expectBody(QueriesResponse::class.java)
-    .returnResult()
-    .responseBody!!
 }

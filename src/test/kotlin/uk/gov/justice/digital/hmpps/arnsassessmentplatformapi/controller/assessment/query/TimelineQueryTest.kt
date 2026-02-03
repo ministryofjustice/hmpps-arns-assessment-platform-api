@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
@@ -37,7 +38,8 @@ class TimelineQueryTest(
   private lateinit var user2Assessment1Uuid: UUID
   private lateinit var user2Assessment2Uuid: UUID
 
-  private val testCrn = UUID.randomUUID().toString() // TODO: If we validate CRN then we may be required to improve this test data
+  private val testCrn =
+    UUID.randomUUID().toString() // TODO: If we validate CRN then we may be required to improve this test data
 
   @Autowired
   lateinit var transactionTemplate: TransactionTemplate
@@ -122,48 +124,107 @@ class TimelineQueryTest(
   }
 
   @Test
-  fun `get timeline for user`() {
-    val result = assertIs<TimelineQueryResult>(
-      query(
-        TimelineQuery(
-          user = testUserDetails,
-          subject = user1,
-        ),
-      ).queries[0].result,
-    )
-
-    assertEquals(6, result.timeline.size)
-    assertThat(result.timeline.all { t -> t.user == user1 })
-    assertEquals(setOf(user1Assessment1Uuid, user1Assessment2Uuid), result.timeline.map { it.assessment }.toSet())
+  fun `returns 400 when no identifiers are provided`() {
+    query(
+      TimelineQuery(
+        user = testUserDetails,
+      ),
+    ).expectStatus().isBadRequest
   }
 
   @Test
-  fun `get timeline for an assessment UUID`() {
-    val result = assertIs<TimelineQueryResult>(
-      query(
-        TimelineQuery(
-          user = testUserDetails,
-          assessmentIdentifier = UuidIdentifier(user1Assessment1Uuid),
-        ),
-      ).queries[0].result,
-    )
-
-    assertEquals(4, result.timeline.size)
-    assertEquals(setOf(user1Assessment1Uuid), result.timeline.map { it.assessment }.toSet())
+  fun `returns the timeline for a user`() {
+    query(
+      TimelineQuery(
+        user = testUserDetails,
+        subject = user1,
+      ),
+    ).expectStatus().isOk
+      .expectBody(QueriesResponse::class.java)
+      .consumeWith { response ->
+        val result = assertIs<TimelineQueryResult>(response.responseBody?.queries?.first()?.result)
+        result.run {
+          assertEquals(6, timeline.size)
+          assertThat(timeline.all { t -> t.user == user1 })
+          assertEquals(setOf(user1Assessment1Uuid, user1Assessment2Uuid), timeline.map { it.assessment }.toSet())
+        }
+      }
   }
 
   @Test
-  fun `get timeline for an assessment identifier`() {
-    val result = assertIs<TimelineQueryResult>(
-      query(
-        TimelineQuery(
-          user = testUserDetails,
-          assessmentIdentifier = ExternalIdentifier(identifierType = IdentifierType.CRN, identifier = testCrn, assessmentType = "TEST"),
-        ),
-      ).queries[0].result,
-    )
+  fun `returns 404 when no user found for the provided user details`() {
+    query(
+      TimelineQuery(
+        user = testUserDetails,
+        subject = UserDetails(id = UUID.randomUUID().toString(), name = "Some random user"),
+      ),
+    ).expectStatus().isNotFound
+  }
 
-    assertEquals(2, result.timeline.size)
-    assertEquals(setOf(user1Assessment2Uuid), result.timeline.map { it.assessment }.toSet())
+  @Test
+  fun `returns the timeline for an assessment UUID`() {
+    query(
+      TimelineQuery(
+        user = testUserDetails,
+        assessmentIdentifier = UuidIdentifier(user1Assessment1Uuid),
+      ),
+    ).expectStatus().isOk
+      .expectBody(QueriesResponse::class.java)
+      .consumeWith { response ->
+        val result = assertIs<TimelineQueryResult>(response.responseBody?.queries?.first()?.result)
+        result.run {
+          assertEquals(4, timeline.size)
+          assertEquals(
+            setOf(user1Assessment1Uuid),
+            timeline.map { it.assessment }.toSet(),
+          )
+        }
+      }
+  }
+
+  @Test
+  fun `returns 404 when no assessment found for an assessment UUID`() {
+    query(
+      TimelineQuery(
+        user = testUserDetails,
+        assessmentIdentifier = UuidIdentifier(UUID.randomUUID()),
+      ),
+    ).expectStatus().isNotFound
+  }
+
+  @Test
+  fun `returns the timeline for an assessment identifier`() {
+    query(
+      TimelineQuery(
+        user = testUserDetails,
+        assessmentIdentifier = ExternalIdentifier(
+          identifierType = IdentifierType.CRN,
+          identifier = testCrn,
+          assessmentType = "TEST",
+        ),
+      ),
+    ).expectStatus().isOk
+      .expectBody(QueriesResponse::class.java)
+      .consumeWith { response ->
+        val result = assertIs<TimelineQueryResult>(response.responseBody?.queries?.first()?.result)
+        result.run {
+          assertEquals(2, timeline.size)
+          assertEquals(setOf(user1Assessment2Uuid), timeline.map { it.assessment }.toSet())
+        }
+      }
+  }
+
+  @Test
+  fun `returns 404 when no assessment found for an assessment identifier`() {
+    query(
+      TimelineQuery(
+        user = testUserDetails,
+        assessmentIdentifier = ExternalIdentifier(
+          identifierType = IdentifierType.CRN,
+          identifier = "SOME_RANDOM_CRN",
+          assessmentType = "TEST",
+        ),
+      ),
+    ).expectStatus().isNotFound
   }
 }

@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity_
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity_
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.exception.TimelineBadCriteriaException
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -20,7 +21,7 @@ data class TimelineCriteria(
 ) {
   fun getSpecification(): Specification<TimelineEntity> {
     if (listOf(assessmentUuid, userUuid).all { it == null }) {
-      throw RuntimeException("Must specify at least one of assessmentUuid or userUuid")
+      throw TimelineBadCriteriaException()
     }
 
     return forAssessment()

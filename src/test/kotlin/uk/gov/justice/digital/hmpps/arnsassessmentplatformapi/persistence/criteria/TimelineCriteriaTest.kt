@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity_
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity_
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.exception.TimelineBadCriteriaException
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -98,10 +99,10 @@ class TimelineCriteriaTest {
 
     @Test
     fun `throws when neither assessmentUuid nor userUuid provided`() {
-      val ex = assertThrows(RuntimeException::class.java) {
+      val ex = assertThrows(TimelineBadCriteriaException::class.java) {
         TimelineCriteria().getSpecification()
       }
-      assertEquals("Must specify at least one of assessmentUuid or userUuid", ex.message)
+      assertEquals("Must specify at least one of assessmentUuid or userUuid", ex.developerMessage)
     }
   }
 
