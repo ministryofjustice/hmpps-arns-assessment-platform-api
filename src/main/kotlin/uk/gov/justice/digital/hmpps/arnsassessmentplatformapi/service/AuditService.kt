@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimelineQuery
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import kotlin.also
 import kotlin.jvm.java
@@ -53,6 +55,14 @@ class AuditService(
     who = query.user.id,
     what = query::class.simpleName ?: "Unknown",
     service = serviceName,
-    details = json(mapOf("assessmentIdentifier" to query.assessmentIdentifier)),
+    details = json(
+      when (query) {
+        is AssessmentQuery -> mapOf("assessmentIdentifier" to query.assessmentIdentifier)
+        is TimelineQuery -> mapOf(
+          "assessmentIdentifier" to query.assessmentIdentifier,
+          "subject" to query.subject?.id,
+        ).filter { it.value != null }
+      },
+    ),
   ).run(::sendEvent)
 }

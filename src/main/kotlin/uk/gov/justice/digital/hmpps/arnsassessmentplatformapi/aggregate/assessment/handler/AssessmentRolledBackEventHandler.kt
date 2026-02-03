@@ -15,7 +15,6 @@ class AssessmentRolledBackEventHandler(
   private val clock: Clock,
   @param:Lazy private val stateService: StateService,
 ) : AssessmentEventHandler<AssessmentRolledBackEvent> {
-
   override val eventType = AssessmentRolledBackEvent::class
   override val stateType = AssessmentState::class
 
@@ -33,8 +32,7 @@ class AssessmentRolledBackEventHandler(
     aggregate.apply { data = previousState.getForWrite().data.clone() }
 
     aggregate.data.apply {
-      collaborators.add(event.user)
-      event.data.timeline?.let { timeline.add(it.item(event)) }
+      collaborators.add(event.user.uuid)
     }
 
     aggregate.apply {

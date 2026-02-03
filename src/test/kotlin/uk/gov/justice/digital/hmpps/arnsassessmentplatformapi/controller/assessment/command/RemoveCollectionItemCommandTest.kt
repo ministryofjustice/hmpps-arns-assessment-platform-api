@@ -10,7 +10,6 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -93,33 +92,29 @@ class RemoveCollectionItemCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = User("FOO_USER", "Foo User")
-
     eventRepository.saveAll(
       listOf(
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
-            timeline = null,
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
           data = CollectionCreatedEvent(
             collectionUuid = collectionUuid,
             name = "COLLECTION_NAME",
             parentCollectionItemUuid = null,
-            timeline = null,
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
           data = CollectionItemAddedEvent(
@@ -128,11 +123,10 @@ class RemoveCollectionItemCommandTest(
             answers = mutableMapOf("title" to SingleValue("existing_collection_1")),
             properties = mutableMapOf(),
             index = null,
-            timeline = null,
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:20:00"),
           data = CollectionItemAddedEvent(
@@ -141,7 +135,6 @@ class RemoveCollectionItemCommandTest(
             answers = mutableMapOf("title" to SingleValue("existing_collection_2")),
             properties = mutableMapOf(),
             index = null,
-            timeline = null,
           ),
         ),
       ),
@@ -150,7 +143,7 @@ class RemoveCollectionItemCommandTest(
     val request = CommandsRequest(
       commands = listOf(
         RemoveCollectionItemCommand(
-          user = User("test-user", "Test User"),
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           collectionItemUuid = collectionItemToRemoveUuid,
         ),

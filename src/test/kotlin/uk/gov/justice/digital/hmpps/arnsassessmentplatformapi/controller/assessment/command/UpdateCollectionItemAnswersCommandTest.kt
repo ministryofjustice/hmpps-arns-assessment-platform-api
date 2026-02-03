@@ -11,7 +11,6 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -98,33 +97,29 @@ class UpdateCollectionItemAnswersCommandTest(
     )
     aggregateRepository.save(aggregateEntity)
 
-    val user = User("FOO_USER", "Foo User")
-
     eventRepository.saveAll(
       listOf(
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
-            timeline = null,
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
           data = CollectionCreatedEvent(
             collectionUuid = collectionUuid,
             name = "COLLECTION_NAME",
             parentCollectionItemUuid = null,
-            timeline = null,
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
           data = CollectionItemAddedEvent(
@@ -133,11 +128,10 @@ class UpdateCollectionItemAnswersCommandTest(
             answers = mutableMapOf("title" to SingleValue("unchanged_1")),
             properties = mutableMapOf(),
             index = null,
-            timeline = null,
           ),
         ),
         EventEntity(
-          user = user,
+          user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:20:00"),
           data = CollectionItemAddedEvent(
@@ -149,7 +143,6 @@ class UpdateCollectionItemAnswersCommandTest(
             ),
             properties = mutableMapOf(),
             index = null,
-            timeline = null,
           ),
         ),
       ),
@@ -158,7 +151,7 @@ class UpdateCollectionItemAnswersCommandTest(
     val request = CommandsRequest(
       commands = listOf(
         UpdateCollectionItemAnswersCommand(
-          user = User("test-user", "Test User"),
+          user = testUserDetails,
           assessmentUuid = assessmentEntity.uuid,
           collectionItemUuid = collectionItemToBeUpdatedUuid,
           added = mutableMapOf("title" to SingleValue("updated")),

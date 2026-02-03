@@ -6,14 +6,15 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
 
 class EventServiceTest {
@@ -22,13 +23,13 @@ class EventServiceTest {
     eventRepository = eventRepository,
   )
   val assessment = AssessmentEntity(type = "TEST")
-  val user = User("FOO_USER", "Foo User")
+  val user = UserDetailsEntity(userId = "FOO_USER", displayName = "Foo User", authSource = AuthSource.HMPPS_AUTH)
 
   val events = listOf(
     EventEntity(
       user = user,
       assessment = assessment,
-      data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap(), timeline = null),
+      data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap()),
     ),
     EventEntity(
       user = user,
@@ -36,7 +37,6 @@ class EventServiceTest {
       data = AssessmentAnswersUpdatedEvent(
         added = mapOf("foo" to SingleValue("foo_value")),
         removed = emptyList(),
-        timeline = null,
       ),
     ),
   )

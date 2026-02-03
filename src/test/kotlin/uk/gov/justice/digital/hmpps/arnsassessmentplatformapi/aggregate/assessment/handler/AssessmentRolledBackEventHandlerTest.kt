@@ -9,15 +9,15 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import java.time.LocalDateTime
 import java.util.UUID
@@ -28,7 +28,7 @@ class AssessmentRolledBackEventHandlerTest {
   private val mockClock: Clock = mockk()
   private val stateProvider: StateService.StateForType<AssessmentAggregate> = mockk()
   private val stateService: StateService = mockk()
-  private val user = User("FOO_USER", "Foo User")
+  private val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   private val timeline = Timeline("test", mapOf("foo" to listOf("bar")))
 
   @BeforeEach
@@ -57,7 +57,6 @@ class AssessmentRolledBackEventHandlerTest {
       eventEntityFor(
         AssessmentRolledBackEvent(
           rolledBackTo = LocalDateTime.parse("2025-01-01T09:00:00"),
-          timeline = timeline,
         ),
       )
 
@@ -68,7 +67,7 @@ class AssessmentRolledBackEventHandlerTest {
           eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
           data = AssessmentAggregate().apply {
             formVersion = "1"
-            answers.put("foo", SingleValue("rolled_back"))
+            answers["foo"] = SingleValue("rolled_back")
           },
           assessment = assessment,
         ),
@@ -104,15 +103,8 @@ class AssessmentRolledBackEventHandlerTest {
           assessment = assessment,
           data = AssessmentAggregate().apply {
             formVersion = "1"
-            collaborators.add(user)
-            answers.put("foo", SingleValue("rolled_back"))
-            timeline.add(
-              TimelineItem(
-                "test",
-                LocalDateTime.parse("2025-01-01T12:00:00"),
-                mapOf("foo" to listOf("bar")),
-              ),
-            )
+            collaborators.add(user.uuid)
+            answers["foo"] = SingleValue("rolled_back")
           },
         ),
       )
@@ -134,7 +126,6 @@ class AssessmentRolledBackEventHandlerTest {
       eventEntityFor(
         AssessmentRolledBackEvent(
           rolledBackTo = LocalDateTime.parse("2025-01-01T09:00:00"),
-          timeline = null,
         ),
       )
 
@@ -145,7 +136,7 @@ class AssessmentRolledBackEventHandlerTest {
           eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
           data = AssessmentAggregate().apply {
             formVersion = "1"
-            answers.put("foo", SingleValue("rolled_back"))
+            answers["foo"] = SingleValue("rolled_back")
           },
           assessment = assessment,
         ),
@@ -180,8 +171,8 @@ class AssessmentRolledBackEventHandlerTest {
           assessment = assessment,
           data = AssessmentAggregate().apply {
             formVersion = "1"
-            collaborators.add(user)
-            answers.put("foo", SingleValue("rolled_back"))
+            collaborators.add(user.uuid)
+            answers["foo"] = SingleValue("rolled_back")
           },
         ),
       )

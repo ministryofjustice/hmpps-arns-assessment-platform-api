@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Nested
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.TestableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.exception.EventHandlerNotImplementedException
@@ -16,8 +15,8 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class EventHandlerRegistryTest {
-  private class SomeEvent(timeline: Timeline?) : TestableEvent(timeline)
-  private class OtherEvent(timeline: Timeline?) : TestableEvent(timeline)
+  private class SomeEvent : TestableEvent()
+  private class OtherEvent : TestableEvent()
 
   @Nested
   inner class GetHandlersFor {

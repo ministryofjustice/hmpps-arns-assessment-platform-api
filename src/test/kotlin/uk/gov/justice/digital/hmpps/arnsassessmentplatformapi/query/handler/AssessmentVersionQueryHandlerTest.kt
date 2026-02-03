@@ -5,6 +5,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
@@ -18,14 +19,15 @@ class AssessmentVersionQueryHandlerTest : AbstractQueryHandlerTest() {
   @ParameterizedTest
   @MethodSource("timestampProvider")
   fun `returns the assessment data for a point in time`(timestamp: LocalDateTime?) {
+    val collaboratorUuid = UUID.randomUUID()
     val aggregate = AggregateEntity(
       assessment = assessment,
       eventsFrom = LocalDateTime.parse("2020-06-01T10:42:43"),
       eventsTo = LocalDateTime.parse("2020-07-01T10:42:43"),
       data = AssessmentAggregate().apply {
         formVersion = "1"
-        answers.put("foo", SingleValue("foo"))
-        properties.put("bar", SingleValue("bar"))
+        answers["foo"] = SingleValue("foo")
+        properties["bar"] = SingleValue("bar")
         collections.add(
           Collection(
             uuid = UUID.randomUUID(),
@@ -35,7 +37,7 @@ class AssessmentVersionQueryHandlerTest : AbstractQueryHandlerTest() {
             items = mutableListOf(),
           ),
         )
-        collaborators.add(user)
+        collaborators.add(collaboratorUuid)
       },
     )
 
@@ -55,8 +57,9 @@ class AssessmentVersionQueryHandlerTest : AbstractQueryHandlerTest() {
       answers = aggregate.data.answers,
       properties = aggregate.data.properties,
       collections = aggregate.data.collections,
-      collaborators = aggregate.data.collaborators,
+      collaborators = setOf(User(collaboratorUuid, "User 0")),
       identifiers = emptyMap(),
+      assignedUser = null,
     )
 
     test(query, aggregate, expectedResult)

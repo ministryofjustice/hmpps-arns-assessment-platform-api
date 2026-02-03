@@ -1,5 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
@@ -18,5 +21,21 @@ class EventService(
 
   fun findAllForPointInTime(assessmentUuid: UUID, pointInTime: LocalDateTime) = eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(assessmentUuid, pointInTime)
 
+  fun findAllBetweenByAssessmentUuid(assessmentUuid: UUID, from: LocalDateTime, to: LocalDateTime) = eventRepository.findAllByAssessmentUuidAndCreatedAtBetween(assessmentUuid, from, to)
+
+  fun findAllPageableByAssessmentUuid(assessmentUuid: UUID, count: Int, page: Int): Page<EventEntity<*>> = eventRepository.findAllByAssessmentUuid(
+    assessmentUuid,
+    PageRequest.of(page, count, Sort.by(Sort.Direction.DESC, "created_at")),
+  )
+
+  fun findAllBetweenByUserUuid(userUuid: UUID, from: LocalDateTime, to: LocalDateTime) = eventRepository.findAllByUserUuidAndCreatedAtBetween(userUuid, from, to)
+
+  fun findAllPageableByUserUuid(userUuid: UUID, count: Int, page: Int): Page<EventEntity<*>> = eventRepository.findAllByUserUuid(
+    userUuid,
+    PageRequest.of(page, count, Sort.by(Sort.Direction.DESC, "created_at")),
+  )
+
   fun <E : Event> save(event: EventEntity<E>): EventEntity<E> = eventRepository.save(event.apply { parent = parentEvent.get() })
+
+  fun saveAll(events: List<EventEntity<*>>): List<EventEntity<*>> = eventRepository.saveAll(events.map { it.apply { parent = parentEvent.get() } })
 }

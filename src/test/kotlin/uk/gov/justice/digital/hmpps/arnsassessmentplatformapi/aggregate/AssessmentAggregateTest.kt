@@ -7,11 +7,9 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNull
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -54,8 +52,7 @@ class AssessmentAggregateTest {
     val collection2 = creatCollection()
     collections.addAll(listOf(collection1, collection2))
 
-    collaborators.add(mockk<User>())
-    timeline.add(mockk<TimelineItem>())
+    collaborators.add(mockk<UUID>())
   }
 
   @Nested
@@ -74,7 +71,6 @@ class AssessmentAggregateTest {
       assertEquals(aggregate.answers, clone.answers)
       assertEquals(aggregate.collections, clone.collections)
       assertEquals(aggregate.collaborators, clone.collaborators)
-      assertEquals(aggregate.timeline, clone.timeline)
     }
 
     @Test
@@ -87,20 +83,17 @@ class AssessmentAggregateTest {
       assertNotSame(aggregate.answers, clone.answers)
       assertNotSame(aggregate.collections, clone.collections)
       assertNotSame(aggregate.collaborators, clone.collaborators)
-      assertNotSame(aggregate.timeline, clone.timeline)
 
       // modifying clone's top-level containers does not affect original container sizes
       clone.properties["p2"] = SingleValue("v2")
       clone.collections.clear()
       clone.collaborators.clear()
-      clone.timeline.clear()
 
       assertTrue(aggregate.properties.containsKey("p1"))
       assertFalse(aggregate.properties.containsKey("p2"))
 
       assertTrue(aggregate.collections.isNotEmpty())
       assertTrue(aggregate.collaborators.isNotEmpty())
-      assertTrue(aggregate.timeline.isNotEmpty())
     }
   }
 
@@ -271,6 +264,82 @@ class AssessmentAggregateTest {
       val itemUuid = UUID.randomUUID()
 
       val result = aggregate.getCollectionItem(itemUuid)
+
+      assertNull(result)
+    }
+  }
+
+  @Nested
+  inner class GetCollectionWithItem {
+
+    @Test
+    fun `returns the collection UUID when found in top-level collection`() {
+      val targetCollectionItem = createCollectionItem()
+      val collection = creatCollection(
+        items = mutableListOf(targetCollectionItem),
+      )
+
+      val aggregate = AssessmentAggregate().apply {
+        formVersion = "v1"
+        collections.add(collection)
+      }
+
+      val result = aggregate.getCollectionWithItem(targetCollectionItem.uuid)
+
+      assertSame(collection.uuid, result?.uuid)
+    }
+
+    @Test
+    fun `returns the collection UUID when found in nested collections`() {
+      val targetCollectionItem = createCollectionItem()
+
+      val childCollection = creatCollection(
+        items = mutableListOf(targetCollectionItem),
+      )
+      val parentCollectionItem = createCollectionItem(
+        collections = mutableListOf(childCollection),
+      )
+      val parentCollection = creatCollection(
+        items = mutableListOf(parentCollectionItem),
+      )
+
+      val aggregate = AssessmentAggregate().apply {
+        formVersion = "v1"
+        collections.add(parentCollection)
+      }
+
+      val result = aggregate.getCollectionWithItem(targetCollectionItem.uuid)
+
+      assertSame(childCollection.uuid, result?.uuid)
+    }
+
+    @Test
+    fun `returns null when item not found`() {
+      val missingItemUuid = UUID.randomUUID()
+      val existingItem = createCollectionItem()
+
+      val collection = creatCollection(
+        items = mutableListOf(existingItem),
+      )
+
+      val aggregate = AssessmentAggregate().apply {
+        formVersion = "v1"
+        collections.add(collection)
+      }
+
+      val result = aggregate.getCollectionWithItem(missingItemUuid)
+
+      assertNull(result)
+    }
+
+    @Test
+    fun `returns null when collections list is empty`() {
+      val aggregate = AssessmentAggregate().apply {
+        formVersion = "v1"
+      }
+      val itemUuid = UUID.randomUUID()
+
+      val result = aggregate.getCollectionWithItem(itemUuid)
 
       assertNull(result)
     }

@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.reques
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidCommandException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import java.util.UUID
@@ -14,7 +14,7 @@ class CommandsRequestTest {
   @Test
   fun `it creates`() {
     val updateAnswersCommand = UpdateAssessmentAnswersCommand(
-      user = User("FOO_USER", "Foo User"),
+      user = UserDetails("test-user", "Test User"),
       assessmentUuid = UUID.randomUUID(),
       added = mapOf("foo" to SingleValue("foo_value")),
       removed = emptyList(),

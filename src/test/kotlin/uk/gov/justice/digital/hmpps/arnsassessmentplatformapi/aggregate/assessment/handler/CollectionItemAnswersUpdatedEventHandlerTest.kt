@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionIt
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
 import java.util.UUID
@@ -25,7 +24,6 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
           collectionItemUuid = collectionItemUuid,
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = listOf("bar"),
-          timeline = timeline,
         ),
       )
 
@@ -75,7 +73,7 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              collaborators.add(user)
+              collaborators.add(user.uuid)
               collections.addAll(
                 listOf(
                   Collection(
@@ -96,15 +94,6 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
                   ),
                 ),
               )
-              timeline.addAll(
-                listOf(
-                  TimelineItem(
-                    "test",
-                    LocalDateTime.parse("2025-01-01T12:00:00"),
-                    mapOf("foo" to listOf("bar")),
-                  ),
-                ),
-              )
             },
           ),
         )
@@ -119,7 +108,6 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
           collectionItemUuid = collectionItemUuid,
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = listOf("bar"),
-          timeline = null,
         ),
       )
 
@@ -169,7 +157,7 @@ class CollectionItemAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Co
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              collaborators.add(user)
+              collaborators.add(user.uuid)
               collections.addAll(
                 listOf(
                   Collection(
