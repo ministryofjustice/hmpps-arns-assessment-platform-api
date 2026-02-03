@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemPropertiesUpdatedEvent
@@ -31,7 +32,7 @@ class UpdateCollectionItemPropertiesCommandHandler(
       .also { updatedState -> services.state.persist(updatedState) }
       .run { get(AssessmentAggregate::class) as AssessmentState }
       .getForRead().data.getCollectionWithItem(command.collectionItemUuid)
-      ?: throw Error("Collection with item ${command.collectionItemUuid} not found")
+      ?: throw CollectionItemNotFoundException(command.collectionItemUuid)
 
     services.event.save(event)
     services.timeline.save(

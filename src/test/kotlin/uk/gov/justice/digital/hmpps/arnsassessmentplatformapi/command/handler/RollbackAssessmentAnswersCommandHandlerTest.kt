@@ -5,17 +5,23 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
 
-class RollbackAssessmentAnswersCommandHandlerTest : AbstractCommandHandlerTest() {
-
+class RollbackAssessmentAnswersCommandHandlerTest : AbstractCommandHandlerTest<RollbackCommand>() {
   override val handler = RollbackCommandHandler::class
-  override val command = RollbackCommand(
-    user = commandUser,
-    assessmentUuid = assessment.uuid,
-    pointInTime = Clock.now(),
-    timeline = timeline,
+
+  override val scenarios = listOf(
+    Scenario.Executes<RollbackCommand>(
+      name = "It handles the command",
+    ).apply {
+      command = RollbackCommand(
+        user = commandUser,
+        assessmentUuid = assessment.uuid,
+        pointInTime = Clock.now(),
+        timeline = timeline,
+      )
+      expectedEvent = AssessmentRolledBackEvent(
+        rolledBackTo = command.pointInTime,
+      )
+      expectedResult = CommandSuccessCommandResult()
+    },
   )
-  override val expectedEvent = AssessmentRolledBackEvent(
-    rolledBackTo = command.pointInTime,
-  )
-  override val expectedResult = CommandSuccessCommandResult()
 }

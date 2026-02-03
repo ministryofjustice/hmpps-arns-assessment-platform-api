@@ -5,22 +5,28 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Cre
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionCreatedEvent
 import java.util.UUID
 
-class CreateCollectionCommandHandlerTest : AbstractCommandHandlerTest() {
-
+class CreateCollectionCommandHandlerTest : AbstractCommandHandlerTest<CreateCollectionCommand>() {
   override val handler = CreateCollectionCommandHandler::class
-  override val command = CreateCollectionCommand(
-    user = commandUser,
-    name = "TEST_COLLECTION",
-    parentCollectionItemUuid = UUID.randomUUID(),
-    assessmentUuid = assessment.uuid,
-    timeline = timeline,
-  )
-  override val expectedEvent = CollectionCreatedEvent(
-    collectionUuid = command.collectionUuid,
-    name = command.name,
-    parentCollectionItemUuid = command.parentCollectionItemUuid,
-  )
-  override val expectedResult = CreateCollectionCommandResult(
-    collectionUuid = command.collectionUuid,
+
+  override val scenarios = listOf(
+    Scenario.Executes<CreateCollectionCommand>(
+      name = "It handles the command",
+    ).apply {
+      command = CreateCollectionCommand(
+        user = commandUser,
+        name = "TEST_COLLECTION",
+        parentCollectionItemUuid = UUID.randomUUID(),
+        assessmentUuid = assessment.uuid,
+        timeline = timeline,
+      )
+      expectedEvent = CollectionCreatedEvent(
+        collectionUuid = command.collectionUuid,
+        name = command.name,
+        parentCollectionItemUuid = command.parentCollectionItemUuid,
+      )
+      expectedResult = CreateCollectionCommandResult(
+        collectionUuid = command.collectionUuid,
+      )
+    },
   )
 }

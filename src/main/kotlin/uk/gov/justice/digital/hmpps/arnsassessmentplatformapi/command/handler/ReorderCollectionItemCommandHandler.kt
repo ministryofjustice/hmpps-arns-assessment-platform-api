@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.ReorderCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemReorderedEvent
@@ -20,7 +21,7 @@ class ReorderCollectionItemCommandHandler(
       .stateForType(AssessmentAggregate::class)
       .fetchOrCreateLatestState(assessment) as AssessmentState
     val collection = state.getForRead().data.getCollectionWithItem(command.collectionItemUuid)
-      ?: throw Error("Collection with item ${command.collectionItemUuid} not found")
+      ?: throw CollectionItemNotFoundException(command.collectionItemUuid)
 
     val event = with(command) {
       EventEntity(
