@@ -10,10 +10,10 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUserEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
@@ -30,9 +30,6 @@ class CreateAssessmentCommandTest(
   @Autowired
   val eventRepository: EventRepository,
 ) : IntegrationTestBase() {
-
-  val user = User("FOO_USER", "Foo User")
-
   @BeforeEach
   fun setUp() {
   }
@@ -46,7 +43,7 @@ class CreateAssessmentCommandTest(
     val randomCrn = UUID.randomUUID().toString()
 
     val command = CreateAssessmentCommand(
-      user = User("test-user", "Test User"),
+      user = testUserDetails,
       assessmentType = "TEST",
       identifiers = mapOf(
         IdentifierType.CRN to randomCrn,
@@ -86,13 +83,14 @@ class CreateAssessmentCommandTest(
 
     val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentUuid)
 
-    assertThat(eventsForAssessment.size).isEqualTo(1)
+    assertThat(eventsForAssessment.size).isEqualTo(2)
 
-    val event = eventsForAssessment.last().data
-    assertIs<AssessmentCreatedEvent>(event)
-
-    assertThat(event.formVersion).isEqualTo(command.formVersion)
-    assertThat(event.properties).isEqualTo(command.properties)
+    val createdEvent = eventsForAssessment[eventsForAssessment.size - 2].data
+    assertIs<AssessmentCreatedEvent>(createdEvent)
+    assertThat(createdEvent.formVersion).isEqualTo(command.formVersion)
+    assertThat(createdEvent.properties).isEqualTo(command.properties)
+    val assignedEvent = eventsForAssessment[eventsForAssessment.size - 1].data
+    assertIs<AssignedToUserEvent>(assignedEvent)
   }
 
   @Test
@@ -100,7 +98,7 @@ class CreateAssessmentCommandTest(
     val randomCrn = UUID.randomUUID().toString()
 
     val command = CreateAssessmentCommand(
-      user = User("test-user", "Test User"),
+      user = testUserDetails,
       assessmentType = "TEST",
       identifiers = mapOf(
         IdentifierType.CRN to randomCrn,

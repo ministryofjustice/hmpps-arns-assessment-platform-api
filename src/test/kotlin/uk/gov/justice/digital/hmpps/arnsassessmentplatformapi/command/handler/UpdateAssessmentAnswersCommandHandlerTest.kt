@@ -5,19 +5,25 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 
-class UpdateAssessmentAnswersCommandHandlerTest : AbstractCommandHandlerTest() {
+class UpdateAssessmentAnswersCommandHandlerTest : AbstractCommandHandlerTest<UpdateAssessmentAnswersCommand>() {
   override val handler = UpdateAssessmentAnswersCommandHandler::class
-  override val command = UpdateAssessmentAnswersCommand(
-    user = user,
-    assessmentUuid = assessment.uuid,
-    added = mapOf("foo" to SingleValue("foo_value")),
-    removed = listOf("bar"),
-    timeline = timeline,
+
+  override val scenarios = listOf(
+    Scenario.Executes<UpdateAssessmentAnswersCommand>(
+      name = "It handles the command",
+    ).apply {
+      command = UpdateAssessmentAnswersCommand(
+        user = commandUser,
+        assessmentUuid = assessment.uuid,
+        added = mapOf("foo" to SingleValue("foo_value")),
+        removed = listOf("bar"),
+        timeline = timeline,
+      )
+      expectedEvent = AssessmentAnswersUpdatedEvent(
+        added = command.added,
+        removed = command.removed,
+      )
+      expectedResult = CommandSuccessCommandResult()
+    },
   )
-  override val expectedEvent = AssessmentAnswersUpdatedEvent(
-    added = command.added,
-    removed = command.removed,
-    timeline = command.timeline,
-  )
-  override val expectedResult = CommandSuccessCommandResult()
 }

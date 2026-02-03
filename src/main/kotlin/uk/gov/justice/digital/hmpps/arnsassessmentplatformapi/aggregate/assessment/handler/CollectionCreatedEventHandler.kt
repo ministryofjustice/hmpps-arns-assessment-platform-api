@@ -41,8 +41,7 @@ class CollectionCreatedEventHandler(
 
     collections.add(collection)
     aggregate.data.apply {
-      collaborators.add(event.user)
-      event.data.timeline?.let { timeline.add(it.item(event)) }
+      collaborators.add(event.user.uuid)
     }
 
     aggregate.apply {

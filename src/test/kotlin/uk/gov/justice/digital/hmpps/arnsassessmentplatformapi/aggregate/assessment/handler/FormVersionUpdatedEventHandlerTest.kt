@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
 
@@ -17,7 +16,6 @@ class FormVersionUpdatedEventHandlerTest : AbstractEventHandlerTest<FormVersionU
         eventEntityFor(
           FormVersionUpdatedEvent(
             version = "1",
-            timeline = timeline,
           ),
         ),
       )
@@ -46,14 +44,7 @@ class FormVersionUpdatedEventHandlerTest : AbstractEventHandlerTest<FormVersionU
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = events.last().data.version
-              collaborators.add(user)
-              timeline.add(
-                TimelineItem(
-                  "test",
-                  LocalDateTime.parse("2025-01-01T12:00:00"),
-                  mapOf("foo" to listOf("bar")),
-                ),
-              )
+              collaborators.add(user.uuid)
             },
           ),
         )
@@ -64,7 +55,6 @@ class FormVersionUpdatedEventHandlerTest : AbstractEventHandlerTest<FormVersionU
         eventEntityFor(
           FormVersionUpdatedEvent(
             version = "1",
-            timeline = null,
           ),
         ),
       )
@@ -93,7 +83,7 @@ class FormVersionUpdatedEventHandlerTest : AbstractEventHandlerTest<FormVersionU
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = events.last().data.version
-              collaborators.add(user)
+              collaborators.add(user.uuid)
             },
           ),
         )

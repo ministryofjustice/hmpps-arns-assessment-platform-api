@@ -12,7 +12,6 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
@@ -35,14 +34,14 @@ class EventEntity<E : Event>(
   var parent: EventEntity<GroupEvent>? = null,
 
   @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
-  val children: List<EventEntity<*>> = emptyList(),
+  val children: MutableList<EventEntity<*>> = mutableListOf(),
 
   @Column(name = "created_at", nullable = false)
   val createdAt: LocalDateTime = Clock.now(),
 
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "user_details", columnDefinition = "jsonb", nullable = false)
-  val user: User,
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_details_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
+  val user: UserDetailsEntity,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "assessment_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)

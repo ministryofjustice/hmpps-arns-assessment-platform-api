@@ -5,7 +5,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.AnswerNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
 
@@ -20,7 +19,6 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
           AssessmentAnswersUpdatedEvent(
             added = mapOf("foo" to SingleValue("foo_value")),
             removed = listOf("bar"),
-            timeline = timeline,
           ),
         ),
       )
@@ -48,15 +46,8 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              collaborators.add(user)
-              events.forEach { it.data.added.forEach { (key, value) -> answers.put(key, value) } }
-              timeline.add(
-                TimelineItem(
-                  "test",
-                  LocalDateTime.parse("2025-01-01T12:00:00"),
-                  mapOf("foo" to listOf("bar")),
-                ),
-              )
+              collaborators.add(user.uuid)
+              events.forEach { it.data.added.forEach { (key, value) -> answers[key] = value } }
             },
           ),
         )
@@ -68,7 +59,6 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
           AssessmentAnswersUpdatedEvent(
             added = mapOf("foo" to SingleValue("foo_value")),
             removed = listOf("bar"),
-            timeline = null,
           ),
         ),
       )
@@ -96,7 +86,7 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              collaborators.add(user)
+              collaborators.add(user.uuid)
               events.forEach { it.data.added.forEach { (key, value) -> answers.put(key, value) } }
             },
           ),
@@ -109,7 +99,6 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
           AssessmentAnswersUpdatedEvent(
             added = mapOf(),
             removed = listOf("foo"),
-            timeline = null,
           ),
         ),
       )

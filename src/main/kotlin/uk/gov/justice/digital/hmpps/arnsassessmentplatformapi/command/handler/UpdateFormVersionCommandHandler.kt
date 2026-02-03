@@ -4,30 +4,34 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFormVersionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
 class UpdateFormVersionCommandHandler(
-  private val assessmentService: AssessmentService,
-  private val eventBus: EventBus,
-  private val eventService: EventService,
-  private val stateService: StateService,
+  private val services: CommandHandlerServiceBundle,
 ) : CommandHandler<UpdateFormVersionCommand> {
   override val type = UpdateFormVersionCommand::class
   override fun handle(command: UpdateFormVersionCommand): CommandSuccessCommandResult {
     val event = with(command) {
       EventEntity(
-        user = user,
-        assessment = assessmentService.findBy(assessmentUuid),
-        data = FormVersionUpdatedEvent(version, timeline),
+        user = services.userDetails.findOrCreate(user),
+        assessment = services.assessment.findBy(assessmentUuid),
+        data = FormVersionUpdatedEvent(version),
       )
     }
-    eventBus.handle(event).run(stateService::persist)
-    eventService.save(event)
+    services.eventBus.handle(event).run(services.state::persist)
+    services.event.save(event)
+    services.event.save(event)
+    services.timeline.save(
+      TimelineEntity.from(
+        command,
+        event,
+        mapOf(
+          "version" to command.version,
+        ),
+      ),
+    )
 
     return CommandSuccessCommandResult()
   }

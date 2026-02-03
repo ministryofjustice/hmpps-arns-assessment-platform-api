@@ -10,7 +10,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregat
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -34,13 +33,12 @@ class EventBusTest {
   @Test
   fun `calls the handler for a given event`() {
     val event = EventEntity(
-      user = User(),
+      user = mockk(),
       assessment = assessment,
       createdAt = LocalDateTime.now().minusDays(1),
       data = AssessmentCreatedEvent(
         formVersion = "1",
         properties = emptyMap(),
-        timeline = null,
       ),
     )
 
