@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionIt
 import java.util.UUID
 
 class RemoveCollectionItemCommandHandlerTest : AbstractCommandHandlerTest() {
+
   override val handler = RemoveCollectionItemCommandHandler::class
   override val command = RemoveCollectionItemCommand(
     user = commandUser,
@@ -15,7 +16,6 @@ class RemoveCollectionItemCommandHandlerTest : AbstractCommandHandlerTest() {
   )
   override val expectedEvent = CollectionItemRemovedEvent(
     collectionItemUuid = command.collectionItemUuid,
-    timeline = command.timeline,
   )
   override val expectedResult = CommandSuccessCommandResult()
 }

@@ -39,8 +39,8 @@ class EventEntity<E : Event>(
   @Column(name = "created_at", nullable = false)
   val createdAt: LocalDateTime = Clock.now(),
 
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "user_details", columnDefinition = "jsonb", nullable = false)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_details_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
   val user: UserDetailsEntity,
 
   @ManyToOne(fetch = FetchType.LAZY)

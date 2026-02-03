@@ -1,7 +1,7 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
-import java.util.*
+import java.util.UUID
 
 data class User(
   val id: UUID,

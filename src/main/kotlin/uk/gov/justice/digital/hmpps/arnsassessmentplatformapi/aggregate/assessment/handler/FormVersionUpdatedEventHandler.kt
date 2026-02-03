@@ -23,7 +23,6 @@ class FormVersionUpdatedEventHandler(
     aggregate.data.apply {
       formVersion = event.data.version
       collaborators.add(event.user.uuid)
-      event.data.timeline?.let { timeline.add(it.item(event)) }
     }
 
     aggregate.apply {

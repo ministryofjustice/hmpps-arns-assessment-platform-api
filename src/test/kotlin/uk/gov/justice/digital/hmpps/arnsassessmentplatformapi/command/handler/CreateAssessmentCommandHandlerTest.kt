@@ -11,10 +11,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.aot.hint.TypeReference.listOf
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.DuplicateExternalIdentifierException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
@@ -23,6 +25,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUs
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -32,27 +35,42 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIden
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
 import java.util.UUID
 
 class CreateAssessmentCommandHandlerTest {
   val assessmentService: AssessmentService = mockk()
-  val eventBus: EventBus = mockk()
   val eventService: EventService = mockk()
   val stateService: StateService = mockk()
   val userDetailsService: UserDetailsService = mockk()
+  val timelineService: TimelineService = mockk()
+  val eventBus: EventBus = mockk()
+  val commandBus: CommandBus = mockk()
+  val assessmentAggregate: AssessmentAggregate = mockk()
+
+  val services = CommandHandlerServiceBundle(
+    assessment = assessmentService,
+    event = eventService,
+    state = stateService,
+    userDetails = userDetailsService,
+    timeline = timelineService,
+    eventBus = eventBus,
+    commandBus = commandBus,
+  )
 
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
 
-  val handler = CreateAssessmentCommandHandler(
-    assessmentService = assessmentService,
-    eventBus = eventBus,
-    eventService = eventService,
-    stateService = stateService,
-    userDetailsService = userDetailsService,
+  val assessmentState: AssessmentState = AssessmentState(
+    AggregateEntity(
+      assessment = AssessmentEntity(type = "TEST"),
+      data = assessmentAggregate,
+    ),
   )
+
+  val handler = CreateAssessmentCommandHandler(services)
 
   val command = CreateAssessmentCommand(
     user = commandUser,
@@ -72,11 +90,9 @@ class CreateAssessmentCommandHandlerTest {
     AssessmentCreatedEvent(
       formVersion = "1",
       properties = command.properties!!,
-      timeline = command.timeline,
     ),
     AssignedToUserEvent(
       userUuid = user.uuid,
-      timeline = null,
     ),
   )
 
@@ -112,6 +128,8 @@ class CreateAssessmentCommandHandlerTest {
     every { stateService.persist(state) } just Runs
     every { eventService.saveAll(capture(persistedEvent)) } answers { firstArg() }
     every { userDetailsService.findOrCreate(commandUser) } returns user
+    every { state[AssessmentAggregate::class] } returns assessmentState
+    every { timelineService.saveAll(any()) } answers { firstArg() }
 
     val result = handler.handle(command)
 

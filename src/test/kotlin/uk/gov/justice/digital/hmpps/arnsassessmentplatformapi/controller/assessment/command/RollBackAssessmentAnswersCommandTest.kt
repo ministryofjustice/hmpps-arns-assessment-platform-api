@@ -67,7 +67,6 @@ class RollBackAssessmentAnswersCommandTest(
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -79,7 +78,6 @@ class RollBackAssessmentAnswersCommandTest(
               "foo" to SingleValue("bar"),
             ),
             removed = emptyList(),
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -91,7 +89,6 @@ class RollBackAssessmentAnswersCommandTest(
               "foo" to SingleValue("baz"),
             ),
             removed = emptyList(),
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -103,7 +100,6 @@ class RollBackAssessmentAnswersCommandTest(
               "bar" to SingleValue("foo"),
             ),
             removed = emptyList(),
-            timeline = null,
           ),
         ),
       ),

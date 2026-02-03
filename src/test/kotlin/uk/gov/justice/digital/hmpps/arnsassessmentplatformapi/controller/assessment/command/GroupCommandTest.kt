@@ -75,7 +75,6 @@ class GroupCommandTest(
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -85,7 +84,6 @@ class GroupCommandTest(
           data = AssessmentAnswersUpdatedEvent(
             added = mapOf("foo" to SingleValue("bar")),
             removed = listOf(),
-            timeline = null,
           ),
         ),
       ),

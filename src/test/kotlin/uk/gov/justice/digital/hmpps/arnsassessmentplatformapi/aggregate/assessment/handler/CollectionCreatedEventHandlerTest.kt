@@ -5,7 +5,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
 import java.util.UUID
@@ -21,7 +20,6 @@ class CollectionCreatedEventHandlerTest : AbstractEventHandlerTest<CollectionCre
           collectionUuid = UUID.randomUUID(),
           name = "NEW_TOP_LEVEL_COLLECTION",
           parentCollectionItemUuid = null,
-          timeline = timeline,
         ),
       )
       val newChildCollectionEvent = eventEntityFor(
@@ -29,7 +27,6 @@ class CollectionCreatedEventHandlerTest : AbstractEventHandlerTest<CollectionCre
           collectionUuid = UUID.randomUUID(),
           name = "CHILD_LEVEL_COLLECTION",
           parentCollectionItemUuid = UUID.randomUUID(),
-          timeline = timeline,
         ),
       )
 
@@ -115,20 +112,6 @@ class CollectionCreatedEventHandlerTest : AbstractEventHandlerTest<CollectionCre
                   ),
                 ),
               )
-              timeline.addAll(
-                listOf(
-                  TimelineItem(
-                    "test",
-                    LocalDateTime.parse("2025-01-01T12:00:00"),
-                    mapOf("foo" to listOf("bar")),
-                  ),
-                  TimelineItem(
-                    "test",
-                    LocalDateTime.parse("2025-01-01T12:00:00"),
-                    mapOf("foo" to listOf("bar")),
-                  ),
-                ),
-              )
             },
           ),
         )
@@ -141,7 +124,6 @@ class CollectionCreatedEventHandlerTest : AbstractEventHandlerTest<CollectionCre
             collectionUuid = UUID.randomUUID(),
             name = "NEW_TOP_LEVEL_COLLECTION",
             parentCollectionItemUuid = null,
-            timeline = null,
           ),
         ),
       )

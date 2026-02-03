@@ -23,13 +23,13 @@ class EventServiceTest {
     eventRepository = eventRepository,
   )
   val assessment = AssessmentEntity(type = "TEST")
-  val user = UserDetailsEntity(userId = "FOO_USER", displayName = "Foo User", authSource = AuthSource.DELIUS)
+  val user = UserDetailsEntity(userId = "FOO_USER", displayName = "Foo User", authSource = AuthSource.HMPPS_AUTH)
 
   val events = listOf(
     EventEntity(
       user = user,
       assessment = assessment,
-      data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap(), timeline = null),
+      data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap()),
     ),
     EventEntity(
       user = user,
@@ -37,7 +37,6 @@ class EventServiceTest {
       data = AssessmentAnswersUpdatedEvent(
         added = mapOf("foo" to SingleValue("foo_value")),
         removed = emptyList(),
-        timeline = null,
       ),
     ),
   )

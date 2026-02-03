@@ -7,9 +7,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import java.util.UUID
 
 class AddCollectionItemCommandHandlerTest : AbstractCommandHandlerTest() {
+  val collectionUuid: UUID = UUID.randomUUID()
+  val collectionItemUuid: UUID = UUID.randomUUID()
+
   override val handler = AddCollectionItemCommandHandler::class
   override val command = AddCollectionItemCommand(
-    collectionUuid = UUID.randomUUID(),
+    collectionUuid = collectionUuid,
     answers = mapOf("foo" to SingleValue("bar")),
     properties = mapOf("bar" to SingleValue("baz")),
     index = 2,
@@ -23,7 +26,6 @@ class AddCollectionItemCommandHandlerTest : AbstractCommandHandlerTest() {
     answers = command.answers,
     properties = command.properties,
     index = command.index,
-    timeline = command.timeline,
   )
   override val expectedResult = AddCollectionItemCommandResult(
     collectionItemUuid = command.collectionItemUuid,

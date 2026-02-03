@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 
 class UpdateFormVersionCommandHandlerTest : AbstractCommandHandlerTest() {
+
   override val handler = UpdateFormVersionCommandHandler::class
   override val command = UpdateFormVersionCommand(
     user = commandUser,
@@ -14,7 +15,6 @@ class UpdateFormVersionCommandHandlerTest : AbstractCommandHandlerTest() {
   )
   override val expectedEvent = FormVersionUpdatedEvent(
     version = "2",
-    timeline = command.timeline,
   )
   override val expectedResult = CommandSuccessCommandResult()
 }

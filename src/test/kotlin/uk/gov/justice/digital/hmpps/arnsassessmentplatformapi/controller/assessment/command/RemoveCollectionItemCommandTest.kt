@@ -101,7 +101,6 @@ class RemoveCollectionItemCommandTest(
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -112,7 +111,6 @@ class RemoveCollectionItemCommandTest(
             collectionUuid = collectionUuid,
             name = "COLLECTION_NAME",
             parentCollectionItemUuid = null,
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -125,7 +123,6 @@ class RemoveCollectionItemCommandTest(
             answers = mutableMapOf("title" to SingleValue("existing_collection_1")),
             properties = mutableMapOf(),
             index = null,
-            timeline = null,
           ),
         ),
         EventEntity(
@@ -138,7 +135,6 @@ class RemoveCollectionItemCommandTest(
             answers = mutableMapOf("title" to SingleValue("existing_collection_2")),
             properties = mutableMapOf(),
             index = null,
-            timeline = null,
           ),
         ),
       ),

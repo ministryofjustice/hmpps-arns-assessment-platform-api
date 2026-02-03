@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
 
@@ -18,7 +17,6 @@ class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCre
           AssessmentCreatedEvent(
             formVersion = "1",
             properties = mutableMapOf(),
-            timeline = timeline,
           ),
         ),
       )
@@ -44,13 +42,6 @@ class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCre
             data = AssessmentAggregate().apply {
               formVersion = events.last().data.formVersion
               collaborators.add(user.uuid)
-              timeline.add(
-                TimelineItem(
-                  "test",
-                  LocalDateTime.parse("2025-01-01T12:00:00"),
-                  mapOf("foo" to listOf("bar")),
-                ),
-              )
             },
           ),
         )
@@ -62,7 +53,6 @@ class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCre
           AssessmentCreatedEvent(
             formVersion = "1",
             properties = mutableMapOf(),
-            timeline = null,
           ),
         ),
       )

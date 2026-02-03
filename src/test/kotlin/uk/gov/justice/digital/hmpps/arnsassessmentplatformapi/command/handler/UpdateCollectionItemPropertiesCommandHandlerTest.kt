@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import java.util.UUID
 
 class UpdateCollectionItemPropertiesCommandHandlerTest : AbstractCommandHandlerTest() {
+
   override val handler = UpdateCollectionItemPropertiesCommandHandler::class
   override val command = UpdateCollectionItemPropertiesCommand(
     user = commandUser,
@@ -20,7 +21,6 @@ class UpdateCollectionItemPropertiesCommandHandlerTest : AbstractCommandHandlerT
     collectionItemUuid = command.collectionItemUuid,
     added = command.added,
     removed = command.removed,
-    timeline = command.timeline,
   )
   override val expectedResult = CommandSuccessCommandResult()
 }

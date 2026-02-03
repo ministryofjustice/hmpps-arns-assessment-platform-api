@@ -22,8 +22,10 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEv
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentTimelineQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
@@ -116,7 +118,14 @@ class AuditServiceTest {
 
     when (auditable) {
       is RequestableCommand -> assertEquals(mapOf("assessmentUuid" to assessmentUuid), capturedEventDetails.captured)
-      is RequestableQuery -> assertEquals(mapOf("assessmentIdentifier" to UuidIdentifier(assessmentUuid)), capturedEventDetails.captured)
+      is AssessmentQuery -> assertEquals(mapOf("assessmentIdentifier" to auditable.assessmentIdentifier), capturedEventDetails.captured)
+      is TimelineQuery -> assertEquals(
+        mapOf(
+          "assessmentIdentifier" to auditable.assessmentIdentifier,
+          "subject" to auditable.subject?.id,
+        ),
+        capturedEventDetails.captured,
+      )
       else -> fail("Unexpected auditable type $auditable")
     }
   }
@@ -143,7 +152,19 @@ class AuditServiceTest {
         removed = emptyList(),
         timeline = null,
       ),
-      AssessmentTimelineQuery(user, UuidIdentifier(assessmentUuid), Clock.now()), // RequestableQuery
+      AssessmentVersionQuery(
+        user = user,
+        timestamp = Clock.now(),
+        assessmentIdentifier = UuidIdentifier(assessmentUuid),
+      ),
+      TimelineQuery(
+        user = user,
+        timestamp = Clock.now(),
+        pageNumber = 0,
+        pageSize = 10,
+        assessmentIdentifier = UuidIdentifier(assessmentUuid),
+        subject = UserDetails("test-subject", "Test subject"),
+      ),
     )
   }
 }
