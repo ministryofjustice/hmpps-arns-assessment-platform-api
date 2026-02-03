@@ -29,12 +29,13 @@ data class CollectionItem(
   override fun findCollection(id: UUID): Collection? = collections.firstOrNull { it.uuid == id }
     ?: collections.firstNotNullOfOrNull { collection -> collection.items.firstNotNullOfOrNull { it.findCollection(id) } }
 
-  fun findCollectionWithItem(collectionItemUuid: UUID): Collection? {
-    return collections.firstNotNullOfOrNull { collection ->
-      val item = collection.items.firstOrNull { item ->  item.uuid === collectionItemUuid }
+  fun findCollectionWithItem(collectionItemUuid: UUID): Collection? = collections.firstNotNullOfOrNull { collection ->
+    val item = collection.items.firstOrNull { item -> item.uuid === collectionItemUuid }
 
-      if (item !== null) collection
-      else collection.items.firstNotNullOfOrNull { item -> item.findCollectionWithItem(collectionItemUuid) }
+    if (item !== null) {
+      collection
+    } else {
+      collection.items.firstNotNullOfOrNull { item -> item.findCollectionWithItem(collectionItemUuid) }
     }
   }
 }
