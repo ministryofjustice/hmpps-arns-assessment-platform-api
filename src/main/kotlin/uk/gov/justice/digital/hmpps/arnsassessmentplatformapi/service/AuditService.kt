@@ -62,6 +62,9 @@ class AuditService(
           "assessmentIdentifier" to query.assessmentIdentifier,
           "subject" to query.subject?.id,
         ).filter { it.value != null }
+        else -> {
+          log.warn("${query::class.simpleName} has not been implemented in the audit service")
+        }
       },
     ),
   ).run(::sendEvent)
