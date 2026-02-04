@@ -81,15 +81,14 @@ class TimelineQueryHandlerTest {
     @Test
     fun `returns the timeline for a given timeframe`() {
       val timelinePage: Page<TimelineEntity> = mockk()
-      every { timelinePage.content } returns listOf(
-        TimelineEntity(
-          createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
-          assessment = assessment,
-          user = userEntity,
-          eventType = TestableEvent::class.simpleName!!,
-          data = mapOf("foo" to "bar"),
-        ),
+      val timelineEntity = TimelineEntity(
+        createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
+        assessment = assessment,
+        user = userEntity,
+        eventType = TestableEvent::class.simpleName!!,
+        data = mapOf("foo" to "bar"),
       )
+      every { timelinePage.content } returns listOf(timelineEntity)
       every { timelinePage.totalPages } returns totalPages
       every { timelinePage.number } returns 0
 
@@ -123,6 +122,7 @@ class TimelineQueryHandlerTest {
         TimelineQueryResult(
           timeline = listOf(
             TimelineItem(
+              uuid = timelineEntity.uuid,
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
               assessment = assessment.uuid,
@@ -142,15 +142,14 @@ class TimelineQueryHandlerTest {
     @Test
     fun `returns a timeline containing a specified number of items`() {
       val timelinePage: Page<TimelineEntity> = mockk()
-      every { timelinePage.content } returns listOf(
-        TimelineEntity(
-          createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
-          assessment = assessment,
-          user = userEntity,
-          eventType = TestableEvent::class.simpleName!!,
-          data = mapOf("foo" to "bar"),
-        ),
+      val timelineEntity = TimelineEntity(
+        createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
+        assessment = assessment,
+        user = userEntity,
+        eventType = TestableEvent::class.simpleName!!,
+        data = mapOf("foo" to "bar"),
       )
+      every { timelinePage.content } returns listOf(timelineEntity)
       every { timelinePage.totalPages } returns totalPages
       every { timelinePage.number } returns 0
 
@@ -181,6 +180,7 @@ class TimelineQueryHandlerTest {
         TimelineQueryResult(
           timeline = listOf(
             TimelineItem(
+              uuid = timelineEntity.uuid,
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
               assessment = assessment.uuid,
@@ -205,15 +205,14 @@ class TimelineQueryHandlerTest {
     @Test
     fun `returns the timeline for a given timeframe`() {
       val timelinePage: Page<TimelineEntity> = mockk()
-      every { timelinePage.content } returns listOf(
-        TimelineEntity(
-          createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
-          assessment = assessment,
-          user = userEntity,
-          eventType = TestableEvent::class.simpleName!!,
-          data = mapOf("foo" to "bar"),
-        ),
+      val timelineEntity = TimelineEntity(
+        createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
+        assessment = assessment,
+        user = userEntity,
+        eventType = TestableEvent::class.simpleName!!,
+        data = mapOf("foo" to "bar"),
       )
+      every { timelinePage.content } returns listOf(timelineEntity)
       every { timelinePage.totalPages } returns totalPages
       every { timelinePage.number } returns 0
 
@@ -248,6 +247,7 @@ class TimelineQueryHandlerTest {
         TimelineQueryResult(
           timeline = listOf(
             TimelineItem(
+              uuid = timelineEntity.uuid,
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
               assessment = assessment.uuid,
@@ -267,15 +267,14 @@ class TimelineQueryHandlerTest {
     @Test
     fun `returns a timeline containing a specified number of items`() {
       val timelinePage: Page<TimelineEntity> = mockk()
-      every { timelinePage.content } returns listOf(
-        TimelineEntity(
-          createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
-          assessment = assessment,
-          user = userEntity,
-          eventType = TestableEvent::class.simpleName!!,
-          data = mapOf("foo" to "bar"),
-        ),
+      val timelineEntity = TimelineEntity(
+        createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
+        assessment = assessment,
+        user = userEntity,
+        eventType = TestableEvent::class.simpleName!!,
+        data = mapOf("foo" to "bar"),
       )
+      every { timelinePage.content } returns listOf(timelineEntity)
       every { timelinePage.totalPages } returns totalPages
       every { timelinePage.number } returns 0
 
@@ -306,6 +305,7 @@ class TimelineQueryHandlerTest {
         TimelineQueryResult(
           timeline = listOf(
             TimelineItem(
+              uuid = timelineEntity.uuid,
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
               assessment = assessment.uuid,
