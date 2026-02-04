@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentIdentifierRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
@@ -19,7 +20,7 @@ class AssessmentService(
 
   fun findBy(assessmentIdentifier: AssessmentIdentifier) = when (assessmentIdentifier) {
     is ExternalIdentifier -> with(assessmentIdentifier) {
-      assessmentIdentifierRepository.findByIdentifierTypeAndIdentifierAndAssessmentType(
+      assessmentIdentifierRepository.findByExternalIdentifierTypeAndExternalIdentifierIdAndAssessmentType(
         identifierType,
         identifier,
         assessmentType,
@@ -30,6 +31,8 @@ class AssessmentService(
       assessmentRepository.findByUuid(uuid)
     }
   } ?: throw AssessmentNotFoundException(assessmentIdentifier)
+
+  fun findAllByExternalIdentifier(identifiers: Set<IdentifierPair>): Set<AssessmentEntity> = assessmentRepository.findAllByIdentifiersExternalIdentifierIn(identifiers)
 
   fun save(assessment: AssessmentEntity): AssessmentEntity = assessmentRepository.save(assessment)
 }
