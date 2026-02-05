@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.SubjectAccessRequestQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.SubjectAccessRequestAssessmentVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.SubjectAccessRequestQueryResult
+import java.time.LocalTime
 
 @Component
 class SubjectAccessRequestQueryHandler(
@@ -13,10 +14,11 @@ class SubjectAccessRequestQueryHandler(
 ) : QueryHandler<SubjectAccessRequestQuery> {
   override val type = SubjectAccessRequestQuery::class
   override fun handle(query: SubjectAccessRequestQuery): SubjectAccessRequestQueryResult {
-    val results = services.assessment.findAllByExternalIdentifier(query.assessmentIdentifiers)
+    val results = services.assessment.findAllByExternalIdentifiers(query.assessmentIdentifiers, query.to, query.from)
       .map { assessment ->
         val aggregate = services.state.stateForType(AssessmentAggregate::class)
-          .fetchOrCreateState(assessment, query.timestamp).let { it as AssessmentState }
+          .fetchOrCreateState(assessment, query.to?.atTime(LocalTime.MAX) ?: query.timestamp)
+          .let { it as AssessmentState }
           .getForRead()
 
         SubjectAccessRequestAssessmentVersion.from(aggregate, assessment)

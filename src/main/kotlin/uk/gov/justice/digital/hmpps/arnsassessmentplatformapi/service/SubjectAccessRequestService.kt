@@ -27,6 +27,8 @@ class SubjectAccessRequestService(
           crn?.let { add(IdentifierPair(IdentifierType.CRN, it)) }
           prn?.let { add(IdentifierPair(IdentifierType.PRN, it)) }
         },
+        from = fromDate,
+        to = toDate,
       ),
     )
 
