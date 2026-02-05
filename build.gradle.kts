@@ -4,9 +4,9 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.3"
-  id("org.jetbrains.kotlin.kapt") version "2.3.0"
-  kotlin("plugin.spring") version "2.3.0"
-  kotlin("plugin.jpa") version "2.3.0"
+  id("org.jetbrains.kotlin.kapt") version "2.3.10"
+  kotlin("plugin.spring") version "2.3.10"
+  kotlin("plugin.jpa") version "2.3.10"
 }
 
 configurations {
@@ -31,7 +31,7 @@ dependencies {
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.0.0")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
-  testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.0")
+  testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.10")
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.37") {
     exclude(group = "io.swagger.core.v3")
   }
