@@ -26,6 +26,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
@@ -490,8 +491,7 @@ class AssessmentVersionQueryTest(
     fun assessmentAndIdentifierProvider() = AssessmentEntity(type = "TEST").apply {
       identifiers.add(
         AssessmentIdentifierEntity(
-          identifierType = IdentifierType.CRN,
-          identifier = UUID.randomUUID().toString(),
+          externalIdentifier = IdentifierPair(IdentifierType.CRN, UUID.randomUUID().toString()),
           assessment = this,
         ),
       )
@@ -502,8 +502,8 @@ class AssessmentVersionQueryTest(
           assessment,
           with(assessment.identifiers.first()) {
             ExternalIdentifier(
-              identifier = identifier,
-              identifierType = identifierType,
+              identifier = externalIdentifier.id,
+              identifierType = externalIdentifier.type,
               assessmentType = assessment.type,
             )
           },

@@ -7,5 +7,5 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 
 @Repository
 interface AssessmentIdentifierRepository : JpaRepository<AssessmentIdentifierEntity, Long> {
-  fun findByIdentifierTypeAndIdentifierAndAssessmentType(type: IdentifierType, identifier: String, assessmentType: String): AssessmentIdentifierEntity?
+  fun findByExternalIdentifierTypeAndExternalIdentifierIdAndAssessmentType(type: IdentifierType, identifier: String, assessmentType: String): AssessmentIdentifierEntity?
 }

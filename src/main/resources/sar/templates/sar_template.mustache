@@ -1,0 +1,42 @@
+<h1 class="title">Assess Risks and Needs</h1>
+
+{{#assessments}}
+    <h2>{{assessmentType}}</h2>
+
+    <table class="summary-list">
+        <caption>Assessment Summary</caption>
+        <tr>
+            <td>Created at</td>
+            <td>{{createdAtFormatted}}</td>
+        </tr>
+        <tr>
+            <td>Updated at</td>
+            <td>{{updatedAtFormatted}}</td>
+        </tr>
+    </table>
+
+    <table class="summary-list">
+        <caption>Assessment Answers</caption>
+        {{#answers}}
+            <tr>
+                <td>{{key}}</td>
+                <td>
+                    {{#single}}{{single}}{{/single}}
+                    {{#multiple}}
+                        <ul>
+                            {{#multiple}}
+                                <li>{{.}}</li>
+                            {{/multiple}}
+                        </ul>
+                    {{/multiple}}
+                </td>
+            </tr>
+        {{/answers}}
+    </table>
+
+    {{> collection}}
+{{/assessments}}
+
+{{^assessments}}
+    <p>No assessments available.</p>
+{{/assessments}}

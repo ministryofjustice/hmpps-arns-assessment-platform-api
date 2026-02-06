@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
+import io.mockk.verify
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
@@ -63,5 +64,12 @@ class AssessmentVersionQueryHandlerTest : AbstractQueryHandlerTest() {
     )
 
     test(query, aggregate, expectedResult)
+  }
+
+  override fun assertSuccessMockCallCount() {
+    verify(exactly = 1) { assessmentService.findBy(UuidIdentifier(assessment.uuid)) }
+    verify(exactly = 1) { state.getForRead() }
+    verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, any()) }
+    verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
   }
 }

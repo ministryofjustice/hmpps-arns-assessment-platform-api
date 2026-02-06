@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 
 import jakarta.persistence.Column
+import jakarta.persistence.Embeddable
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -18,8 +20,18 @@ import java.util.UUID
 
 enum class IdentifierType {
   CRN,
-  NOMIS_ID,
+  PRN,
 }
+
+@Embeddable
+data class IdentifierPair(
+  @Column(name = "identifier_type")
+  @Enumerated(EnumType.STRING)
+  val type: IdentifierType,
+
+  @Column(name = "identifier")
+  val id: String,
+)
 
 @Entity
 @Table(name = "assessment_identifier")
@@ -35,20 +47,16 @@ class AssessmentIdentifierEntity(
   @Column(name = "created_at")
   val createdAt: LocalDateTime = Clock.now(),
 
-  @Column(name = "identifier_type")
-  @Enumerated(EnumType.STRING)
-  val identifierType: IdentifierType,
-
-  @Column(name = "identifier")
-  val identifier: String,
+  @Embedded
+  val externalIdentifier: IdentifierPair,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "assessment_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
   val assessment: AssessmentEntity,
 ) {
   fun toIdentifier() = ExternalIdentifier(
-    identifier = identifier,
-    identifierType = identifierType,
+    identifier = externalIdentifier.id,
+    identifierType = externalIdentifier.type,
     assessmentType = assessment.type,
   )
 }
