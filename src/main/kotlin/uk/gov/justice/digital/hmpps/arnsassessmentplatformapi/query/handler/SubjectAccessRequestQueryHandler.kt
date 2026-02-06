@@ -16,7 +16,7 @@ class SubjectAccessRequestQueryHandler(
 ) : QueryHandler<SubjectAccessRequestQuery> {
   override val type = SubjectAccessRequestQuery::class
   override fun handle(query: SubjectAccessRequestQuery): SubjectAccessRequestQueryResult {
-    val assessments = services.assessment.findAllByExternalIdentifiers(query.assessmentIdentifiers, query.to, query.from)
+    val assessments = services.assessment.findAllByExternalIdentifiers(query.assessmentIdentifiers, query.from, query.to)
 
     if (assessments.isEmpty()) throw SubjectAccessRequestNoAssessmentsException(query.assessmentIdentifiers)
 
