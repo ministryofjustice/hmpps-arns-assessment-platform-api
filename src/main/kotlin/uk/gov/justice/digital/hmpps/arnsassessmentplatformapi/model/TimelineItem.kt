@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 data class TimelineItem(
+  val uuid: UUID,
   val timestamp: LocalDateTime,
   val user: User,
   val assessment: UUID,
@@ -15,6 +16,7 @@ data class TimelineItem(
 ) {
   companion object {
     fun from(entity: TimelineEntity) = TimelineItem(
+      uuid = entity.uuid,
       timestamp = entity.createdAt,
       user = User.from(entity.user),
       assessment = entity.assessment.uuid,
