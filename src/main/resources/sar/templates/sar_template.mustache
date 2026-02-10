@@ -32,9 +32,155 @@
                 </td>
             </tr>
         {{/answers}}
+
+        {{#properties}}
+            <tr>
+                <td>{{key}}</td>
+                <td>
+                    {{#single}}{{single}}{{/single}}
+                    {{#multiple}}
+                        <ul>
+                            {{#multiple}}
+                                <li>{{.}}</li>
+                            {{/multiple}}
+                        </ul>
+                    {{/multiple}}
+                </td>
+            </tr>
+        {{/properties}}
     </table>
 
-    {{> collection}}
+    {{#collections}}
+        <h2>{{name}}</h2>
+
+        {{#items}}
+            <table class="summary-list">
+                <caption>{{name}} {{index}}</caption>
+
+                {{#answers}}
+                    <tr>
+                        <td>{{key}}</td>
+                        <td>
+                            {{#single}}{{single}}{{/single}}
+
+                            {{#multiple}}
+                                <ul>
+                                    {{#multiple}}
+                                        <li>{{.}}</li>
+                                    {{/multiple}}
+                                </ul>
+                            {{/multiple}}
+                        </td>
+                    </tr>
+                {{/answers}}
+
+                {{#properties}}
+                    <tr>
+                        <td>{{key}}</td>
+                        <td>
+                            {{#single}}{{single}}{{/single}}
+
+                            {{#multiple}}
+                                <ul>
+                                    {{#multiple}}
+                                        <li>{{.}}</li>
+                                    {{/multiple}}
+                                </ul>
+                            {{/multiple}}
+                        </td>
+                    </tr>
+                {{/properties}}
+            </table>
+
+            {{#collections}}
+                <h2>{{name}}</h2>
+
+                {{#items}}
+                    <table class="summary-list">
+                        <caption>{{name}} {{index}}</caption>
+
+                        {{#answers}}
+                            <tr>
+                                <td>{{key}}</td>
+                                <td>
+                                    {{#single}}{{single}}{{/single}}
+
+                                    {{#multiple}}
+                                        <ul>
+                                            {{#multiple}}
+                                                <li>{{.}}</li>
+                                            {{/multiple}}
+                                        </ul>
+                                    {{/multiple}}
+                                </td>
+                            </tr>
+                        {{/answers}}
+
+                        {{#properties}}
+                            <tr>
+                                <td>{{key}}</td>
+                                <td>
+                                    {{#single}}{{single}}{{/single}}
+
+                                    {{#multiple}}
+                                        <ul>
+                                            {{#multiple}}
+                                                <li>{{.}}</li>
+                                            {{/multiple}}
+                                        </ul>
+                                    {{/multiple}}
+                                </td>
+                            </tr>
+                        {{/properties}}
+                    </table>
+
+                    {{#collections}}
+                        <h2>{{name}}</h2>
+
+                        {{#items}}
+                            <table class="summary-list">
+                                <caption>{{name}} {{index}}</caption>
+
+                                {{#answers}}
+                                    <tr>
+                                        <td>{{key}}</td>
+                                        <td>
+                                            {{#single}}{{single}}{{/single}}
+
+                                            {{#multiple}}
+                                                <ul>
+                                                    {{#multiple}}
+                                                        <li>{{.}}</li>
+                                                    {{/multiple}}
+                                                </ul>
+                                            {{/multiple}}
+                                        </td>
+                                    </tr>
+                                {{/answers}}
+
+                                {{#properties}}
+                                    <tr>
+                                        <td>{{key}}</td>
+                                        <td>
+                                            {{#single}}{{single}}{{/single}}
+
+                                            {{#multiple}}
+                                                <ul>
+                                                    {{#multiple}}
+                                                        <li>{{.}}</li>
+                                                    {{/multiple}}
+                                                </ul>
+                                            {{/multiple}}
+                                        </td>
+                                    </tr>
+                                {{/properties}}
+                            </table>
+                        {{/items}}
+                    {{/collections}}
+                {{/items}}
+            {{/collections}}
+        {{/items}}
+    {{/collections}}
 {{/assessments}}
 
 {{^assessments}}
