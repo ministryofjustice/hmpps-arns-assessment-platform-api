@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentQu
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimelineQuery
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
-import kotlin.also
 import kotlin.jvm.java
 
 @Service
