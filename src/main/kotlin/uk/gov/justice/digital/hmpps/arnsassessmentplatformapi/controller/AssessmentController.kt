@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
@@ -14,12 +15,15 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.Comman
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.bus.QueryBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
+import java.util.UUID
 
 @RestController
 class AssessmentController(
   private val commandDispatcher: CommandDispatcher,
   private val queryBus: QueryBus,
+  private val assessmentService: AssessmentService,
 ) {
   @RequestMapping(path = ["/command"], method = [RequestMethod.POST])
   @Operation(description = "Execute commands on an assessment")
@@ -76,4 +80,34 @@ class AssessmentController(
     @RequestBody
     request: QueriesRequest,
   ) = queryBus.dispatch(request.queries)
+
+  @RequestMapping(path = ["/assessment/{assessmentUuid}"], method = [RequestMethod.DELETE])
+  @Operation(description = "Deletes an assessment and all related entities")
+  @ApiResponses(
+    value = [
+      ApiResponse(responseCode = "200", description = "Assessment deleted"),
+      ApiResponse(
+        responseCode = "400",
+        description = "Unable to process queries",
+        content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Assessment not found",
+        content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
+      ),
+      ApiResponse(
+        responseCode = "500",
+        description = "Unexpected error",
+        content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
+      ),
+    ],
+  )
+  @PreAuthorize("hasAnyRole('ROLE_AAP__COORDINATOR_RW')")
+  fun deleteAssessment(
+    @PathVariable("assessmentUuid") assessmentUuid: UUID,
+  ) {
+    assessmentService.findBy(assessmentUuid)
+      .run(assessmentService::delete)
+  }
 }
