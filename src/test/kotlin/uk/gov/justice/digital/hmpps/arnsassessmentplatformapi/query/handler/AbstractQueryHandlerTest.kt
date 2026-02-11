@@ -58,7 +58,7 @@ abstract class AbstractQueryHandlerTest {
   }
 
   fun test(query: RequestableQuery, aggregate: AggregateEntity<AssessmentAggregate>, expectedResult: QueryResult) {
-    every { assessmentService.findBy(UuidIdentifier(assessment.uuid)) } returns assessment
+    every { assessmentService.findBy(UuidIdentifier(assessment.uuid), LocalDateTime.now()) } returns assessment
 
     val state: AssessmentState = mockk()
     every { state.getForRead() } returns aggregate
@@ -80,7 +80,7 @@ abstract class AbstractQueryHandlerTest {
 
     val result = handlerInstance.execute(query)
 
-    verify(exactly = 1) { assessmentService.findBy(UuidIdentifier(assessment.uuid)) }
+    verify(exactly = 1) { assessmentService.findBy(UuidIdentifier(assessment.uuid), LocalDateTime.now()) }
     verify(exactly = 1) { state.getForRead() }
     verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, query.timestamp) }
     verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
@@ -93,7 +93,7 @@ abstract class AbstractQueryHandlerTest {
     aggregate: AggregateEntity<AssessmentAggregate>,
     expectedError: AssessmentPlatformException,
   ) {
-    every { assessmentService.findBy(UuidIdentifier(assessment.uuid)) } returns assessment
+    every { assessmentService.findBy(UuidIdentifier(assessment.uuid), LocalDateTime.now()) } returns assessment
 
     val state: AssessmentState = mockk()
     every { state.getForRead() } returns aggregate
@@ -106,7 +106,7 @@ abstract class AbstractQueryHandlerTest {
 
     val error = assertThrows<AssessmentPlatformException> { handlerInstance.execute(query) }
 
-    verify(exactly = 1) { assessmentService.findBy(UuidIdentifier(assessment.uuid)) }
+    verify(exactly = 1) { assessmentService.findBy(UuidIdentifier(assessment.uuid), LocalDateTime.now()) }
     verify(exactly = 1) { state.getForRead() }
     verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, query.timestamp) }
     verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }

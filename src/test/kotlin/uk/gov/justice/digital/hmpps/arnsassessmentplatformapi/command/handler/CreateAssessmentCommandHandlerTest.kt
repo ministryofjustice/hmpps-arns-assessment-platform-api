@@ -38,6 +38,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateServi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
+import java.time.LocalDateTime
 import java.util.UUID
 
 class CreateAssessmentCommandHandlerTest {
@@ -113,7 +114,7 @@ class CreateAssessmentCommandHandlerTest {
   @Test
   fun `it handles the command`() {
     val assessment = slot<AssessmentEntity>()
-    every { assessmentService.findBy(any<ExternalIdentifier>()) } answers {
+    every { assessmentService.findBy(any<ExternalIdentifier>(), LocalDateTime.now()) } answers {
       throw AssessmentNotFoundException(firstArg())
     }
     every { assessmentService.save(capture(assessment)) } answers { firstArg() }
@@ -135,7 +136,7 @@ class CreateAssessmentCommandHandlerTest {
 
     val expectedIdentifier = ExternalIdentifier("CRN123", IdentifierType.CRN, "TEST")
 
-    verify(exactly = 1) { assessmentService.findBy(expectedIdentifier) }
+    verify(exactly = 1) { assessmentService.findBy(expectedIdentifier, LocalDateTime.now()) }
     verify(exactly = 1) { assessmentService.save(any<AssessmentEntity>()) }
     verify(exactly = 1) { userDetailsService.findOrCreate(commandUser) }
     verify(exactly = 2) { eventBus.handle(any<EventEntity<out Event>>()) }
@@ -169,7 +170,7 @@ class CreateAssessmentCommandHandlerTest {
   @Test
   fun `it throws when the provided identifier already exists`() {
     val assessment = slot<AssessmentEntity>()
-    every { assessmentService.findBy(any<ExternalIdentifier>()) } answers { AssessmentEntity(type = "TEST") }
+    every { assessmentService.findBy(any<ExternalIdentifier>(), LocalDateTime.now()) } answers { AssessmentEntity(type = "TEST") }
     every { assessmentService.save(capture(assessment)) } answers { firstArg() }
 
     every { eventBus.handle(any<EventEntity<out Event>>()) } returns mockk()
@@ -184,7 +185,7 @@ class CreateAssessmentCommandHandlerTest {
 
     assertThat(exception.developerMessage).isEqualTo("Duplicate identifier: $expectedIdentifier")
 
-    verify(exactly = 1) { assessmentService.findBy(expectedIdentifier) }
+    verify(exactly = 1) { assessmentService.findBy(expectedIdentifier, LocalDateTime.now()) }
     verify(exactly = 0) { assessmentService.save(any<AssessmentEntity>()) }
     verify(exactly = 0) { eventBus.handle(any<EventEntity<out Event>>()) }
     verify(exactly = 0) { stateService.persist(any()) }

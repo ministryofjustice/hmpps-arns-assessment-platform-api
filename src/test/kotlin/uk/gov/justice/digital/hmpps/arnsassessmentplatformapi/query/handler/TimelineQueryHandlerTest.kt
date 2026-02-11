@@ -103,7 +103,7 @@ class TimelineQueryHandlerTest {
       } returns timelinePage
 
       every {
-        services.assessment.findBy(identifier)
+        services.assessment.findBy(identifier, LocalDateTime.now())
       } returns assessment
 
       val query = TimelineQuery(
@@ -163,7 +163,7 @@ class TimelineQueryHandlerTest {
       } returns timelinePage
 
       every {
-        services.assessment.findBy(identifier)
+        services.assessment.findBy(identifier, LocalDateTime.now())
       } returns assessment
 
       val query = TimelineQuery(
@@ -228,7 +228,7 @@ class TimelineQueryHandlerTest {
       } returns timelinePage
 
       every {
-        services.assessment.findBy(identifier)
+        services.assessment.findBy(identifier, LocalDateTime.now())
       } returns assessment
 
       val query = TimelineQuery(
@@ -288,7 +288,7 @@ class TimelineQueryHandlerTest {
       } returns timelinePage
 
       every {
-        services.assessment.findBy(identifier)
+        services.assessment.findBy(identifier, LocalDateTime.now())
       } returns assessment
 
       val query = TimelineQuery(

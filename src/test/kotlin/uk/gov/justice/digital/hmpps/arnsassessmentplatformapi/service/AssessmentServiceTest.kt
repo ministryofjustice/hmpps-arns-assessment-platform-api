@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
+import java.time.LocalDateTime
 import java.util.UUID
 
 class AssessmentServiceTest {
@@ -55,7 +56,7 @@ class AssessmentServiceTest {
 
       every { assessmentRepository.findByUuid(assessment.uuid) } returns assessment
 
-      val result = service.findBy(UuidIdentifier(assessment.uuid))
+      val result = service.findBy(UuidIdentifier(assessment.uuid), LocalDateTime.now())
 
       assertThat(result).isEqualTo(assessment)
     }
@@ -65,7 +66,7 @@ class AssessmentServiceTest {
       every { assessmentRepository.findByUuid(any<UUID>()) } returns null
 
       assertThrows<AssessmentNotFoundException> {
-        service.findBy(UuidIdentifier(UUID.randomUUID()))
+        service.findBy(UuidIdentifier(UUID.randomUUID()), LocalDateTime.now())
       }
     }
   }
@@ -84,14 +85,15 @@ class AssessmentServiceTest {
     @Test
     fun `it finds and returns the assessment`() {
       every {
-        assessmentIdentifierRepository.findByIdentifierTypeAndIdentifierAndAssessmentType(
+        assessmentIdentifierRepository.findFirstByIdentifierTypeAndIdentifierAndAssessmentTypeAndCreatedAtBeforeOrderByCreatedAtDesc(
           type = IdentifierType.CRN,
           identifier = "CRN123",
           assessmentType = "TEST",
+          pointInTime = LocalDateTime.now()
         )
       } returns identifier
 
-      val result = service.findBy(externalIdentifier)
+      val result = service.findBy(externalIdentifier, LocalDateTime.now())
 
       assertThat(result).isEqualTo(assessment)
     }
@@ -99,15 +101,16 @@ class AssessmentServiceTest {
     @Test
     fun `it throws when unable to find the assessment`() {
       every {
-        assessmentIdentifierRepository.findByIdentifierTypeAndIdentifierAndAssessmentType(
+        assessmentIdentifierRepository.findFirstByIdentifierTypeAndIdentifierAndAssessmentTypeAndCreatedAtBeforeOrderByCreatedAtDesc(
           type = IdentifierType.CRN,
           identifier = "CRN123",
           assessmentType = "TEST",
+          pointInTime = LocalDateTime.now()
         )
       } returns null
 
       assertThrows<AssessmentNotFoundException> {
-        service.findBy(externalIdentifier)
+        service.findBy(externalIdentifier, LocalDateTime.now())
       }
     }
   }

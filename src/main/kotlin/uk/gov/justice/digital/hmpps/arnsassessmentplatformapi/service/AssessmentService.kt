@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentId
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -15,14 +16,15 @@ class AssessmentService(
   private val assessmentRepository: AssessmentRepository,
   private val assessmentIdentifierRepository: AssessmentIdentifierRepository,
 ) {
-  fun findBy(uuid: UUID) = findBy(UuidIdentifier(uuid))
+  fun findBy(uuid: UUID) = findBy(UuidIdentifier(uuid), LocalDateTime.now())
 
-  fun findBy(assessmentIdentifier: AssessmentIdentifier) = when (assessmentIdentifier) {
+  fun findBy(assessmentIdentifier: AssessmentIdentifier, pointInTime: LocalDateTime) = when (assessmentIdentifier) {
     is ExternalIdentifier -> with(assessmentIdentifier) {
-      assessmentIdentifierRepository.findByIdentifierTypeAndIdentifierAndAssessmentType(
+      assessmentIdentifierRepository.findFirstByIdentifierTypeAndIdentifierAndAssessmentTypeAndCreatedAtBeforeOrderByCreatedAtDesc(
         identifierType,
         identifier,
         assessmentType,
+        pointInTime,
       )?.assessment
     }
 
