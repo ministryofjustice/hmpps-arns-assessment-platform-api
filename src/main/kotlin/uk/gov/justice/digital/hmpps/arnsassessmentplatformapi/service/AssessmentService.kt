@@ -43,4 +43,6 @@ class AssessmentService(
   ).toSet()
 
   fun save(assessment: AssessmentEntity): AssessmentEntity = assessmentRepository.save(assessment)
+
+  fun delete(assessment: AssessmentEntity) = assessmentRepository.delete(assessment)
 }

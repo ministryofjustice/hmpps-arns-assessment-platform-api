@@ -11,7 +11,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentQu
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimelineQuery
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
-import kotlin.also
 import kotlin.jvm.java
 
 @Service
@@ -39,9 +38,13 @@ class AuditService(
       it.queueUrl(queueUrl)
         .messageBody(json(event))
         .build()
+    }.whenComplete { _, error ->
+      if (error != null) {
+        log.error("Failed to send audit event ${event.what} for ${event.who}", error)
+      } else {
+        log.info("Audit event ${event.what} for ${event.who} sent")
+      }
     }
-      .get()
-      .also { log.info("Audit event ${event.what} for ${event.who} sent") }
   }
 
   fun audit(command: RequestableCommand) = AuditableEvent(
