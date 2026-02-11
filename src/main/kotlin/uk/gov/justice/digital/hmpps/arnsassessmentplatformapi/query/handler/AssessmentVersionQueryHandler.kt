@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
+import java.time.LocalDateTime
 
 @Component
 class AssessmentVersionQueryHandler(
@@ -13,7 +14,7 @@ class AssessmentVersionQueryHandler(
 ) : QueryHandler<AssessmentVersionQuery> {
   override val type = AssessmentVersionQuery::class
   override fun handle(query: AssessmentVersionQuery): AssessmentVersionQueryResult {
-    val assessment = services.assessment.findBy(query.assessmentIdentifier)
+    val assessment = services.assessment.findBy(query.assessmentIdentifier, LocalDateTime.now())
 
     val state = services.state.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState

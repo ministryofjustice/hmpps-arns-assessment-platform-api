@@ -57,7 +57,7 @@ abstract class AbstractQueryHandlerTest {
   }
 
   fun test(query: Query, aggregate: AggregateEntity<AssessmentAggregate>, expectedResult: QueryResult) {
-    every { assessmentService.findBy(UuidIdentifier(assessment.uuid)) } returns assessment
+    every { assessmentService.findBy(UuidIdentifier(assessment.uuid), LocalDateTime.now()) } returns assessment
     every { state.getForRead() } returns aggregate
     every { stateProvider.fetchOrCreateState(assessment, query.timestamp) } returns state
     every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
@@ -86,7 +86,7 @@ abstract class AbstractQueryHandlerTest {
     aggregate: AggregateEntity<AssessmentAggregate>,
     expectedError: AssessmentPlatformException,
   ) {
-    every { assessmentService.findBy(UuidIdentifier(assessment.uuid)) } returns assessment
+    every { assessmentService.findBy(UuidIdentifier(assessment.uuid), LocalDateTime.now()) } returns assessment
 
     val state: AssessmentState = mockk()
     every { state.getForRead() } returns aggregate

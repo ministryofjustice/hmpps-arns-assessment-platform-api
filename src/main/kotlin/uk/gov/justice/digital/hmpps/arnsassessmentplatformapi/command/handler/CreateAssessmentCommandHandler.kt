@@ -35,14 +35,6 @@ class CreateAssessmentCommandHandler(
       }
     }
 
-    assessment.identifiers.forEach {
-      try {
-        services.assessment.findBy(it.toIdentifier())
-        throw DuplicateExternalIdentifierException(it.toIdentifier())
-      } catch (_: AssessmentNotFoundException) {
-      }
-    }
-
     services.assessment.save(assessment)
 
     val user = services.userDetails.findOrCreate(command.user)
