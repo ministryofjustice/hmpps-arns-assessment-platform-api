@@ -1,188 +1,110 @@
-<h1 class="title">Assess Risks and Needs</h1>
+<h1>Assess Risks and Needs</h1>
 
-{{#assessments}}
-    <h2>{{assessmentType}}</h2>
+{{#results}}
+    <section>
+        <h2>{{assessmentType}}</h2>
 
-    <table class="summary-list">
-        <caption>Assessment Summary</caption>
-        <tr>
-            <td>Created at</td>
-            <td>{{createdAtFormatted}}</td>
-        </tr>
-        <tr>
-            <td>Updated at</td>
-            <td>{{updatedAtFormatted}}</td>
-        </tr>
-    </table>
+        <!-- Summary -->
+        <section>
+            <h3>Assessment summary</h3>
+            <dl>
+                <dt>Created at</dt>
+                <dd>{{createdAt}}</dd>
 
-    <table class="summary-list">
-        <caption>Assessment Answers</caption>
-        {{#answers}}
-            <tr>
-                <td>{{key}}</td>
-                <td>
-                    {{#single}}{{single}}{{/single}}
-                    {{#multiple}}
-                        <ul>
-                            {{#multiple}}
-                                <li>{{.}}</li>
-                            {{/multiple}}
-                        </ul>
-                    {{/multiple}}
-                </td>
-            </tr>
-        {{/answers}}
+                <dt>Updated at</dt>
+                <dd>{{updatedAt}}</dd>
+            </dl>
+        </section>
 
-        {{#properties}}
-            <tr>
-                <td>{{key}}</td>
-                <td>
-                    {{#single}}{{single}}{{/single}}
-                    {{#multiple}}
-                        <ul>
-                            {{#multiple}}
-                                <li>{{.}}</li>
-                            {{/multiple}}
-                        </ul>
-                    {{/multiple}}
-                </td>
-            </tr>
-        {{/properties}}
-    </table>
+        <!-- Answers + Properties -->
+        {{#hasAnswersOrProperties}}
+            <section>
+                <h3>Assessment answers</h3>
 
-    {{#collections}}
-        <h2>{{name}}</h2>
+                <dl>
+                    {{#answers}}
+                        <dt>{{key}}</dt>
+                        <dd>
+                            {{#hasSingle}}{{single}}{{/hasSingle}}
 
-        {{#items}}
-            <table class="summary-list">
-                <caption>{{name}} {{index}}</caption>
-
-                {{#answers}}
-                    <tr>
-                        <td>{{key}}</td>
-                        <td>
-                            {{#single}}{{single}}{{/single}}
-
-                            {{#multiple}}
+                            {{#hasMultiple}}
                                 <ul>
                                     {{#multiple}}
                                         <li>{{.}}</li>
                                     {{/multiple}}
                                 </ul>
-                            {{/multiple}}
-                        </td>
-                    </tr>
-                {{/answers}}
+                            {{/hasMultiple}}
+                        </dd>
+                    {{/answers}}
 
-                {{#properties}}
-                    <tr>
-                        <td>{{key}}</td>
-                        <td>
-                            {{#single}}{{single}}{{/single}}
+                    {{#properties}}
+                        <dt>{{key}}</dt>
+                        <dd>
+                            {{#hasSingle}}{{single}}{{/hasSingle}}
 
-                            {{#multiple}}
+                            {{#hasMultiple}}
                                 <ul>
                                     {{#multiple}}
                                         <li>{{.}}</li>
                                     {{/multiple}}
                                 </ul>
-                            {{/multiple}}
-                        </td>
-                    </tr>
-                {{/properties}}
-            </table>
+                            {{/hasMultiple}}
+                        </dd>
+                    {{/properties}}
+                </dl>
+            </section>
+        {{/hasAnswersOrProperties}}
 
-            {{#collections}}
-                <h2>{{name}}</h2>
+        <!-- Collections -->
+        {{#collections}}
+            <section>
+                <h3>{{name}}</h3>
 
-                {{#items}}
-                    <table class="summary-list">
-                        <caption>{{name}} {{index}}</caption>
+                <ul>
+                    {{#items}}
+                        <section>
+                            <h4>{{name}}</h4>
 
-                        {{#answers}}
-                            <tr>
-                                <td>{{key}}</td>
-                                <td>
-                                    {{#single}}{{single}}{{/single}}
-
-                                    {{#multiple}}
-                                        <ul>
-                                            {{#multiple}}
-                                                <li>{{.}}</li>
-                                            {{/multiple}}
-                                        </ul>
-                                    {{/multiple}}
-                                </td>
-                            </tr>
-                        {{/answers}}
-
-                        {{#properties}}
-                            <tr>
-                                <td>{{key}}</td>
-                                <td>
-                                    {{#single}}{{single}}{{/single}}
-
-                                    {{#multiple}}
-                                        <ul>
-                                            {{#multiple}}
-                                                <li>{{.}}</li>
-                                            {{/multiple}}
-                                        </ul>
-                                    {{/multiple}}
-                                </td>
-                            </tr>
-                        {{/properties}}
-                    </table>
-
-                    {{#collections}}
-                        <h2>{{name}}</h2>
-
-                        {{#items}}
-                            <table class="summary-list">
-                                <caption>{{name}} {{index}}</caption>
-
+                            <dl>
                                 {{#answers}}
-                                    <tr>
-                                        <td>{{key}}</td>
-                                        <td>
-                                            {{#single}}{{single}}{{/single}}
+                                    <dt>{{key}}</dt>
+                                    <dd>
+                                        {{#hasSingle}}{{single}}{{/hasSingle}}
 
-                                            {{#multiple}}
-                                                <ul>
-                                                    {{#multiple}}
-                                                        <li>{{.}}</li>
-                                                    {{/multiple}}
-                                                </ul>
-                                            {{/multiple}}
-                                        </td>
-                                    </tr>
+                                        {{#hasMultiple}}
+                                            <ul>
+                                                {{#multiple}}
+                                                    <li>{{.}}</li>
+                                                {{/multiple}}
+                                            </ul>
+                                        {{/hasMultiple}}
+                                    </dd>
                                 {{/answers}}
 
                                 {{#properties}}
-                                    <tr>
-                                        <td>{{key}}</td>
-                                        <td>
-                                            {{#single}}{{single}}{{/single}}
+                                    <dt>{{key}}</dt>
+                                    <dd>
+                                        {{#hasSingle}}{{single}}{{/hasSingle}}
 
-                                            {{#multiple}}
-                                                <ul>
-                                                    {{#multiple}}
-                                                        <li>{{.}}</li>
-                                                    {{/multiple}}
-                                                </ul>
-                                            {{/multiple}}
-                                        </td>
-                                    </tr>
+                                        {{#hasMultiple}}
+                                            <ul>
+                                                {{#multiple}}
+                                                    <li>{{.}}</li>
+                                                {{/multiple}}
+                                            </ul>
+                                        {{/hasMultiple}}
+                                    </dd>
                                 {{/properties}}
-                            </table>
-                        {{/items}}
-                    {{/collections}}
-                {{/items}}
-            {{/collections}}
-        {{/items}}
-    {{/collections}}
-{{/assessments}}
+                            </dl>
+                        </section>
+                    {{/items}}
+                </ul>
+            </section>
+        {{/collections}}
 
-{{^assessments}}
+    </section>
+{{/results}}
+
+{{^results}}
     <p>No assessments available.</p>
-{{/assessments}}
+{{/results}}

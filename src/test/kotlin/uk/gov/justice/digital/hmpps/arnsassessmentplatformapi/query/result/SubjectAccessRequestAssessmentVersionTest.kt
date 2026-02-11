@@ -117,7 +117,7 @@ class SubjectAccessRequestAssessmentVersionTest {
         items = mutableListOf(),
       )
 
-      val result = listOf(collection).toRenderedCollection()
+      val result = listOf(collection).toFlattenedRenderedCollections()
 
       val expected = listOf(
         RenderedCollection(
@@ -159,23 +159,21 @@ class SubjectAccessRequestAssessmentVersionTest {
 
       collection.items.addAll(items)
 
-      val result = listOf(collection).toRenderedCollection()
+      val result = listOf(collection).toFlattenedRenderedCollections()
 
       val expected = listOf(
         RenderedCollection(
           name = collectionName,
           items = mutableListOf(
             RenderedCollectionItem(
-              index = 0,
+              name = "$collectionName/1",
               answers = listOf(RenderedValue("first_foo", "first_foo_value", null)),
               properties = listOf(RenderedValue("first_bar", "first_bar_value", null)),
-              collections = emptyList(),
             ),
             RenderedCollectionItem(
-              index = 1,
+              name = "$collectionName/2",
               answers = listOf(RenderedValue("second_foo", "second_foo_value", null)),
               properties = listOf(RenderedValue("second_bar", null, listOf("foo", "bar", "baz"))),
-              collections = emptyList(),
             ),
           ),
         ),
@@ -229,17 +227,16 @@ class SubjectAccessRequestAssessmentVersionTest {
       parentItems.first().collections.add(childCollection)
       parentCollection.items.addAll(parentItems)
 
-      val result = listOf(parentCollection).toRenderedCollection()
+      val result = listOf(parentCollection).toFlattenedRenderedCollections()
 
       val expectedChildCollections = listOf(
         RenderedCollection(
-          name = childCollectionName,
+          name = "$collectionName/1/$childCollectionName",
           items = listOf(
             RenderedCollectionItem(
-              index = 0,
+              name = "$collectionName/1/$childCollectionName/1",
               answers = listOf(RenderedValue("child_foo", "child_foo_value", null)),
               properties = listOf(RenderedValue("child_bar", "child_bar_value", null)),
-              collections = emptyList(),
             ),
           ),
         ),
@@ -250,14 +247,13 @@ class SubjectAccessRequestAssessmentVersionTest {
           name = collectionName,
           items = mutableListOf(
             RenderedCollectionItem(
-              index = 0,
+              name = "$collectionName/1",
               answers = listOf(RenderedValue("parent_foo", "parent_foo_value", null)),
               properties = listOf(RenderedValue("parent_bar", "parent_bar_value", null)),
-              collections = expectedChildCollections,
             ),
           ),
         ),
-      )
+      ).plus(expectedChildCollections)
 
       assertEquals(expected, result)
     }
