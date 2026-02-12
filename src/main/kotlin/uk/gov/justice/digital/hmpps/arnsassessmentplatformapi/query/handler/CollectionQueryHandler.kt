@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.CollectionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.exception.CollectionDepthOutOfBoundsException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.CollectionQueryResult
-import java.time.LocalDateTime
 
 @Component
 class CollectionQueryHandler(
@@ -16,7 +15,7 @@ class CollectionQueryHandler(
 ) : QueryHandler<CollectionQuery> {
   override val type = CollectionQuery::class
   override fun handle(query: CollectionQuery): CollectionQueryResult {
-    val assessment = services.assessment.findBy(query.assessmentIdentifier, LocalDateTime.now())
+    val assessment = services.assessment.findBy(query.assessmentIdentifier, services.clock.now())
 
     val state = services.state.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState

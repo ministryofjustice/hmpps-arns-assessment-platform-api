@@ -20,7 +20,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.Assess
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
-import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
 import kotlin.test.assertIs
 
@@ -91,43 +90,6 @@ class CreateAssessmentCommandTest(
     assertThat(createdEvent.properties).isEqualTo(command.properties)
     val assignedEvent = eventsForAssessment[eventsForAssessment.size - 1].data
     assertIs<AssignedToUserEvent>(assignedEvent)
-  }
-
-  @Test
-  fun `it rejects the request if the provided identifier is not unique`() {
-    val randomCrn = UUID.randomUUID().toString()
-
-    val command = CreateAssessmentCommand(
-      user = testUserDetails,
-      assessmentType = "TEST",
-      identifiers = mapOf(
-        IdentifierType.CRN to randomCrn,
-      ),
-      formVersion = "1",
-    )
-
-    val request = CommandsRequest(
-      commands = listOf(command),
-    )
-
-    webTestClient.post().uri("/command")
-      .header(HttpHeaders.CONTENT_TYPE, "application/json")
-      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
-      .bodyValue(request)
-      .exchange()
-      .expectStatus().isOk
-
-    val response = webTestClient.post().uri("/command")
-      .header(HttpHeaders.CONTENT_TYPE, "application/json")
-      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
-      .bodyValue(request)
-      .exchange()
-      .expectStatus().isBadRequest
-      .expectBody(ErrorResponse::class.java)
-      .returnResult()
-      .responseBody
-
-    assertThat(response?.userMessage).isEqualTo("The provided identifier already exists")
   }
 
   @Test

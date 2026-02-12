@@ -74,13 +74,16 @@ class AssessmentServiceTest {
   @Nested
   inner class FindByExternalIdentifier {
     val assessment = AssessmentEntity(type = "TEST")
-    val identifier = AssessmentIdentifierEntity(identifierType = IdentifierType.CRN, identifier = "CRN123", assessment = assessment)
+    val identifier =
+      AssessmentIdentifierEntity(identifierType = IdentifierType.CRN, identifier = "CRN123", assessment = assessment)
 
     val externalIdentifier = ExternalIdentifier(
       identifierType = IdentifierType.CRN,
       identifier = "CRN123",
       assessmentType = "TEST",
     )
+
+    val now = LocalDateTime.now()
 
     @Test
     fun `it finds and returns the assessment`() {
@@ -89,11 +92,11 @@ class AssessmentServiceTest {
           type = IdentifierType.CRN,
           identifier = "CRN123",
           assessmentType = "TEST",
-          pointInTime = LocalDateTime.now()
+          pointInTime = now,
         )
       } returns identifier
 
-      val result = service.findBy(externalIdentifier, LocalDateTime.now())
+      val result = service.findBy(externalIdentifier, now)
 
       assertThat(result).isEqualTo(assessment)
     }
@@ -105,12 +108,12 @@ class AssessmentServiceTest {
           type = IdentifierType.CRN,
           identifier = "CRN123",
           assessmentType = "TEST",
-          pointInTime = LocalDateTime.now()
+          pointInTime = now,
         )
       } returns null
 
       assertThrows<AssessmentNotFoundException> {
-        service.findBy(externalIdentifier, LocalDateTime.now())
+        service.findBy(externalIdentifier, now)
       }
     }
   }
