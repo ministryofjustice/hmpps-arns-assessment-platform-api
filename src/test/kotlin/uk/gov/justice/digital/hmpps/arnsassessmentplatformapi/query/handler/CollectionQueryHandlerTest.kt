@@ -20,7 +20,6 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   override val handler = CollectionQueryHandler::class
 
   val uuid = (1..10).map { UUID.randomUUID() }
-  val now: LocalDateTime = LocalDateTime.now()
 
   val allCollections = listOf(
     Collection(

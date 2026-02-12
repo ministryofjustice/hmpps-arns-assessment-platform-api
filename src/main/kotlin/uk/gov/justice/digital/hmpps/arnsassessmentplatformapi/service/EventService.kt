@@ -1,8 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent

@@ -86,6 +86,8 @@ class AssessmentServiceTest {
       assessmentType = "TEST",
     )
 
+    val now = LocalDateTime.now()
+
     @Test
     fun `it finds and returns the assessment`() {
       every {
@@ -93,11 +95,11 @@ class AssessmentServiceTest {
           type = IdentifierType.CRN,
           identifier = "CRN123",
           assessmentType = "TEST",
-          pointInTime = LocalDateTime.now()
+          pointInTime = now,
         )
       } returns identifier
 
-      val result = service.findBy(externalIdentifier, LocalDateTime.now())
+      val result = service.findBy(externalIdentifier, now)
 
       assertThat(result).isEqualTo(assessment)
     }
@@ -109,12 +111,12 @@ class AssessmentServiceTest {
           type = IdentifierType.CRN,
           identifier = "CRN123",
           assessmentType = "TEST",
-          pointInTime = LocalDateTime.now()
+          pointInTime = now,
         )
       } returns null
 
       assertThrows<AssessmentNotFoundException> {
-        service.findBy(externalIdentifier, LocalDateTime.now())
+        service.findBy(externalIdentifier, now)
       }
     }
   }

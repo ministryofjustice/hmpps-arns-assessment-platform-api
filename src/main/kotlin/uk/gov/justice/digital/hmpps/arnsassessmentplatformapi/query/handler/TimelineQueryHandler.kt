@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.criteria.TimelineCriteria
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.TimelineQueryResult
-import java.time.LocalDateTime
 
 @Component
 class TimelineQueryHandler(
@@ -16,7 +15,7 @@ class TimelineQueryHandler(
 
   override fun handle(query: TimelineQuery) = services.timeline.findAll(
     TimelineCriteria(
-      assessmentUuid = query.assessmentIdentifier?.let { services.assessment.findBy(it, LocalDateTime.now()).uuid },
+      assessmentUuid = query.assessmentIdentifier?.let { services.assessment.findBy(it, services.clock.now()).uuid },
       userUuid = query.subject?.let { services.userDetails.find(it).uuid },
       from = query.from,
       to = query.to,
