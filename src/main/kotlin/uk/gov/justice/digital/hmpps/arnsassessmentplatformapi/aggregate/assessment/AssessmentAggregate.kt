@@ -10,6 +10,7 @@ typealias Collaborators = MutableSet<UUID>
 typealias Answers = MutableMap<String, Value>
 typealias Properties = MutableMap<String, Value>
 typealias Collections = MutableList<Collection>
+typealias Flags = MutableList<String>
 typealias FormVersion = String
 
 class AssessmentAggregate :
@@ -22,12 +23,14 @@ class AssessmentAggregate :
   override val answers: Answers = mutableMapOf()
   override val collections: Collections = mutableListOf()
   override val collaborators: Collaborators = mutableSetOf()
+  override val flags: Flags = mutableListOf()
 
   override fun clone() = AssessmentAggregate().also { clone ->
     clone.properties.putAll(properties)
     clone.answers.putAll(answers)
     clone.collections.addAll(collections)
     clone.collaborators.addAll(collaborators)
+    clone.flags.addAll(flags)
     clone.formVersion = formVersion
   }
 

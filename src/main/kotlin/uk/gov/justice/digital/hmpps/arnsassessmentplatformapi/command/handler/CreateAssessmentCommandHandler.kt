@@ -55,6 +55,7 @@ class CreateAssessmentCommandHandler(
         data = AssessmentCreatedEvent(
           formVersion = formVersion,
           properties = properties ?: emptyMap(),
+          flags = flags,
         ),
       )
     }
