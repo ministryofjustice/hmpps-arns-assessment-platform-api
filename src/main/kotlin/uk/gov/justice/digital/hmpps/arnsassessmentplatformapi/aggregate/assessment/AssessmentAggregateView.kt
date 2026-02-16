@@ -10,6 +10,7 @@ typealias CollaboratorsView = Set<UUID>
 typealias AnswersView = Map<String, Value>
 typealias PropertiesView = Map<String, Value>
 typealias CollectionsView = List<Collection>
+typealias FlagsView = List<String>
 typealias FormVersionView = String
 
 interface AssessmentAggregateView : AggregateView {
@@ -19,6 +20,7 @@ interface AssessmentAggregateView : AggregateView {
   val answers: AnswersView
   val collections: CollectionsView
   val collaborators: CollaboratorsView
+  val flags: FlagsView
 
   fun getCollection(collectionUuid: UUID): Collection?
   fun getCollectionWithItem(collectionItemUuid: UUID): Collection?
