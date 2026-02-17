@@ -77,6 +77,7 @@ class CreateAssessmentCommandHandlerTest {
     assessmentType = "TEST",
     formVersion = "1",
     properties = mapOf("foo" to SingleValue("bar")),
+    flags = listOf("SAN_BETA"),
     identifiers = mapOf(
       IdentifierType.CRN to "CRN123",
     ),
@@ -90,6 +91,7 @@ class CreateAssessmentCommandHandlerTest {
     AssessmentCreatedEvent(
       formVersion = "1",
       properties = command.properties!!,
+      flags = listOf("SAN_BETA"),
     ),
     AssignedToUserEvent(
       userUuid = user.uuid,

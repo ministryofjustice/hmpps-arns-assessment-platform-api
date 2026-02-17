@@ -42,6 +42,7 @@ class AssessmentVersionQueryHandler(
       collaborators = collaborators,
       identifiers = assessment.identifiersMap(),
       assignedUser = assignedUser,
+      flags = data.flags,
     )
   }
 }
