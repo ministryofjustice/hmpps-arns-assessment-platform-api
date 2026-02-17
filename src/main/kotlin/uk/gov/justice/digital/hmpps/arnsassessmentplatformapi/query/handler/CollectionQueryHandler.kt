@@ -15,7 +15,7 @@ class CollectionQueryHandler(
 ) : QueryHandler<CollectionQuery> {
   override val type = CollectionQuery::class
   override fun handle(query: CollectionQuery): CollectionQueryResult {
-    val assessment = services.assessment.findBy(query.assessmentIdentifier)
+    val assessment = services.assessment.findBy(query.assessmentIdentifier, services.clock.now())
 
     val state = services.state.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
