@@ -13,6 +13,7 @@ data class CreateAssessmentCommand(
   val assessmentType: String,
   val identifiers: Map<IdentifierType, String>? = null,
   val properties: Map<String, Value>? = null,
+  val flags: List<String> = emptyList(),
   override val timeline: Timeline? = null,
 ) : RequestableCommand {
   @JsonIgnore

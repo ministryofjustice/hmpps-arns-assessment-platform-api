@@ -22,6 +22,7 @@ class AssessmentCreatedEventHandler(
     state.getForWrite().data.apply {
       formVersion = event.data.formVersion
       collaborators.add(event.user.uuid)
+      flags.addAll(event.data.flags)
     }
 
     state.getForWrite().apply {
