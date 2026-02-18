@@ -8,9 +8,14 @@ import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.SubjectAccessRequestQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimelineQuery
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import kotlin.jvm.java
 
 @Service
@@ -54,21 +59,40 @@ class AuditService(
     details = json(mapOf("assessmentUuid" to command.assessmentUuid)),
   ).run(::sendEvent)
 
-  fun audit(query: RequestableQuery) = AuditableEvent(
-    who = query.user.id,
-    what = query::class.simpleName ?: "Unknown",
-    service = serviceName,
-    details = json(
-      when (query) {
-        is AssessmentQuery -> mapOf("assessmentIdentifier" to query.assessmentIdentifier)
-        is TimelineQuery -> mapOf(
-          "assessmentIdentifier" to query.assessmentIdentifier,
-          "subject" to query.subject?.id,
-        ).filter { it.value != null }
-        else -> {
-          log.warn("${query::class.simpleName} has not been implemented in the audit service")
-        }
-      },
-    ),
-  ).run(::sendEvent)
+  fun audit(query: Query) = when (query) {
+    is RequestableQuery -> AuditableEvent(
+      who = query.user.id,
+      what = query::class.simpleName ?: "Unknown",
+      service = serviceName,
+      details = json(
+        when (query) {
+          is AssessmentQuery -> mapOf("assessmentIdentifier" to query.assessmentIdentifier)
+          is TimelineQuery -> mapOf(
+            "assessmentIdentifier" to query.assessmentIdentifier,
+            "subject" to query.subject?.id,
+          ).filter { it.value != null }
+        },
+      ),
+    ).run(::sendEvent)
+
+    is SubjectAccessRequestQuery -> AuditableEvent(
+      who = "SAR",
+      what = query::class.simpleName ?: "Unknown",
+      `when` = LocalDateTime.now().intoAuditableTimestamp(),
+      service = serviceName,
+      details = json(
+        mapOf(
+          "subject" to query.assessmentIdentifiers,
+          "from" to query.from,
+          "to" to query.to,
+          "timestamp" to query.timestamp?.intoAuditableTimestamp(),
+        ),
+      ),
+    ).run(::sendEvent)
+    else -> {
+      log.warn("${query::class.simpleName} has not been implemented in the audit service")
+    }
+  }
+
+  fun LocalDateTime.intoAuditableTimestamp(): Instant = atZone(ZoneOffset.systemDefault()).toInstant()
 }
