@@ -1,8 +1,12 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.sentencePlan
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.GroupCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
@@ -33,28 +37,79 @@ class SentencePlanService(
     val goalsCollection = assessment.collections.firstOrNull { it.name == "GOALS" }
       ?: throw IllegalStateException("Sentence plan must have goals collection")
 
+    val now = LocalDateTime.now().toString()
+
     val goalsToRemove = goalsCollection.items
       .filter {
         val status = it.properties["status"] as SingleValue
         status.value == "ACTIVE" || status.value == "FUTURE"
       }
-      .map {
+
+    val goalCommands = goalsToRemove.flatMap { goal ->
+      val notesCollection = goal.collections.firstOrNull { it.name == "NOTES" }
+
+      val createNotesCollection = if (notesCollection == null) {
+        CreateCollectionCommand(
+          name = "NOTES",
+          parentCollectionItemUuid = goal.uuid,
+          user = userDetails,
+          assessmentUuid = assessmentUuid,
+        )
+      } else null
+
+      val notesCollectionUuid = notesCollection?.uuid ?: createNotesCollection!!.collectionUuid
+
+      listOfNotNull(
         UpdateCollectionItemPropertiesCommand(
-          collectionItemUuid = it.uuid,
+          collectionItemUuid = goal.uuid,
           added = mapOf(
             "status" to SingleValue("REMOVED"),
-            "status_date" to SingleValue(LocalDateTime.now().toString()),
+            "status_date" to SingleValue(now),
           ),
           removed = emptyList(),
           user = userDetails,
           assessmentUuid = assessmentUuid,
+        ),
+        UpdateCollectionItemAnswersCommand(
+          collectionItemUuid = goal.uuid,
+          added = emptyMap(),
+          removed = listOf("target_date"),
+          user = userDetails,
+          assessmentUuid = assessmentUuid,
+        ),
+        createNotesCollection,
+        AddCollectionItemCommand(
+          collectionUuid = notesCollectionUuid,
+          answers = mapOf(
+            "note" to SingleValue("Automatically removed as the previous supervision period has ended."),
+            "created_by" to SingleValue("System"),
+          ),
+          properties = mapOf(
+            "type" to SingleValue("REMOVED"),
+            "created_at" to SingleValue(now),
+          ),
+          index = null,
+          user = userDetails,
+          assessmentUuid = assessmentUuid,
+        ),
+      )
+    }
+
+
+    val agreementCommands = assessment.collections
+      .firstOrNull { it.name == "PLAN_AGREEMENTS" }
+      ?.items?.map {
+        RemoveCollectionItemCommand(
+          collectionItemUuid = it.uuid,
+          user = userDetails,
+          assessmentUuid = assessmentUuid,
         )
-      }
+      } ?: emptyList()
 
     GroupCommand(
       user = userDetails,
       assessmentUuid = assessmentUuid,
-      commands = listOf(goalsToRemove).flatten(),
+      commands = listOf(goalCommands, agreementCommands).flatten(),
       timeline = Timeline(
         type = "NEW_PERIOD_OF_SUPERVISION",
         data = mapOf(

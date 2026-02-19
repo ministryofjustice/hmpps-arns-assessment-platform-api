@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
@@ -39,8 +40,8 @@ class SentencePlanController(
       ),
     ],
   )
-  @PreAuthorize("hasAnyRole('ROLE_AAP__COORDINATOR_RW')")
-  fun newPeriodOfSupervision( request: NewPeriodOfSupervisionRequest) {
+  @PreAuthorize("hasAnyAuthority('ROLE_AAP__FRONTEND_RW','ROLE_AAP__COORDINATOR_RW')")
+  fun newPeriodOfSupervision(@RequestBody request: NewPeriodOfSupervisionRequest) {
     sentencePlanService.newPeriodOfSupervision(request.assessmentUuid, request.user)
   }
 }
