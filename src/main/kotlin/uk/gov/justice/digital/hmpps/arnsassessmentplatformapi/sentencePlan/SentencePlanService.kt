@@ -39,6 +39,15 @@ class SentencePlanService(
 
     val now = LocalDateTime.now().toString()
 
+    val forename = (assessment.properties["SUBJECT_FORENAME"] as? SingleValue)?.value
+
+    val noteText = if (!forename.isNullOrBlank()) {
+      "Automatically removed as $forename's previous supervision period has ended."
+    } else {
+      "Automatically removed as the previous supervision period has ended."
+    }
+
+
     val goalsToRemove = goalsCollection.items
       .filter {
         val status = it.properties["status"] as SingleValue
@@ -81,7 +90,7 @@ class SentencePlanService(
         AddCollectionItemCommand(
           collectionUuid = notesCollectionUuid,
           answers = mapOf(
-            "note" to SingleValue("Automatically removed as the previous supervision period has ended."),
+            "note" to SingleValue(noteText),
             "created_by" to SingleValue("System"),
           ),
           properties = mapOf(
