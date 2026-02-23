@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUs
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
 
@@ -28,8 +29,7 @@ class CreateAssessmentCommandHandler(
         identifiers.add(
           AssessmentIdentifierEntity(
             assessment = this,
-            identifierType = it.key,
-            identifier = it.value,
+            externalIdentifier = IdentifierPair(it.key, it.value),
           ),
         )
       }

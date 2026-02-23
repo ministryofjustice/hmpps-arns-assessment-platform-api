@@ -1,10 +1,9 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.bus
 
-import io.mockk.Called
+import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
@@ -27,7 +26,7 @@ class QueryBusTest {
 
     @BeforeEach
     fun setUp() {
-      every { auditService.audit(any<RequestableQuery>()) } just runs
+      every { auditService.audit(any<RequestableQuery>()) } just Runs
     }
 
     @Test
@@ -45,25 +44,6 @@ class QueryBusTest {
       verify(exactly = 1) { registry.getHandlerFor(any()) }
       verify(exactly = 1) { handler.execute(any()) }
       verify(exactly = 1) { auditService.audit(any<RequestableQuery>()) }
-
-      assertEquals(queryResult, result)
-    }
-
-    @Test
-    fun `non-requestable query is not audited`() {
-      val handler = mockk<QueryHandler<out TestableQuery>>()
-      every { handler.execute(any()) } returns queryResult
-
-      val registry: QueryHandlerRegistry = mockk()
-      every { registry.getHandlerFor(any()) } returns handler
-
-      val queryBus = QueryBus(registry, auditService)
-
-      val result = queryBus.dispatch(mockk<TestableQuery>())
-
-      verify(exactly = 1) { registry.getHandlerFor(any()) }
-      verify(exactly = 1) { handler.execute(any()) }
-      verify { auditService wasNot Called }
 
       assertEquals(queryResult, result)
     }

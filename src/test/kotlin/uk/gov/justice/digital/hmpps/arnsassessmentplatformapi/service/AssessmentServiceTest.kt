@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.Assess
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
@@ -73,7 +74,10 @@ class AssessmentServiceTest {
   @Nested
   inner class FindByExternalIdentifier {
     val assessment = AssessmentEntity(type = "TEST")
-    val identifier = AssessmentIdentifierEntity(identifierType = IdentifierType.CRN, identifier = "CRN123", assessment = assessment)
+    val identifier = AssessmentIdentifierEntity(
+      externalIdentifier = IdentifierPair(IdentifierType.CRN, "CRN123"),
+      assessment = assessment,
+    )
 
     val externalIdentifier = ExternalIdentifier(
       identifierType = IdentifierType.CRN,
@@ -84,7 +88,7 @@ class AssessmentServiceTest {
     @Test
     fun `it finds and returns the assessment`() {
       every {
-        assessmentIdentifierRepository.findByIdentifierTypeAndIdentifierAndAssessmentType(
+        assessmentIdentifierRepository.findByExternalIdentifierTypeAndExternalIdentifierIdAndAssessmentType(
           type = IdentifierType.CRN,
           identifier = "CRN123",
           assessmentType = "TEST",
@@ -99,7 +103,7 @@ class AssessmentServiceTest {
     @Test
     fun `it throws when unable to find the assessment`() {
       every {
-        assessmentIdentifierRepository.findByIdentifierTypeAndIdentifierAndAssessmentType(
+        assessmentIdentifierRepository.findByExternalIdentifierTypeAndExternalIdentifierIdAndAssessmentType(
           type = IdentifierType.CRN,
           identifier = "CRN123",
           assessmentType = "TEST",
