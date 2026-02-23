@@ -47,7 +47,6 @@ class SentencePlanService(
       "Automatically removed as the previous supervision period has ended."
     }
 
-
     val goalsToRemove = goalsCollection.items
       .filter {
         val status = it.properties["status"] as SingleValue
@@ -64,7 +63,9 @@ class SentencePlanService(
           user = userDetails,
           assessmentUuid = assessmentUuid,
         )
-      } else null
+      } else {
+        null
+      }
 
       val notesCollectionUuid = notesCollection?.uuid ?: createNotesCollection!!.collectionUuid
 
@@ -103,7 +104,6 @@ class SentencePlanService(
         ),
       )
     }
-
 
     val agreementCommands = assessment.collections
       .firstOrNull { it.name == "PLAN_AGREEMENTS" }

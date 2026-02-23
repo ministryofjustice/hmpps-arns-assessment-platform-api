@@ -211,7 +211,6 @@ class SentencePlanServiceTest {
       assertThat(createCollectionCommands.first().parentCollectionItemUuid).isEqualTo(goalWithoutNotes.uuid)
       assertThat(addItemCommands).hasSize(1)
       assertThat(groupCommand.commands).hasSize(4)
-
     }
 
     @Test
@@ -255,6 +254,4 @@ class SentencePlanServiceTest {
       assertThat(noteValue.value).isEqualTo("Automatically removed as the previous supervision period has ended.")
     }
   }
-
-
 }

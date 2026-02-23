@@ -15,8 +15,7 @@ import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestController
 class SentencePlanController(
-        private val sentencePlanService: SentencePlanService
-
+  private val sentencePlanService: SentencePlanService,
 ) {
   @RequestMapping(path = ["/plan/start-new-period-of-supervision"], method = [RequestMethod.POST])
   @Operation(description = "Starts a new period of supervision for a Sentence Plan, removes Active and Future Goals")
