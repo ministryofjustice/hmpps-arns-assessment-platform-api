@@ -20,7 +20,6 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
   override val handler = CollectionItemQueryHandler::class
 
   val uuid = (1..10).map { UUID.randomUUID() }
-  val now: LocalDateTime = LocalDateTime.now()
 
   val allCollections = listOf(
     Collection(
@@ -258,7 +257,7 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
   }
 
   override fun assertSuccessMockCallCount() {
-    verify(exactly = 1) { assessmentService.findBy(UuidIdentifier(assessment.uuid)) }
+    verify(exactly = 1) { assessmentService.findBy(UuidIdentifier(assessment.uuid), now) }
     verify(exactly = 1) { state.getForRead() }
     verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, any()) }
     verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }

@@ -10,7 +10,7 @@ class DailyVersionsQueryHandler(
 ) : QueryHandler<DailyVersionsQuery> {
   override val type = DailyVersionsQuery::class
 
-  override fun handle(query: DailyVersionsQuery) = services.assessment.findBy(query.assessmentIdentifier).uuid
+  override fun handle(query: DailyVersionsQuery) = services.assessment.findBy(query.assessmentIdentifier, services.clock.now()).uuid
     .run(services.timeline::findDailyVersions)
     .let { DailyVersionsQueryResult(it) }
 }

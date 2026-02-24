@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.DailyVersionDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
@@ -24,12 +25,14 @@ import java.util.UUID
 class DailyVersionsQueryHandlerTest {
   val assessmentService: AssessmentService = mockk()
   val timelineService: TimelineService = mockk()
+  val clock: Clock = mockk()
 
   val services = QueryHandlerServiceBundle(
     assessment = assessmentService,
     state = mockk(),
     userDetails = mockk(),
     timeline = timelineService,
+    clock = clock,
   )
 
   val handler = DailyVersionsQueryHandler(services)
@@ -57,6 +60,7 @@ class DailyVersionsQueryHandlerTest {
   @BeforeEach
   fun setup() {
     clearAllMocks()
+    every { clock.now() } returns now
   }
 
   @ParameterizedTest
@@ -67,7 +71,7 @@ class DailyVersionsQueryHandlerTest {
     } returns dailyVersions
 
     every {
-      services.assessment.findBy(identifier)
+      services.assessment.findBy(identifier, now)
     } returns assessment
 
     val query = DailyVersionsQuery(
@@ -94,7 +98,7 @@ class DailyVersionsQueryHandlerTest {
     } returns emptyList()
 
     every {
-      services.assessment.findBy(identifier)
+      services.assessment.findBy(identifier, now)
     } returns assessment
 
     val query = DailyVersionsQuery(
