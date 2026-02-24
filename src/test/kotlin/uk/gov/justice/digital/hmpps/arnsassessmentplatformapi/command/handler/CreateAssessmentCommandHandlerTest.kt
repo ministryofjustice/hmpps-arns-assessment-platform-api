@@ -10,14 +10,12 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.DuplicateExternalIdentifierException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
@@ -37,7 +35,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventServi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
 import java.util.UUID
 
 class CreateAssessmentCommandHandlerTest {
@@ -115,9 +112,6 @@ class CreateAssessmentCommandHandlerTest {
   @Test
   fun `it handles the command`() {
     val assessment = slot<AssessmentEntity>()
-    every { assessmentService.findBy(any<ExternalIdentifier>()) } answers {
-      throw AssessmentNotFoundException(firstArg())
-    }
     every { assessmentService.save(capture(assessment)) } answers { firstArg() }
 
     val persistedEvent = slot<List<EventEntity<out Event>>>()
@@ -126,7 +120,6 @@ class CreateAssessmentCommandHandlerTest {
     val state: State = mockk()
 
     every { eventBus.handle(capture(handledEvents)) } returns state
-
     every { stateService.persist(state) } just Runs
     every { eventService.saveAll(capture(persistedEvent)) } answers { firstArg() }
     every { userDetailsService.findOrCreate(commandUser) } returns user
@@ -137,7 +130,6 @@ class CreateAssessmentCommandHandlerTest {
 
     val expectedIdentifier = ExternalIdentifier("CRN123", IdentifierType.CRN, "TEST")
 
-    verify(exactly = 1) { assessmentService.findBy(expectedIdentifier) }
     verify(exactly = 1) { assessmentService.save(any<AssessmentEntity>()) }
     verify(exactly = 1) { userDetailsService.findOrCreate(commandUser) }
     verify(exactly = 2) { eventBus.handle(any<EventEntity<out Event>>()) }
@@ -166,30 +158,5 @@ class CreateAssessmentCommandHandlerTest {
     }
 
     assertThat(result).isEqualTo(expectedResult)
-  }
-
-  @Test
-  fun `it throws when the provided identifier already exists`() {
-    val assessment = slot<AssessmentEntity>()
-    every { assessmentService.findBy(any<ExternalIdentifier>()) } answers { AssessmentEntity(type = "TEST") }
-    every { assessmentService.save(capture(assessment)) } answers { firstArg() }
-
-    every { eventBus.handle(any<EventEntity<out Event>>()) } returns mockk()
-    every { stateService.persist(any()) } just Runs
-    every { eventService.save(any<EventEntity<out Event>>()) } answers { firstArg() }
-
-    every { userDetailsService.findOrCreate(commandUser) } returns user
-
-    val exception = assertThrows<DuplicateExternalIdentifierException> { handler.handle(command) }
-
-    val expectedIdentifier = ExternalIdentifier("CRN123", IdentifierType.CRN, "TEST")
-
-    assertThat(exception.developerMessage).isEqualTo("Duplicate identifier: $expectedIdentifier")
-
-    verify(exactly = 1) { assessmentService.findBy(expectedIdentifier) }
-    verify(exactly = 0) { assessmentService.save(any<AssessmentEntity>()) }
-    verify(exactly = 0) { eventBus.handle(any<EventEntity<out Event>>()) }
-    verify(exactly = 0) { stateService.persist(any()) }
-    verify(exactly = 0) { eventService.save(any<EventEntity<out Event>>()) }
   }
 }
