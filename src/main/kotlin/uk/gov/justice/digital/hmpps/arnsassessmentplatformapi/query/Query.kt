@@ -10,6 +10,7 @@ import java.time.LocalDateTime
   JsonSubTypes.Type(value = AssessmentVersionQuery::class, name = "AssessmentVersionQuery"),
   JsonSubTypes.Type(value = CollectionItemQuery::class, name = "CollectionItemQuery"),
   JsonSubTypes.Type(value = CollectionQuery::class, name = "CollectionQuery"),
+  JsonSubTypes.Type(value = DailyVersionsQuery::class, name = "DailyVersionsQuery"),
 )
 sealed interface Query {
   val timestamp: LocalDateTime?

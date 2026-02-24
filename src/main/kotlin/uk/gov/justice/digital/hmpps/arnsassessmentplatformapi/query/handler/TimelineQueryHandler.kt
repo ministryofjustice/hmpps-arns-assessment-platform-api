@@ -15,7 +15,7 @@ class TimelineQueryHandler(
 
   override fun handle(query: TimelineQuery) = services.timeline.findAll(
     TimelineCriteria(
-      assessmentUuid = query.assessmentIdentifier?.let { services.assessment.findBy(it).uuid },
+      assessmentUuid = query.assessmentIdentifier?.let { services.assessment.findBy(it, services.clock.now()).uuid },
       userUuid = query.subject?.let { services.userDetails.find(it).uuid },
       from = query.from,
       to = query.to,

@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.TestableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.User
@@ -38,12 +39,14 @@ class TimelineQueryHandlerTest {
   val stateService: StateService = mockk()
   val userDetailsService: UserDetailsService = mockk()
   val timelineService: TimelineService = mockk()
+  val clock: Clock = mockk()
 
   val services = QueryHandlerServiceBundle(
     assessment = assessmentService,
     state = stateService,
     userDetails = userDetailsService,
     timeline = timelineService,
+    clock = clock,
   )
   val handler = TimelineQueryHandler(services)
 
@@ -72,6 +75,7 @@ class TimelineQueryHandlerTest {
   @BeforeEach
   fun setup() {
     clearAllMocks()
+    every { clock.now() } returns now
   }
 
   @Nested
@@ -103,7 +107,7 @@ class TimelineQueryHandlerTest {
       } returns timelinePage
 
       every {
-        services.assessment.findBy(identifier)
+        services.assessment.findBy(identifier, any())
       } returns assessment
 
       val query = TimelineQuery(
@@ -163,7 +167,7 @@ class TimelineQueryHandlerTest {
       } returns timelinePage
 
       every {
-        services.assessment.findBy(identifier)
+        services.assessment.findBy(identifier, any())
       } returns assessment
 
       val query = TimelineQuery(
@@ -228,7 +232,7 @@ class TimelineQueryHandlerTest {
       } returns timelinePage
 
       every {
-        services.assessment.findBy(identifier)
+        services.assessment.findBy(identifier, now)
       } returns assessment
 
       val query = TimelineQuery(
@@ -288,7 +292,7 @@ class TimelineQueryHandlerTest {
       } returns timelinePage
 
       every {
-        services.assessment.findBy(identifier)
+        services.assessment.findBy(identifier, now)
       } returns assessment
 
       val query = TimelineQuery(

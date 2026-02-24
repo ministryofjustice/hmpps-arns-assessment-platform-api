@@ -4,15 +4,14 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.DuplicateExternalIdentifierException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUserEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
 
 @Component
 class CreateAssessmentCommandHandler(
@@ -28,18 +27,9 @@ class CreateAssessmentCommandHandler(
         identifiers.add(
           AssessmentIdentifierEntity(
             assessment = this,
-            identifierType = it.key,
-            identifier = it.value,
+            externalIdentifier = IdentifierPair(it.key, it.value),
           ),
         )
-      }
-    }
-
-    assessment.identifiers.forEach {
-      try {
-        services.assessment.findBy(it.toIdentifier())
-        throw DuplicateExternalIdentifierException(it.toIdentifier())
-      } catch (_: AssessmentNotFoundException) {
       }
     }
 
@@ -55,6 +45,7 @@ class CreateAssessmentCommandHandler(
         data = AssessmentCreatedEvent(
           formVersion = formVersion,
           properties = properties ?: emptyMap(),
+          flags = flags,
         ),
       )
     }

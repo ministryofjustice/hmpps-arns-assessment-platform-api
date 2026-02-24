@@ -1,0 +1,110 @@
+<h1>Assess Risks and Needs</h1>
+
+{{#results}}
+    <section>
+        <h2>{{assessmentType}}</h2>
+
+        <!-- Summary -->
+        <section>
+            <h3>Assessment summary</h3>
+            <dl>
+                <dt>Created at</dt>
+                <dd>{{createdAt}}</dd>
+
+                <dt>Updated at</dt>
+                <dd>{{updatedAt}}</dd>
+            </dl>
+        </section>
+
+        <!-- Answers + Properties -->
+        {{#hasAnswersOrProperties}}
+            <section>
+                <h3>Assessment answers</h3>
+
+                <dl>
+                    {{#answers}}
+                        <dt>{{key}}</dt>
+                        <dd>
+                            {{#hasSingle}}{{single}}{{/hasSingle}}
+
+                            {{#hasMultiple}}
+                                <ul>
+                                    {{#multiple}}
+                                        <li>{{.}}</li>
+                                    {{/multiple}}
+                                </ul>
+                            {{/hasMultiple}}
+                        </dd>
+                    {{/answers}}
+
+                    {{#properties}}
+                        <dt>{{key}}</dt>
+                        <dd>
+                            {{#hasSingle}}{{single}}{{/hasSingle}}
+
+                            {{#hasMultiple}}
+                                <ul>
+                                    {{#multiple}}
+                                        <li>{{.}}</li>
+                                    {{/multiple}}
+                                </ul>
+                            {{/hasMultiple}}
+                        </dd>
+                    {{/properties}}
+                </dl>
+            </section>
+        {{/hasAnswersOrProperties}}
+
+        <!-- Collections -->
+        {{#collections}}
+            <section>
+                <h3>{{name}}</h3>
+
+                <ul>
+                    {{#items}}
+                        <section>
+                            <h4>{{name}}</h4>
+
+                            <dl>
+                                {{#answers}}
+                                    <dt>{{key}}</dt>
+                                    <dd>
+                                        {{#hasSingle}}{{single}}{{/hasSingle}}
+
+                                        {{#hasMultiple}}
+                                            <ul>
+                                                {{#multiple}}
+                                                    <li>{{.}}</li>
+                                                {{/multiple}}
+                                            </ul>
+                                        {{/hasMultiple}}
+                                    </dd>
+                                {{/answers}}
+
+                                {{#properties}}
+                                    <dt>{{key}}</dt>
+                                    <dd>
+                                        {{#hasSingle}}{{single}}{{/hasSingle}}
+
+                                        {{#hasMultiple}}
+                                            <ul>
+                                                {{#multiple}}
+                                                    <li>{{.}}</li>
+                                                {{/multiple}}
+                                            </ul>
+                                        {{/hasMultiple}}
+                                    </dd>
+                                {{/properties}}
+                            </dl>
+                        </section>
+                    {{/items}}
+                </ul>
+            </section>
+        {{/collections}}
+
+    </section>
+{{/results}}
+
+{{^results}}
+    <p>No assessments available.</p>
+{{/results}}

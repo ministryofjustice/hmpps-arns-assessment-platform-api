@@ -59,3 +59,9 @@ app:
   services:
     hmpps-auth:
       url: ${hmpps-auth.url:http://localhost:8090/auth}
+
+hmpps:
+  sar:
+    template:
+      path: /sar/templates/sar_template.mustache
+      enabled: true

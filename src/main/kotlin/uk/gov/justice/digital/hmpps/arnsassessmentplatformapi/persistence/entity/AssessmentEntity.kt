@@ -33,5 +33,5 @@ class AssessmentEntity(
   @OneToMany(mappedBy = "assessment", fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL])
   val identifiers: MutableList<AssessmentIdentifierEntity> = mutableListOf(),
 ) {
-  fun identifiersMap() = identifiers.associate { it.identifierType to it.identifier }
+  fun identifiersMap() = identifiers.associate { it.externalIdentifier.type to it.externalIdentifier.id }
 }

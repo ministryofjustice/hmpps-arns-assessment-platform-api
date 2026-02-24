@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.QueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
@@ -16,6 +17,7 @@ class QueryHandlerServiceBundle(
   val state: StateService,
   val userDetails: UserDetailsService,
   val timeline: TimelineService,
+  val clock: Clock,
 )
 
 interface QueryHandler<C : Query> {

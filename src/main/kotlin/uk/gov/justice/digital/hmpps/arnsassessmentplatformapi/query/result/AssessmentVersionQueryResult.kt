@@ -22,4 +22,5 @@ data class AssessmentVersionQueryResult(
   val collaborators: Set<User>,
   val identifiers: Map<IdentifierType, String>,
   val assignedUser: User?,
+  val flags: List<String> = emptyList(),
 ) : QueryResult

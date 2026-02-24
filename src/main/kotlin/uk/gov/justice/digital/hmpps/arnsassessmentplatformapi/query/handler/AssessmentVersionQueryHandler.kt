@@ -13,7 +13,7 @@ class AssessmentVersionQueryHandler(
 ) : QueryHandler<AssessmentVersionQuery> {
   override val type = AssessmentVersionQuery::class
   override fun handle(query: AssessmentVersionQuery): AssessmentVersionQueryResult {
-    val assessment = services.assessment.findBy(query.assessmentIdentifier)
+    val assessment = services.assessment.findBy(query.assessmentIdentifier, services.clock.now())
 
     val state = services.state.stateForType(AssessmentAggregate::class)
       .fetchOrCreateState(assessment, query.timestamp) as AssessmentState
@@ -42,6 +42,7 @@ class AssessmentVersionQueryHandler(
       collaborators = collaborators,
       identifiers = assessment.identifiersMap(),
       assignedUser = assignedUser,
+      flags = data.flags,
     )
   }
 }

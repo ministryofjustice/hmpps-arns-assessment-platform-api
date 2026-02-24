@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
+import io.mockk.verify
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
@@ -19,7 +20,6 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
   override val handler = CollectionQueryHandler::class
 
   val uuid = (1..10).map { UUID.randomUUID() }
-  val now: LocalDateTime = LocalDateTime.now()
 
   val allCollections = listOf(
     Collection(
@@ -270,5 +270,12 @@ class CollectionQueryHandlerTest : AbstractQueryHandlerTest() {
     )
 
     testThrows(query, aggregate, CollectionDepthOutOfBoundsException(query.depth, query.collectionUuid))
+  }
+
+  override fun assertSuccessMockCallCount() {
+    verify(exactly = 1) { assessmentService.findBy(UuidIdentifier(assessment.uuid), now) }
+    verify(exactly = 1) { state.getForRead() }
+    verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, any()) }
+    verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
   }
 }
