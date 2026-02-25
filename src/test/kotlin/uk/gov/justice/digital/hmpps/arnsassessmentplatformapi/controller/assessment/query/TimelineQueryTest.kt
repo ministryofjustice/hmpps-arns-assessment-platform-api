@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
@@ -76,7 +77,7 @@ class TimelineQueryTest(
       listOf(
         UpdateAssessmentAnswersCommand(
           user = user,
-          assessmentUuid = assessmentUuid,
+          assessmentUuid = assessmentUuid.toReference(),
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = listOf(),
           timeline = Timeline(
@@ -86,7 +87,7 @@ class TimelineQueryTest(
         ),
         UpdateAssessmentPropertiesCommand(
           user = user,
-          assessmentUuid = assessmentUuid,
+          assessmentUuid = assessmentUuid.toReference(),
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = listOf(),
           timeline = Timeline(

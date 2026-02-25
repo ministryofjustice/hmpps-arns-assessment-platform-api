@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 
@@ -14,7 +15,7 @@ class UpdateAssessmentPropertiesCommandHandlerTest : AbstractCommandHandlerTest<
     ).apply {
       command = UpdateAssessmentPropertiesCommand(
         user = commandUser,
-        assessmentUuid = assessment.uuid,
+        assessmentUuid = assessment.uuid.toReference(),
         added = mapOf("foo" to SingleValue("bar")),
         removed = listOf("baz"),
         timeline = timeline,

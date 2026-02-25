@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateCollectionCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -80,7 +81,7 @@ class CreateCollectionCommandTest(
       commands = listOf(
         CreateCollectionCommand(
           user = testUserDetails,
-          assessmentUuid = assessmentEntity.uuid,
+          assessmentUuid = assessmentEntity.uuid.toReference(),
           name = "NEW_COLLECTION",
           parentCollectionItemUuid = null,
           timeline = null,
@@ -173,9 +174,9 @@ class CreateCollectionCommandTest(
       commands = listOf(
         CreateCollectionCommand(
           user = testUserDetails,
-          assessmentUuid = assessmentEntity.uuid,
+          assessmentUuid = assessmentEntity.uuid.toReference(),
           name = "NEW_CHILD_COLLECTION",
-          parentCollectionItemUuid = collectionItemUuid,
+          parentCollectionItemUuid = collectionItemUuid.toReference(),
           timeline = null,
         ),
       ),

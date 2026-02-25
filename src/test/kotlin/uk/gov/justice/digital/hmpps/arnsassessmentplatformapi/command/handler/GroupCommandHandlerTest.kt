@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateForm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.GroupCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
@@ -63,17 +64,17 @@ class GroupCommandHandlerTest {
 
   val command = GroupCommand(
     user = commandUser,
-    assessmentUuid = assessment.uuid,
+    assessmentUuid = assessment.uuid.toReference(),
     commands = listOf(
       UpdateAssessmentAnswersCommand(
         user = commandUser,
-        assessmentUuid = assessment.uuid,
+        assessmentUuid = assessment.uuid.toReference(),
         added = mapOf(),
         removed = listOf(),
       ),
       UpdateFormVersionCommand(
         user = commandUser,
-        assessmentUuid = assessment.uuid,
+        assessmentUuid = assessment.uuid.toReference(),
         version = "1.2",
       ),
     ),

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.scena
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
@@ -43,7 +44,7 @@ class AggregateCreationTest : IntegrationTestBase() {
       command(
         UpdateAssessmentAnswersCommand(
           user = testUserDetails,
-          assessmentUuid = assessmentUuid,
+          assessmentUuid = assessmentUuid.toReference(),
           added = mapOf("event-$i" to SingleValue("answer-$i")),
           removed = emptyList(),
         ),

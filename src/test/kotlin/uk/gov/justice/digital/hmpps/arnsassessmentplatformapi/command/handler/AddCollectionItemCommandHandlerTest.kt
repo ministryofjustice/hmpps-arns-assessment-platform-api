@@ -4,6 +4,7 @@ import io.mockk.every
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.AddCollectionItemCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAddedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import java.util.UUID
@@ -19,18 +20,18 @@ class AddCollectionItemCommandHandlerTest : AbstractCommandHandlerTest<AddCollec
       name = "It handles the command",
     ).apply {
       command = AddCollectionItemCommand(
-        collectionUuid = collectionUuid,
+        collectionUuid = collectionUuid.toReference(),
         answers = mapOf("foo" to SingleValue("bar")),
         properties = mapOf("bar" to SingleValue("baz")),
         index = 2,
         user = commandUser,
-        assessmentUuid = assessment.uuid,
+        assessmentUuid = assessment.uuid.toReference(),
         timeline = timeline,
       )
 
       expectedEvent = CollectionItemAddedEvent(
         collectionItemUuid = command.collectionItemUuid,
-        collectionUuid = command.collectionUuid,
+        collectionUuid = command.collectionUuid.value,
         answers = command.answers,
         properties = command.properties,
         index = command.index,
@@ -46,11 +47,11 @@ class AddCollectionItemCommandHandlerTest : AbstractCommandHandlerTest<AddCollec
       setupMocks = { every { assessmentAggregate.getCollection(any()) } returns null }
       command = AddCollectionItemCommand(
         user = commandUser,
-        assessmentUuid = assessment.uuid,
+        assessmentUuid = assessment.uuid.toReference(),
         answers = mapOf("foo" to SingleValue("bar")),
         properties = mapOf("bar" to SingleValue("baz")),
         timeline = timeline,
-        collectionUuid = collectionUuid,
+        collectionUuid = collectionUuid.toReference(),
         index = 0,
       )
       expectedException = CollectionNotFoundException::class

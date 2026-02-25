@@ -4,6 +4,7 @@ import io.mockk.every
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import java.util.UUID
@@ -17,14 +18,14 @@ class UpdateCollectionItemPropertiesCommandHandlerTest : AbstractCommandHandlerT
     ).apply {
       command = UpdateCollectionItemPropertiesCommand(
         user = commandUser,
-        assessmentUuid = assessment.uuid,
-        collectionItemUuid = UUID.randomUUID(),
+        assessmentUuid = assessment.uuid.toReference(),
+        collectionItemUuid = UUID.randomUUID().toReference(),
         added = mapOf("foo" to SingleValue("foo_value")),
         removed = listOf("bar"),
         timeline = timeline,
       )
       expectedEvent = CollectionItemPropertiesUpdatedEvent(
-        collectionItemUuid = command.collectionItemUuid,
+        collectionItemUuid = command.collectionItemUuid.value,
         added = command.added,
         removed = command.removed,
       )
@@ -36,8 +37,8 @@ class UpdateCollectionItemPropertiesCommandHandlerTest : AbstractCommandHandlerT
       setupMocks = { every { assessmentAggregate.getCollectionWithItem(any()) } returns null }
       command = UpdateCollectionItemPropertiesCommand(
         user = commandUser,
-        assessmentUuid = assessment.uuid,
-        collectionItemUuid = UUID.randomUUID(),
+        assessmentUuid = assessment.uuid.toReference(),
+        collectionItemUuid = UUID.randomUUID().toReference(),
         added = mapOf("foo" to SingleValue("foo_value")),
         removed = listOf("bar"),
       )

@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -152,8 +153,8 @@ class UpdateCollectionItemPropertiesCommandTest(
       commands = listOf(
         UpdateCollectionItemPropertiesCommand(
           user = testUserDetails,
-          assessmentUuid = assessmentEntity.uuid,
-          collectionItemUuid = collectionItemToBeUpdatedUuid,
+          assessmentUuid = assessmentEntity.uuid.toReference(),
+          collectionItemUuid = collectionItemToBeUpdatedUuid.toReference(),
           added = mutableMapOf("prop" to SingleValue("updated")),
           removed = listOf("prop_to_remove"),
           timeline = null,

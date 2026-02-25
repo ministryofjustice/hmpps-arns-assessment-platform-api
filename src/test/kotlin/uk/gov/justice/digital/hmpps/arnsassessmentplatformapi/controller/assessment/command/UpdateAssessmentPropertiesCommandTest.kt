@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -93,7 +94,7 @@ class UpdateAssessmentPropertiesCommandTest(
       commands = listOf(
         UpdateAssessmentPropertiesCommand(
           user = testUserDetails,
-          assessmentUuid = assessmentEntity.uuid,
+          assessmentUuid = assessmentEntity.uuid.toReference(),
           added = mapOf("foo" to SingleValue("updated_foo_value"), "baz" to SingleValue("baz_value")),
           removed = listOf("bar"),
         ),

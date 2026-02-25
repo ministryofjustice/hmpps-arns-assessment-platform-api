@@ -19,9 +19,9 @@ class UpdateCollectionItemPropertiesCommandHandler(
     val event = with(command) {
       EventEntity(
         user = services.userDetails.findOrCreate(user),
-        assessment = services.assessment.findBy(assessmentUuid),
+        assessment = services.assessment.findBy(assessmentUuid.value),
         data = CollectionItemPropertiesUpdatedEvent(
-          collectionItemUuid = collectionItemUuid,
+          collectionItemUuid = collectionItemUuid.value,
           added = added,
           removed = removed,
         ),
@@ -31,8 +31,8 @@ class UpdateCollectionItemPropertiesCommandHandler(
     val collection = services.eventBus.handle(event)
       .also { updatedState -> services.state.persist(updatedState) }
       .run { get(AssessmentAggregate::class) as AssessmentState }
-      .getForRead().data.getCollectionWithItem(command.collectionItemUuid)
-      ?: throw CollectionItemNotFoundException(command.collectionItemUuid)
+      .getForRead().data.getCollectionWithItem(command.collectionItemUuid.value)
+      ?: throw CollectionItemNotFoundException(command.collectionItemUuid.value)
 
     services.event.save(event)
     services.timeline.save(
@@ -41,7 +41,7 @@ class UpdateCollectionItemPropertiesCommandHandler(
         event,
         mapOf(
           "collection" to collection.name,
-          "index" to collection.findItem(command.collectionItemUuid).run(collection.items::indexOf),
+          "index" to collection.findItem(command.collectionItemUuid.value).run(collection.items::indexOf),
           "added" to command.added.keys,
           "removed" to command.removed,
         ),

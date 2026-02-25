@@ -96,7 +96,7 @@ class CreateAssessmentCommandHandlerTest {
   )
 
   val expectedResult = CreateAssessmentCommandResult(
-    assessmentUuid = command.assessmentUuid,
+    assessmentUuid = command.assessmentUuid.value,
   )
 
   @BeforeEach
@@ -136,7 +136,7 @@ class CreateAssessmentCommandHandlerTest {
     verify(exactly = 2) { stateService.persist(state) }
     verify(exactly = 1) { eventService.saveAll(any<List<EventEntity<out Event>>>()) }
 
-    assertThat(assessment.captured.uuid).isEqualTo(command.assessmentUuid)
+    assertThat(assessment.captured.uuid).isEqualTo(command.assessmentUuid.value)
     assertThat(assessment.captured.type).isEqualTo(command.assessmentType)
     assertThat(assessment.captured.identifiers).hasSize(1)
     assessment.captured.identifiers.forEach {

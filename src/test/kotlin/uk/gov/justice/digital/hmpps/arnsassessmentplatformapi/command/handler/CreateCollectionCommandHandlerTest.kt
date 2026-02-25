@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateCollectionCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionCreatedEvent
 import java.util.UUID
 
@@ -15,14 +16,14 @@ class CreateCollectionCommandHandlerTest : AbstractCommandHandlerTest<CreateColl
       command = CreateCollectionCommand(
         user = commandUser,
         name = "TEST_COLLECTION",
-        parentCollectionItemUuid = UUID.randomUUID(),
-        assessmentUuid = assessment.uuid,
+        parentCollectionItemUuid = UUID.randomUUID().toReference(),
+        assessmentUuid = assessment.uuid.toReference(),
         timeline = timeline,
       )
       expectedEvent = CollectionCreatedEvent(
         collectionUuid = command.collectionUuid,
         name = command.name,
-        parentCollectionItemUuid = command.parentCollectionItemUuid,
+        parentCollectionItemUuid = command.parentCollectionItemUuid?.value,
       )
       expectedResult = CreateCollectionCommandResult(
         collectionUuid = command.collectionUuid,

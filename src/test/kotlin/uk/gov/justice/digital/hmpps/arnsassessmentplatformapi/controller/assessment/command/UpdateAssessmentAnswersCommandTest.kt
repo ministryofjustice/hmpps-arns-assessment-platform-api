@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
@@ -122,7 +123,7 @@ class UpdateAssessmentAnswersCommandTest(
 
     val expectedCommandRequest = UpdateAssessmentAnswersCommand(
       user = UserDetails(id = "test-user", name = "Test User"),
-      assessmentUuid = assessmentEntity.uuid,
+      assessmentUuid = assessmentEntity.uuid.toReference(),
       added = mapOf("foo" to SingleValue("updated_foo_value"), "baz" to MultiValue.of("baz_value_1", "baz_value_2")),
       removed = listOf("bar"),
     )

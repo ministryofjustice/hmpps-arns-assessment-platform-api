@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidCommandException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import java.util.UUID
@@ -15,7 +16,7 @@ class CommandsRequestTest {
   fun `it creates`() {
     val updateAnswersCommand = UpdateAssessmentAnswersCommand(
       user = UserDetails("test-user", "Test User"),
-      assessmentUuid = UUID.randomUUID(),
+      assessmentUuid = UUID.randomUUID().toReference(),
       added = mapOf("foo" to SingleValue("foo_value")),
       removed = emptyList(),
     )

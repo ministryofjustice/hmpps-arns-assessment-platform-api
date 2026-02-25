@@ -20,6 +20,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Requestabl
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentQuery
@@ -147,7 +148,7 @@ class AuditServiceTest {
     fun provideAuditable(): Stream<Any> = Stream.of(
       UpdateAssessmentPropertiesCommand(
         user = user,
-        assessmentUuid = assessmentUuid,
+        assessmentUuid = assessmentUuid.toReference(),
         added = mapOf("STATUS" to SingleValue("TEST_STATUS")),
         removed = emptyList(),
         timeline = null,

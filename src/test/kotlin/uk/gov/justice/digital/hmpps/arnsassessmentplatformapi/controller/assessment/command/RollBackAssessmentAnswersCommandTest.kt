@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollbackCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -110,7 +111,7 @@ class RollBackAssessmentAnswersCommandTest(
       commands = listOf(
         RollbackCommand(
           user = testUserDetails,
-          assessmentUuid = assessmentEntity.uuid,
+          assessmentUuid = assessmentEntity.uuid.toReference(),
           pointInTime = LocalDateTime.parse("2025-01-01T13:00:00"),
         ),
       ),
@@ -151,7 +152,7 @@ class RollBackAssessmentAnswersCommandTest(
       commands = listOf(
         RollbackCommand(
           user = testUserDetails,
-          assessmentUuid = assessmentEntity.uuid,
+          assessmentUuid = assessmentEntity.uuid.toReference(),
           pointInTime = LocalDateTime.parse("2025-01-02T10:00:00"),
         ),
       ),

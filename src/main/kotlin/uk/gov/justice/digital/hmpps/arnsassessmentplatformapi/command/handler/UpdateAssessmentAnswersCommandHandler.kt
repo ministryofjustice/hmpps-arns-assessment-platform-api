@@ -16,7 +16,7 @@ class UpdateAssessmentAnswersCommandHandler(
     val event = with(command) {
       EventEntity(
         user = services.userDetails.findOrCreate(user),
-        assessment = services.assessment.findBy(assessmentUuid),
+        assessment = services.assessment.findBy(assessmentUuid.value),
         data = AssessmentAnswersUpdatedEvent(
           added = added,
           removed = removed,
