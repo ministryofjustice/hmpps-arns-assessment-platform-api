@@ -1,15 +1,19 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.getUuidAt
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandResponse
 import java.util.UUID
 
-data class Reference @JsonCreator(mode = JsonCreator.Mode.DELEGATING) constructor(
+data class Reference
+@JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+constructor(
   @get:JsonValue
-  private val rawValue: String,
+  val rawValue: String,
 ) {
+  @JsonIgnore
   lateinit var value: UUID
 
   fun resolve(context: List<CommandResponse>) {

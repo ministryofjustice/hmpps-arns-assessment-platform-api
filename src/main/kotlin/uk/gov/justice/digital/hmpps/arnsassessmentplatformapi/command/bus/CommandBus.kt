@@ -56,7 +56,7 @@ fun Command.resolvePlaceholders(context: List<CommandResponse>) {
     .filter { it.returnType.classifier == Reference::class }
     .forEach { prop ->
       prop.isAccessible = true
-      val value = prop.get(this) as Reference
-      value.resolve(context)
+      val value = prop.get(this) as Reference?
+      value?.resolve(context)
     }
 }

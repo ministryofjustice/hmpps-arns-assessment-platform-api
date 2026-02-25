@@ -77,7 +77,7 @@ class PlaceholderReferenceTest : IntegrationTestBase() {
     val response = command(*commands.toList().toTypedArray())
 
     val assessmentUuid = assertIs<CreateAssessmentCommandResult>(
-      response.commands.find { it.request is CreateAssessmentCommand }?.result
+      response.commands.find { it.request is CreateAssessmentCommand }?.result,
     ).assessmentUuid
 
     val result = assertIs<AssessmentVersionQueryResult>(
