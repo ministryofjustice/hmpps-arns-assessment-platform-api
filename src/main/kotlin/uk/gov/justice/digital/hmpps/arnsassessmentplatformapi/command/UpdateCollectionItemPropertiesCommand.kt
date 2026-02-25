@@ -9,6 +9,6 @@ data class UpdateCollectionItemPropertiesCommand(
   val added: Map<String, Value>,
   val removed: List<String>,
   override val user: UserDetails,
-  override val assessmentUuid: UUID,
+  override val assessmentUuid: Reference,
   override val timeline: Timeline? = null,
 ) : RequestableCommand

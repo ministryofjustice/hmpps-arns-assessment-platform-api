@@ -8,7 +8,7 @@ data class CreateCollectionCommand(
   val name: String,
   val parentCollectionItemUuid: UUID?,
   override val user: UserDetails,
-  override val assessmentUuid: UUID,
+  override val assessmentUuid: Reference,
   override val timeline: Timeline? = null,
 ) : RequestableCommand {
   @JsonIgnore

@@ -6,12 +6,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
 import java.util.UUID
 
 data class AddCollectionItemCommand(
-  val collectionUuid: UUID,
+  val collectionUuid: Reference,
   val answers: Map<String, Value>,
   val properties: Map<String, Value>,
   val index: Int?,
   override val user: UserDetails,
-  override val assessmentUuid: UUID,
+  override val assessmentUuid: Reference,
   override val timeline: Timeline? = null,
 ) : RequestableCommand {
   @JsonIgnore

@@ -2,11 +2,10 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import java.time.LocalDateTime
-import java.util.UUID
 
 data class RollbackCommand(
   override val user: UserDetails,
-  override val assessmentUuid: UUID,
+  override val assessmentUuid: Reference,
   val pointInTime: LocalDateTime,
   override val timeline: Timeline? = null,
 ) : RequestableCommand

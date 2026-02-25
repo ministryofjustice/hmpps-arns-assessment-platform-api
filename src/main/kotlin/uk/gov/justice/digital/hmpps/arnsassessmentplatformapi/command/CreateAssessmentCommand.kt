@@ -17,5 +17,5 @@ data class CreateAssessmentCommand(
   override val timeline: Timeline? = null,
 ) : RequestableCommand {
   @JsonIgnore
-  override val assessmentUuid: UUID = UUID.randomUUID()
+  override val assessmentUuid: Reference = Reference.Uuid(UUID.randomUUID())
 }

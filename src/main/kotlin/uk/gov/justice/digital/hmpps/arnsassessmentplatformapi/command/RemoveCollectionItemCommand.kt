@@ -6,6 +6,6 @@ import java.util.UUID
 data class RemoveCollectionItemCommand(
   val collectionItemUuid: UUID,
   override val user: UserDetails,
-  override val assessmentUuid: UUID,
+  override val assessmentUuid: Reference,
   override val timeline: Timeline? = null,
 ) : RequestableCommand
