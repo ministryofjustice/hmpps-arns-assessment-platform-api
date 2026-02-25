@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common
 
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.getUuidAt
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandResponse
 import java.util.UUID
 
-data class Reference(
+data class Reference @JsonCreator(mode = JsonCreator.Mode.DELEGATING) constructor(
+  @get:JsonValue
   private val rawValue: String,
 ) {
   lateinit var value: UUID
@@ -19,12 +21,6 @@ data class Reference(
   }
 
   fun resolve() = resolve(emptyList())
-
-  companion object {
-    @JvmStatic
-    @JsonCreator
-    fun from(value: String) = Reference(value)
-  }
 }
 
 fun UUID.toReference() = Reference(this.toString()).also { it.resolve() }
