@@ -16,20 +16,20 @@ class RemoveCollectionItemCommandHandler(
 ) : CommandHandler<RemoveCollectionItemCommand> {
   override val type = RemoveCollectionItemCommand::class
   override fun handle(command: RemoveCollectionItemCommand): CommandSuccessCommandResult {
-    val assessment = services.assessment.findBy(command.assessmentUuid)
+    val assessment = services.assessment.findBy(command.assessmentUuid.value)
     val state = services.state
       .stateForType(AssessmentAggregate::class)
       .fetchOrCreateLatestState(assessment) as AssessmentState
     val collection =
-      state.getForRead().data.getCollectionWithItem(command.collectionItemUuid)
-        ?: throw CollectionItemNotFoundException(command.collectionItemUuid)
+      state.getForRead().data.getCollectionWithItem(command.collectionItemUuid.value)
+        ?: throw CollectionItemNotFoundException(command.collectionItemUuid.value)
 
     val event = with(command) {
       EventEntity(
         user = services.userDetails.findOrCreate(user),
-        assessment = services.assessment.findBy(assessmentUuid),
+        assessment = services.assessment.findBy(assessmentUuid.value),
         data = CollectionItemRemovedEvent(
-          collectionItemUuid = collectionItemUuid,
+          collectionItemUuid = collectionItemUuid.value,
         ),
       )
     }
@@ -42,7 +42,7 @@ class RemoveCollectionItemCommandHandler(
         event,
         mapOf(
           "collection" to collection.name,
-          "index" to collection.items.indexOf(collection.findItem(command.collectionItemUuid)),
+          "index" to collection.items.indexOf(collection.findItem(command.collectionItemUuid.value)),
         ),
       ),
     )

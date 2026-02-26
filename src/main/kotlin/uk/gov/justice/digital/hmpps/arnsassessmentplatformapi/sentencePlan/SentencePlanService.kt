@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateColl
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
@@ -59,9 +60,9 @@ class SentencePlanService(
       val createNotesCollection = if (notesCollection == null) {
         CreateCollectionCommand(
           name = "NOTES",
-          parentCollectionItemUuid = goal.uuid,
+          parentCollectionItemUuid = goal.uuid.toReference(),
           user = userDetails,
-          assessmentUuid = assessmentUuid,
+          assessmentUuid = assessmentUuid.toReference(),
         )
       } else {
         null
@@ -71,25 +72,25 @@ class SentencePlanService(
 
       listOfNotNull(
         UpdateCollectionItemPropertiesCommand(
-          collectionItemUuid = goal.uuid,
+          collectionItemUuid = goal.uuid.toReference(),
           added = mapOf(
             "status" to SingleValue("REMOVED"),
             "status_date" to SingleValue(now),
           ),
           removed = emptyList(),
           user = userDetails,
-          assessmentUuid = assessmentUuid,
+          assessmentUuid = assessmentUuid.toReference(),
         ),
         UpdateCollectionItemAnswersCommand(
-          collectionItemUuid = goal.uuid,
+          collectionItemUuid = goal.uuid.toReference(),
           added = emptyMap(),
           removed = listOf("target_date"),
           user = userDetails,
-          assessmentUuid = assessmentUuid,
+          assessmentUuid = assessmentUuid.toReference(),
         ),
         createNotesCollection,
         AddCollectionItemCommand(
-          collectionUuid = notesCollectionUuid,
+          collectionUuid = notesCollectionUuid.toReference(),
           answers = mapOf(
             "note" to SingleValue(noteText),
             "created_by" to SingleValue("System"),
@@ -100,7 +101,7 @@ class SentencePlanService(
           ),
           index = null,
           user = userDetails,
-          assessmentUuid = assessmentUuid,
+          assessmentUuid = assessmentUuid.toReference(),
         ),
       )
     }
@@ -109,15 +110,15 @@ class SentencePlanService(
       .firstOrNull { it.name == "PLAN_AGREEMENTS" }
       ?.items?.map {
         RemoveCollectionItemCommand(
-          collectionItemUuid = it.uuid,
+          collectionItemUuid = it.uuid.toReference(),
           user = userDetails,
-          assessmentUuid = assessmentUuid,
+          assessmentUuid = assessmentUuid.toReference(),
         )
       } ?: emptyList()
 
     GroupCommand(
       user = userDetails,
-      assessmentUuid = assessmentUuid,
+      assessmentUuid = assessmentUuid.toReference(),
       commands = listOf(goalCommands, agreementCommands).flatten(),
       timeline = Timeline(
         type = "NEW_PERIOD_OF_SUPERVISION",

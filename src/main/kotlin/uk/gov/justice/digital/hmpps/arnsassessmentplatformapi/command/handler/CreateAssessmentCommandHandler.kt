@@ -20,7 +20,7 @@ class CreateAssessmentCommandHandler(
   override val type = CreateAssessmentCommand::class
   override fun handle(command: CreateAssessmentCommand): CreateAssessmentCommandResult {
     val assessment = AssessmentEntity(
-      uuid = command.assessmentUuid,
+      uuid = command.assessmentUuid.value,
       type = command.assessmentType,
     ).apply {
       command.identifiers?.forEach {

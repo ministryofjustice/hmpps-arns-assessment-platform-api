@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
@@ -61,7 +62,7 @@ class DailyVersionsQueryTest(
     command(
       UpdateAssessmentAnswersCommand(
         user = testUserDetails,
-        assessmentUuid = assessmentUuid,
+        assessmentUuid = assessmentUuid.toReference(),
         added = mapOf("foo" to SingleValue("foo_value")),
         removed = listOf(),
         timeline = Timeline(
@@ -71,7 +72,7 @@ class DailyVersionsQueryTest(
       ),
       UpdateAssessmentAnswersCommand(
         user = testUserDetails,
-        assessmentUuid = assessmentUuid,
+        assessmentUuid = assessmentUuid.toReference(),
         added = mapOf("bar" to SingleValue("bar_value")),
         removed = listOf(),
         timeline = Timeline(
@@ -81,7 +82,7 @@ class DailyVersionsQueryTest(
       ),
       UpdateAssessmentAnswersCommand(
         user = testUserDetails,
-        assessmentUuid = assessmentUuid,
+        assessmentUuid = assessmentUuid.toReference(),
         added = mapOf("baz" to SingleValue("baz_value")),
         removed = listOf(),
         timeline = Timeline(
@@ -119,7 +120,7 @@ class DailyVersionsQueryTest(
     command(
       UpdateAssessmentAnswersCommand(
         user = testUserDetails,
-        assessmentUuid = assessmentUuid,
+        assessmentUuid = assessmentUuid.toReference(),
         added = mapOf("test" to SingleValue("val")),
         removed = listOf(),
         timeline = Timeline(

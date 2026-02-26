@@ -19,10 +19,10 @@ class AddCollectionItemCommandHandler(
     val event = with(command) {
       EventEntity(
         user = services.userDetails.findOrCreate(user),
-        assessment = services.assessment.findBy(assessmentUuid),
+        assessment = services.assessment.findBy(assessmentUuid.value),
         data = CollectionItemAddedEvent(
           collectionItemUuid,
-          collectionUuid,
+          collectionUuid.value,
           answers,
           properties,
           index,
@@ -33,8 +33,8 @@ class AddCollectionItemCommandHandler(
     val collection = services.eventBus.handle(event)
       .also { updatedState -> services.state.persist(updatedState) }
       .run { get(AssessmentAggregate::class) as AssessmentState }
-      .getForRead().data.getCollection(command.collectionUuid)
-      ?: throw CollectionNotFoundException(command.collectionUuid)
+      .getForRead().data.getCollection(command.collectionUuid.value)
+      ?: throw CollectionNotFoundException(command.collectionUuid.value)
 
     services.event.save(event)
     services.timeline.save(

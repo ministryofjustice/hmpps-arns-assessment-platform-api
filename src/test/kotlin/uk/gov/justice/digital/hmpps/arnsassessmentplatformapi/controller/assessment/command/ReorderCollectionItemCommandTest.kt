@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.ReorderCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -145,8 +146,8 @@ class ReorderCollectionItemCommandTest(
       commands = listOf(
         ReorderCollectionItemCommand(
           user = testUserDetails,
-          assessmentUuid = assessmentEntity.uuid,
-          collectionItemUuid = secondCollectionItemUuid,
+          assessmentUuid = assessmentEntity.uuid.toReference(),
+          collectionItemUuid = secondCollectionItemUuid.toReference(),
           index = 0, // move the second collection item in to the first position
         ),
       ),

@@ -168,11 +168,11 @@ class AssessmentControllerTest(
         queries = listOf(
           AssessmentVersionQuery(
             user = UserDetails("test-user-1", "Test User"),
-            assessmentIdentifier = UuidIdentifier(assessment1.assessmentUuid),
+            assessmentIdentifier = UuidIdentifier(assessment1.assessmentUuid.value),
           ),
           AssessmentVersionQuery(
             user = UserDetails("test-user-2", "Test User"),
-            assessmentIdentifier = UuidIdentifier(assessment2.assessmentUuid),
+            assessmentIdentifier = UuidIdentifier(assessment2.assessmentUuid.value),
           ),
         ),
       )
@@ -196,7 +196,7 @@ class AssessmentControllerTest(
 
       listOf(assessment1, assessment2).forEach { assessment ->
         aggregateRepository.findByAssessmentAndTypeBeforeDate(
-          assessment.assessmentUuid,
+          assessment.assessmentUuid.value,
           AssessmentAggregate::class.simpleName!!,
           Clock.now(),
         ).let { assertThat(it).isNotNull() }
@@ -272,7 +272,7 @@ class AssessmentControllerTest(
           queries = listOf(
             AssessmentVersionQuery(
               user = UserDetails("test-user", "Test User"),
-              assessmentIdentifier = UuidIdentifier(assessment.assessmentUuid),
+              assessmentIdentifier = UuidIdentifier(assessment.assessmentUuid.value),
             ),
           ),
         )

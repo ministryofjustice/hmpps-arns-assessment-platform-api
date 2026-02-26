@@ -16,19 +16,19 @@ class ReorderCollectionItemCommandHandler(
 ) : CommandHandler<ReorderCollectionItemCommand> {
   override val type = ReorderCollectionItemCommand::class
   override fun handle(command: ReorderCollectionItemCommand): CommandSuccessCommandResult {
-    val assessment = services.assessment.findBy(command.assessmentUuid)
+    val assessment = services.assessment.findBy(command.assessmentUuid.value)
     val state = services.state
       .stateForType(AssessmentAggregate::class)
       .fetchOrCreateLatestState(assessment) as AssessmentState
-    val collection = state.getForRead().data.getCollectionWithItem(command.collectionItemUuid)
-      ?: throw CollectionItemNotFoundException(command.collectionItemUuid)
+    val collection = state.getForRead().data.getCollectionWithItem(command.collectionItemUuid.value)
+      ?: throw CollectionItemNotFoundException(command.collectionItemUuid.value)
 
     val event = with(command) {
       EventEntity(
         user = services.userDetails.findOrCreate(user),
-        assessment = services.assessment.findBy(assessmentUuid),
+        assessment = services.assessment.findBy(assessmentUuid.value),
         data = CollectionItemReorderedEvent(
-          collectionItemUuid = collectionItemUuid,
+          collectionItemUuid = collectionItemUuid.value,
           index = command.index,
         ),
       )
@@ -44,7 +44,7 @@ class ReorderCollectionItemCommandHandler(
           "collection" to collection.name,
           "collectionItemUuid" to command.collectionItemUuid,
           "index" to command.index,
-          "previousIndex" to collection.items.indexOf(collection.findItem(command.collectionItemUuid)),
+          "previousIndex" to collection.items.indexOf(collection.findItem(command.collectionItemUuid.value)),
         ),
       ),
     )

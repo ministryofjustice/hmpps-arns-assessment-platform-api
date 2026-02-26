@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.AddCollectionItemCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -101,8 +102,8 @@ class AddCollectionItemCommandTest(
       commands = listOf(
         AddCollectionItemCommand(
           user = testUserDetails,
-          assessmentUuid = assessmentEntity.uuid,
-          collectionUuid = collectionUuid,
+          assessmentUuid = assessmentEntity.uuid.toReference(),
+          collectionUuid = collectionUuid.toReference(),
           answers = mutableMapOf("title" to SingleValue("new_collection")),
           properties = mutableMapOf(),
           index = null,
@@ -238,8 +239,8 @@ class AddCollectionItemCommandTest(
       commands = listOf(
         AddCollectionItemCommand(
           user = testUserDetails,
-          assessmentUuid = assessmentEntity.uuid,
-          collectionUuid = collectionUuid,
+          assessmentUuid = assessmentEntity.uuid.toReference(),
+          collectionUuid = collectionUuid.toReference(),
           answers = mutableMapOf("title" to SingleValue("new_collection")),
           properties = mutableMapOf(),
           index = 1,

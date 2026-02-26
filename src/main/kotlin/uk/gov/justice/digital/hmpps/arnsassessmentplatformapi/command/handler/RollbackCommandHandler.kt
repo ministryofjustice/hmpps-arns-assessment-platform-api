@@ -16,7 +16,7 @@ class RollbackCommandHandler(
     val event = with(command) {
       EventEntity(
         user = services.userDetails.findOrCreate(user),
-        assessment = services.assessment.findBy(assessmentUuid),
+        assessment = services.assessment.findBy(assessmentUuid.value),
         data = AssessmentRolledBackEvent(
           rolledBackTo = command.pointInTime,
         ),

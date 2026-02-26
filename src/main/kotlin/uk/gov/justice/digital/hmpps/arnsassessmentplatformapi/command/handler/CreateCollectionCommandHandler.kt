@@ -16,8 +16,8 @@ class CreateCollectionCommandHandler(
     val event = with(command) {
       EventEntity(
         user = services.userDetails.findOrCreate(user),
-        assessment = services.assessment.findBy(assessmentUuid),
-        data = CollectionCreatedEvent(collectionUuid, name, parentCollectionItemUuid),
+        assessment = services.assessment.findBy(assessmentUuid.value),
+        data = CollectionCreatedEvent(collectionUuid, name, parentCollectionItemUuid?.value),
       )
     }
 

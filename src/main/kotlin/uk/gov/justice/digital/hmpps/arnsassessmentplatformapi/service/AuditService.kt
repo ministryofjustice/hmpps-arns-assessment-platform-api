@@ -56,7 +56,7 @@ class AuditService(
     who = command.user.id,
     what = command::class.simpleName ?: "Unknown",
     service = serviceName,
-    details = json(mapOf("assessmentUuid" to command.assessmentUuid)),
+    details = json(mapOf("assessmentUuid" to command.assessmentUuid.value)),
   ).run(::sendEvent)
 
   fun audit(query: Query) = when (query) {

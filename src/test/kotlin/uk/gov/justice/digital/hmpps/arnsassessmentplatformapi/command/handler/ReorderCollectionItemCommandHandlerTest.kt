@@ -4,6 +4,7 @@ import io.mockk.every
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.ReorderCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemReorderedEvent
 import java.util.UUID
 
@@ -16,13 +17,13 @@ class ReorderCollectionItemCommandHandlerTest : AbstractCommandHandlerTest<Reord
     ).apply {
       command = ReorderCollectionItemCommand(
         user = commandUser,
-        assessmentUuid = assessment.uuid,
-        collectionItemUuid = UUID.randomUUID(),
+        assessmentUuid = assessment.uuid.toReference(),
+        collectionItemUuid = UUID.randomUUID().toReference(),
         index = 0,
         timeline = timeline,
       )
       expectedEvent = CollectionItemReorderedEvent(
-        collectionItemUuid = command.collectionItemUuid,
+        collectionItemUuid = command.collectionItemUuid.value,
         index = command.index,
       )
       expectedResult = CommandSuccessCommandResult()
@@ -33,8 +34,8 @@ class ReorderCollectionItemCommandHandlerTest : AbstractCommandHandlerTest<Reord
       setupMocks = { every { assessmentAggregate.getCollectionWithItem(any()) } returns null }
       command = ReorderCollectionItemCommand(
         user = commandUser,
-        assessmentUuid = assessment.uuid,
-        collectionItemUuid = UUID.randomUUID(),
+        assessmentUuid = assessment.uuid.toReference(),
+        collectionItemUuid = UUID.randomUUID().toReference(),
         index = 0,
         timeline = timeline,
       )

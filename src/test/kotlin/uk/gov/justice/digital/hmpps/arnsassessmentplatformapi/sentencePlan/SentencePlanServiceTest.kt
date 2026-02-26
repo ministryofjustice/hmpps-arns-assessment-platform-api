@@ -149,7 +149,7 @@ class SentencePlanServiceTest {
       assertThat(updateAnswersCommands).allMatch {
         it.removed == listOf("target_date")
       }
-      assertThat(removeItemCommands.first().collectionItemUuid).isEqualTo(agreement.uuid)
+      assertThat(removeItemCommands.first().collectionItemUuid.value).isEqualTo(agreement.uuid)
 
       assertThat(groupCommand.timeline?.type).isEqualTo("NEW_PERIOD_OF_SUPERVISION")
       assertThat(groupCommand.timeline?.data?.get("Goals removed")).isEqualTo(2)
@@ -208,7 +208,7 @@ class SentencePlanServiceTest {
 
       assertThat(createCollectionCommands).hasSize(1)
       assertThat(createCollectionCommands.first().name).isEqualTo("NOTES")
-      assertThat(createCollectionCommands.first().parentCollectionItemUuid).isEqualTo(goalWithoutNotes.uuid)
+      assertThat(createCollectionCommands.first().parentCollectionItemUuid?.value).isEqualTo(goalWithoutNotes.uuid)
       assertThat(addItemCommands).hasSize(1)
       assertThat(groupCommand.commands).hasSize(4)
     }
