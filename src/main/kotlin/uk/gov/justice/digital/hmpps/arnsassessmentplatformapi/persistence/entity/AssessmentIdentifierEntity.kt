@@ -21,6 +21,7 @@ import java.util.UUID
 enum class IdentifierType {
   CRN,
   PRN,
+  NOMIS_ID,
 }
 
 @Embeddable
