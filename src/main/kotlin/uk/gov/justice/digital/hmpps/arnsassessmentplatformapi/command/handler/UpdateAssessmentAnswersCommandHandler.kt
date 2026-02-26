@@ -21,6 +21,7 @@ class UpdateAssessmentAnswersCommandHandler(
           added = added,
           removed = removed,
         ),
+        createdAt = services.clock.now(),
       )
     }
 

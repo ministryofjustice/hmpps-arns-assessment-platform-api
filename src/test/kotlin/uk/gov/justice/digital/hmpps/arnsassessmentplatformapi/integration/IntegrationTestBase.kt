@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration
 
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
@@ -11,6 +13,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
@@ -23,6 +26,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import uk.gov.justice.hmpps.test.kotlin.auth.JwtAuthorisationHelper
+import java.time.LocalDateTime
 
 @ExtendWith(HmppsAuthApiExtension::class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -40,8 +44,11 @@ abstract class IntegrationTestBase {
 
   protected lateinit var testUserDetailsEntity: UserDetailsEntity
 
+  protected val clock: Clock = mockk()
+
   @BeforeAll
   fun setupWebTestClient() {
+    every { clock.now() } answers { LocalDateTime.now() }
     testUserDetailsEntity = userDetailsService.findOrCreate(testUserDetails)
     webTestClient = WebTestClient.bindToServer()
       .baseUrl("http://localhost:$port")
@@ -65,6 +72,16 @@ abstract class IntegrationTestBase {
   }
 
   protected fun command(vararg cmd: RequestableCommand) = webTestClient.post().uri("/command")
+    .header(HttpHeaders.CONTENT_TYPE, "application/json")
+    .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+    .bodyValue(CommandsRequest(cmd.toList()))
+    .exchange()
+    .expectStatus().isEqualTo(HttpStatus.OK)
+    .expectBody(CommandsResponse::class.java)
+    .returnResult()
+    .responseBody!!
+
+  protected fun backdatedCommand(backdateTo: LocalDateTime, vararg cmd: RequestableCommand) = webTestClient.post().uri("/command?backdateTo=$backdateTo")
     .header(HttpHeaders.CONTENT_TYPE, "application/json")
     .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
     .bodyValue(CommandsRequest(cmd.toList()))

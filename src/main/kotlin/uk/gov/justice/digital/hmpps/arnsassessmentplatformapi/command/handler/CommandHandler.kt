@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandResult
@@ -23,6 +24,7 @@ data class CommandHandlerServiceBundle(
   val timeline: TimelineService,
   val eventBus: EventBus,
   @param:Lazy val commandBus: CommandBus,
+  val clock: Clock,
 )
 
 interface CommandHandler<C : Command> {

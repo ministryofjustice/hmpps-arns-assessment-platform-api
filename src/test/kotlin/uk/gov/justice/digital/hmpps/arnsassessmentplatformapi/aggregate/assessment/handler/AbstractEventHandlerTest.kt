@@ -12,8 +12,8 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
@@ -47,13 +47,14 @@ sealed interface Scenario<E : Event> {
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractEventHandlerTest<E : Event> {
+  protected val now = LocalDateTime.parse("2025-01-01T12:00:00")
 
   abstract val handler: KClass<out EventHandler<E, AssessmentState>>
   abstract val eventType: KClass<out E>
   abstract val scenarios: List<Scenario<E>>
 
   protected val aggregateUuid: UUID = UUID.randomUUID()
-  protected val assessment = AssessmentEntity(type = "TEST")
+  protected val assessment = AssessmentEntity(type = "TEST", createdAt = now)
   protected val mockClock: Clock = mockk()
   protected val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   protected val timeline = Timeline("test", mapOf("foo" to listOf("bar")))
@@ -61,7 +62,7 @@ abstract class AbstractEventHandlerTest<E : Event> {
   @BeforeEach
   fun setUp() {
     clearAllMocks()
-    every { mockClock.now() } returns LocalDateTime.parse("2025-01-01T12:00:00")
+    every { mockClock.now() } returns now
   }
 
   protected fun getHandler(): EventHandler<E, AssessmentState> = handler.primaryConstructor!!.call(mockClock)

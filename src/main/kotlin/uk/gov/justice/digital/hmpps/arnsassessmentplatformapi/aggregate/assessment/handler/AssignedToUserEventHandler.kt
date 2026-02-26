@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUserEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 
@@ -18,11 +18,11 @@ class AssignedToUserEventHandler(
     event: EventEntity<AssignedToUserEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    state.getForWrite().data.apply {
+    state.getForWrite(clock).data.apply {
       assignedUser = event.data.userUuid
     }
 
-    state.getForWrite().apply {
+    state.getForWrite(clock).apply {
       eventsTo = event.createdAt
       updatedAt = clock.now()
       numberOfEventsApplied += 1

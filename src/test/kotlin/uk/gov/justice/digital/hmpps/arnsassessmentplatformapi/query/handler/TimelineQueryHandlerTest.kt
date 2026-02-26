@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.TestableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.User
@@ -34,7 +34,6 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class TimelineQueryHandlerTest {
-  val assessment = AssessmentEntity(type = "TEST")
   val assessmentService: AssessmentService = mockk()
   val stateService: StateService = mockk()
   val userDetailsService: UserDetailsService = mockk()
@@ -51,6 +50,7 @@ class TimelineQueryHandlerTest {
   val handler = TimelineQueryHandler(services)
 
   val now: LocalDateTime = LocalDateTime.now()
+  val assessment = AssessmentEntity(type = "TEST", createdAt = now)
 
   val user = UserDetails(
     id = "FOO_USER",

@@ -11,12 +11,6 @@ import java.util.UUID
 @Repository
 interface EventRepository : JpaRepository<EventEntity<*>, Long> {
   fun findAllByAssessmentUuid(uuid: UUID): List<EventEntity<*>>
-
   fun findAllByAssessmentUuid(uuid: UUID, pageable: Pageable): Page<EventEntity<*>>
-  fun findAllByUserUuid(uuid: UUID, pageable: Pageable): Page<EventEntity<*>>
-
-  fun findAllByAssessmentUuidAndCreatedAtBetween(uuid: UUID, from: LocalDateTime, to: LocalDateTime): List<EventEntity<*>>
-  fun findAllByUserUuidAndCreatedAtBetween(uuid: UUID, from: LocalDateTime, to: LocalDateTime): List<EventEntity<*>>
-
   fun findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(uuid: UUID, dateTime: LocalDateTime): List<EventEntity<*>>
 }

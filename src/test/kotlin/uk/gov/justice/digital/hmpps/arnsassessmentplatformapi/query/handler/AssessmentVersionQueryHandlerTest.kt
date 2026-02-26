@@ -25,6 +25,7 @@ class AssessmentVersionQueryHandlerTest : AbstractQueryHandlerTest() {
       assessment = assessment,
       eventsFrom = LocalDateTime.parse("2020-06-01T10:42:43"),
       eventsTo = LocalDateTime.parse("2020-07-01T10:42:43"),
+      updatedAt = clock.now(),
       data = AssessmentAggregate().apply {
         formVersion = "1"
         answers["foo"] = SingleValue("foo")

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 
@@ -19,7 +19,7 @@ class CollectionItemPropertiesUpdatedEventHandler(
     event: EventEntity<CollectionItemPropertiesUpdatedEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    val aggregate = state.getForWrite()
+    val aggregate = state.getForWrite(clock)
 
     aggregate.data.getCollectionItem(event.data.collectionItemUuid)?.run {
       updatedAt = event.createdAt

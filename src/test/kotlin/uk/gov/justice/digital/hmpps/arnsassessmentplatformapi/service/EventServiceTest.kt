@@ -22,18 +22,21 @@ class EventServiceTest {
   val service = EventService(
     eventRepository = eventRepository,
   )
-  val assessment = AssessmentEntity(type = "TEST")
+  val now = LocalDateTime.now()
+  val assessment = AssessmentEntity(type = "TEST", createdAt = now)
   val user = UserDetailsEntity(userId = "FOO_USER", displayName = "Foo User", authSource = AuthSource.HMPPS_AUTH)
 
   val events = listOf(
     EventEntity(
       user = user,
       assessment = assessment,
+      createdAt = now,
       data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap()),
     ),
     EventEntity(
       user = user,
       assessment = assessment,
+      createdAt = now,
       data = AssessmentAnswersUpdatedEvent(
         added = mapOf("foo" to SingleValue("foo_value")),
         removed = emptyList(),

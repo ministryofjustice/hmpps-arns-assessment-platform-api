@@ -13,7 +13,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import java.time.LocalDateTime
 import java.util.UUID
@@ -46,7 +45,7 @@ class AssessmentIdentifierEntity(
   val uuid: UUID = UUID.randomUUID(),
 
   @Column(name = "created_at")
-  val createdAt: LocalDateTime = Clock.now(),
+  val createdAt: LocalDateTime,
 
   @Embedded
   val externalIdentifier: IdentifierPair,

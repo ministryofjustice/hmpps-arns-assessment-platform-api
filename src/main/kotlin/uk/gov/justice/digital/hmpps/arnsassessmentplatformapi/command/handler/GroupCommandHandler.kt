@@ -17,6 +17,7 @@ class GroupCommandHandler(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid.value),
         data = GroupEvent(command.commands.count()),
+        createdAt = services.clock.now(),
       )
     }
     services.eventBus.handle(event).run(services.state::persist)

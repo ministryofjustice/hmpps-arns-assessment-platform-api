@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.QueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService

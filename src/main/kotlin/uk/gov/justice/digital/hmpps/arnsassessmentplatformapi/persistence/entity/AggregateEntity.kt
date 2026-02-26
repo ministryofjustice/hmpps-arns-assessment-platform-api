@@ -13,7 +13,7 @@ import jakarta.persistence.Version
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -32,13 +32,13 @@ class AggregateEntity<T : Aggregate<T>>(
   override val version: Long = 0,
 
   @Column(name = "updated_at")
-  override var updatedAt: LocalDateTime = Clock.now(),
+  override var updatedAt: LocalDateTime,
 
   @Column(name = "events_from")
-  override val eventsFrom: LocalDateTime = Clock.now(),
+  override val eventsFrom: LocalDateTime,
 
   @Column(name = "events_to")
-  override var eventsTo: LocalDateTime = Clock.now(),
+  override var eventsTo: LocalDateTime,
 
   @Column(name = "events_applied", nullable = false)
   override var numberOfEventsApplied: Long = 0,
@@ -51,10 +51,11 @@ class AggregateEntity<T : Aggregate<T>>(
   @Column(name = "data", columnDefinition = "jsonb", nullable = false)
   override var data: T,
 ) : AggregateEntityView<T> {
-  fun clone() = AggregateEntity(
+  fun clone(clock: Clock) = AggregateEntity(
     eventsFrom = this.eventsFrom,
     eventsTo = this.eventsTo,
     assessment = this.assessment,
     data = this.data.clone(),
+    updatedAt = clock.now(),
   )
 }

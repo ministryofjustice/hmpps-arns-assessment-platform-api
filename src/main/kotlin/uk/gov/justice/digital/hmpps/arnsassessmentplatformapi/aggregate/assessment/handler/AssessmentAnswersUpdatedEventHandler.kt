@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.AnswerNotFoundException
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -21,11 +21,11 @@ class AssessmentAnswersUpdatedEventHandler(
     state: AssessmentState,
   ): AssessmentState {
     updateAnswers(state, event.data.added, event.data.removed)
-    state.getForWrite().data.apply {
+    state.getForWrite(clock).data.apply {
       collaborators.add(event.user.uuid)
     }
 
-    state.getForWrite().apply {
+    state.getForWrite(clock).apply {
       eventsTo = event.createdAt
       updatedAt = clock.now()
       numberOfEventsApplied += 1
@@ -34,19 +34,17 @@ class AssessmentAnswersUpdatedEventHandler(
     return state
   }
 
-  companion object {
-    fun updateAnswers(state: AssessmentState, added: Map<String, Value>, removed: List<String>) {
-      with(state.getForWrite()) {
-        added.entries.forEach {
-          data.answers[it.key] = it.value
-        }
-        removed.forEach { fieldCode ->
-          val removedValue = data.answers[fieldCode]
-          if (removedValue != null) {
-            data.answers.remove(fieldCode)
-          } else {
-            throw AnswerNotFoundException(fieldCode, uuid)
-          }
+  private fun updateAnswers(state: AssessmentState, added: Map<String, Value>, removed: List<String>) {
+    with(state.getForWrite(clock)) {
+      added.entries.forEach {
+        data.answers[it.key] = it.value
+      }
+      removed.forEach { fieldCode ->
+        val removedValue = data.answers[fieldCode]
+        if (removedValue != null) {
+          data.answers.remove(fieldCode)
+        } else {
+          throw AnswerNotFoundException(fieldCode, uuid)
         }
       }
     }

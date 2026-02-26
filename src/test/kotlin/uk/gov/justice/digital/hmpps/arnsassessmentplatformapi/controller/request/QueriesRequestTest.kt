@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.reques
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidQueryException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
@@ -19,8 +18,8 @@ class QueriesRequestTest {
       user = UserDetails("test-user", "Test User"),
       assessmentIdentifier = UuidIdentifier(UUID.randomUUID()),
       from = LocalDateTime.parse("2021-07-01T00:00:00"),
-      to = Clock.now(),
-      timestamp = Clock.now(),
+      to = LocalDateTime.now(),
+      timestamp = LocalDateTime.now(),
     )
 
     val request = QueriesRequest(

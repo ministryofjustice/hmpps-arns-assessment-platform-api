@@ -32,11 +32,13 @@ class SubjectAccessRequestQueryHandlerTest : AbstractQueryHandlerTest() {
   val aggregate = AggregateEntity(
     eventsFrom = fromDate.atTime(LocalTime.parse("12:00:00")),
     eventsTo = toDate.atTime(LocalTime.parse("12:00:00")),
+    updatedAt = now,
     assessment = assessment.apply {
       identifiers.add(
         AssessmentIdentifierEntity(
           externalIdentifier = crn,
           assessment = this,
+          createdAt = now,
         ),
       )
     },

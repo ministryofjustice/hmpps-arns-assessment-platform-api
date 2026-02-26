@@ -20,6 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandResult
@@ -34,6 +35,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
@@ -62,6 +64,9 @@ sealed interface Scenario<C : RequestableCommand> {
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
+  val now: LocalDateTime = LocalDateTime.now()
+  val clock: Clock = mockk()
+
   abstract val scenarios: List<Scenario<C>>
   abstract val handler: KClass<out CommandHandler<C>>
 
@@ -72,7 +77,10 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
   val collectionItem: CollectionItem = mockk()
 
   // Basic mock data
-  val assessment = AssessmentEntity(type = "TEST")
+  val assessment = AssessmentEntity(
+    type = "TEST",
+    createdAt = now,
+  )
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val timeline = Timeline(type = "test", data = mapOf("foo" to listOf("bar")))
@@ -80,6 +88,9 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
     AggregateEntity(
       assessment = assessment,
       data = assessmentAggregate,
+      updatedAt = now,
+      eventsFrom = now,
+      eventsTo = now,
     ),
   )
 
@@ -90,6 +101,7 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
   @BeforeEach
   fun setUp() {
     clearAllMocks()
+    every { clock.now() } returns now
   }
 
   private fun getHandler() = handler.primaryConstructor!!.call(services)
@@ -126,6 +138,7 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
     every { assessmentAggregate.getCollectionWithItem(any()) } returns collection
     every { assessmentAggregate.getCollectionItem(any()) } returns collectionItem
     every { services.timeline.save(capture(savedTimeline)) } answers { firstArg() }
+    every { services.clock } returns clock
 
     scenario.setupMocks()
 

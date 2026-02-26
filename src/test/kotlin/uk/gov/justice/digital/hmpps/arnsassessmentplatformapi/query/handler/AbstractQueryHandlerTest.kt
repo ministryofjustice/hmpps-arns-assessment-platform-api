@@ -10,9 +10,9 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.provider.Arguments
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
@@ -30,7 +30,8 @@ import kotlin.reflect.full.primaryConstructor
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractQueryHandlerTest {
-  val assessment = AssessmentEntity(type = "TEST")
+  val now: LocalDateTime = LocalDateTime.now()
+  val assessment = AssessmentEntity(type = "TEST", createdAt = now)
   val assessmentService: AssessmentService = mockk()
   val stateService: StateService = mockk()
   val stateProvider: StateService.StateForType<AssessmentAggregate> = mockk()
@@ -51,8 +52,6 @@ abstract class AbstractQueryHandlerTest {
     id = "FOO_USER",
     name = "Foo User",
   )
-
-  val now: LocalDateTime = LocalDateTime.now()
 
   abstract val handler: KClass<out QueryHandler<out Query>>
 

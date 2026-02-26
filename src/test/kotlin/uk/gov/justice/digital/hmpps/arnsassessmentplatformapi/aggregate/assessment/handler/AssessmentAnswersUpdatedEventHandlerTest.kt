@@ -32,6 +32,8 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
               answers.put("bar", SingleValue("value_to_remove"))
             },
             assessment = assessment,
+            updatedAt = now,
+            eventsTo = now,
           ),
         )
       }
@@ -72,6 +74,8 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
               answers.put("bar", SingleValue("value_to_remove"))
             },
             assessment = assessment,
+            updatedAt = now,
+            eventsTo = now,
           ),
         )
       }
@@ -112,6 +116,8 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
               formVersion = "1"
             },
             assessment = assessment,
+            updatedAt = now,
+            eventsTo = now,
           ),
         )
       }
