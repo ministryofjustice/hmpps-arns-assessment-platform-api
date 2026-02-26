@@ -23,7 +23,7 @@ class EventBusTest {
   val eventService = mockk<EventService>()
   val stateProvider = mockk<StateService.StateForType<AssessmentAggregate>>()
   val state: AggregateState<AssessmentAggregate> = mockk()
-  val assessment = AssessmentEntity(type = "TEST")
+  val assessment = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.now())
 
   @BeforeEach
   fun setUp() {

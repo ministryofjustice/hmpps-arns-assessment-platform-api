@@ -12,7 +12,6 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -28,7 +27,7 @@ class TimelineEntity(
   var uuid: UUID = UUID.randomUUID(),
 
   @Column(name = "created_at", nullable = false)
-  val createdAt: LocalDateTime = Clock.now(),
+  val createdAt: LocalDateTime,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_details_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)

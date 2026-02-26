@@ -27,6 +27,7 @@ class AddCollectionItemCommandHandler(
           properties,
           index,
         ),
+        createdAt = services.clock.now(),
       )
     }
 

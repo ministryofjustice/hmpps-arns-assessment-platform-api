@@ -33,11 +33,13 @@ class SubjectAccessRequestAssessmentVersionTest {
       val assessment = AssessmentEntity(
         type = assessmentType,
         identifiers = mutableListOf(),
+        createdAt = yesterday,
       ).apply {
         identifiers.add(
           AssessmentIdentifierEntity(
             externalIdentifier = identifier,
             assessment = this,
+            createdAt = yesterday,
           ),
         )
       }
@@ -46,6 +48,7 @@ class SubjectAccessRequestAssessmentVersionTest {
         assessment = assessment,
         eventsFrom = yesterday,
         eventsTo = today,
+        updatedAt = today,
         data = AssessmentAggregate()
           .apply {
             formVersion = "v1.0"

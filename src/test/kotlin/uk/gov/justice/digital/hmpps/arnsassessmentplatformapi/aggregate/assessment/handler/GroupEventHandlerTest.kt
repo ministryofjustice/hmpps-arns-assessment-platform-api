@@ -23,6 +23,8 @@ class GroupEventHandlerTest : AbstractEventHandlerTest<GroupEvent>() {
           AggregateEntity(
             uuid = aggregateUuid,
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            updatedAt = now,
+            eventsTo = now,
             data = AssessmentAggregate(),
             assessment = assessment,
           ),
@@ -57,6 +59,8 @@ class GroupEventHandlerTest : AbstractEventHandlerTest<GroupEvent>() {
           AggregateEntity(
             uuid = aggregateUuid,
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            updatedAt = now,
+            eventsTo = now,
             data = AssessmentAggregate(),
             assessment = assessment,
           ),

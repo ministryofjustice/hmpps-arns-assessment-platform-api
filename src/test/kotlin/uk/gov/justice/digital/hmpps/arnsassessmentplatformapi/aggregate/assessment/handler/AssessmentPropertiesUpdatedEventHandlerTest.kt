@@ -33,6 +33,8 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
               properties["bar"] = SingleValue("value_to_remove")
             },
             assessment = assessment,
+            updatedAt = now,
+            eventsTo = now,
           ),
         )
       }
@@ -75,6 +77,8 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
               properties["bar"] = SingleValue("value_to_remove")
             },
             assessment = assessment,
+            updatedAt = now,
+            eventsTo = now,
           ),
         )
       }
@@ -116,6 +120,8 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
               formVersion = "1"
             },
             assessment = assessment,
+            updatedAt = now,
+            eventsTo = now,
           ),
         )
       }

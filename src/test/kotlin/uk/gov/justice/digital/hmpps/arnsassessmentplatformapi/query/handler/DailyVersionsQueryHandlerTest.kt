@@ -5,10 +5,11 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.DailyVersionDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
@@ -22,6 +23,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineSe
 import java.time.LocalDateTime
 import java.util.UUID
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DailyVersionsQueryHandlerTest {
   val assessmentService: AssessmentService = mockk()
   val timelineService: TimelineService = mockk()
@@ -38,6 +40,7 @@ class DailyVersionsQueryHandlerTest {
   val handler = DailyVersionsQueryHandler(services)
 
   val now: LocalDateTime = LocalDateTime.now()
+  val assessment = AssessmentEntity(type = "TEST", createdAt = now)
 
   val user = UserDetails(
     id = "FOO_USER",
@@ -117,13 +120,8 @@ class DailyVersionsQueryHandlerTest {
     )
   }
 
-  companion object {
-    val assessment = AssessmentEntity(type = "TEST")
-
-    @JvmStatic
-    fun identifierProvider() = listOf(
-      UuidIdentifier(assessment.uuid),
-      ExternalIdentifier("A123456", IdentifierType.CRN, assessment.type),
-    )
-  }
+  fun identifierProvider() = listOf(
+    UuidIdentifier(assessment.uuid),
+    ExternalIdentifier("A123456", IdentifierType.CRN, assessment.type),
+  )
 }

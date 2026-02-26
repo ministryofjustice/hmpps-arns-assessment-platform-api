@@ -8,8 +8,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
@@ -23,8 +23,9 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class AssessmentRolledBackEventHandlerTest {
+  private val now = LocalDateTime.parse("2025-01-01T12:00:00")
   private val aggregateUuid: UUID = UUID.randomUUID()
-  private val assessment = AssessmentEntity(type = "TEST")
+  private val assessment = AssessmentEntity(type = "TEST", createdAt = now)
   private val mockClock: Clock = mockk()
   private val stateProvider: StateService.StateForType<AssessmentAggregate> = mockk()
   private val stateService: StateService = mockk()
@@ -34,7 +35,7 @@ class AssessmentRolledBackEventHandlerTest {
   @BeforeEach
   fun setUp() {
     clearAllMocks()
-    every { mockClock.now() } returns LocalDateTime.parse("2025-01-01T12:00:00")
+    every { mockClock.now() } returns now
   }
 
   private fun getHandler(): EventHandler<AssessmentRolledBackEvent, AssessmentState> = AssessmentRolledBackEventHandler(mockClock, stateService)
@@ -70,6 +71,8 @@ class AssessmentRolledBackEventHandlerTest {
             answers["foo"] = SingleValue("rolled_back")
           },
           assessment = assessment,
+          updatedAt = mockClock.now(),
+          eventsTo = mockClock.now(),
         ),
       )
     }
@@ -89,6 +92,8 @@ class AssessmentRolledBackEventHandlerTest {
             )
           },
           assessment = assessment,
+          updatedAt = mockClock.now(),
+          eventsTo = mockClock.now(),
         ),
       )
     }
@@ -139,6 +144,8 @@ class AssessmentRolledBackEventHandlerTest {
             answers["foo"] = SingleValue("rolled_back")
           },
           assessment = assessment,
+          updatedAt = mockClock.now(),
+          eventsTo = mockClock.now(),
         ),
       )
     }
@@ -157,6 +164,8 @@ class AssessmentRolledBackEventHandlerTest {
             )
           },
           assessment = assessment,
+          updatedAt = mockClock.now(),
+          eventsTo = mockClock.now(),
         ),
       )
     }

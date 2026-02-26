@@ -18,6 +18,7 @@ class CreateCollectionCommandHandler(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid.value),
         data = CollectionCreatedEvent(collectionUuid, name, parentCollectionItemUuid?.value),
+        createdAt = services.clock.now(),
       )
     }
 

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
@@ -35,6 +36,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventServi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
+import java.time.LocalDateTime
 import java.util.UUID
 
 class CreateAssessmentCommandHandlerTest {
@@ -46,6 +48,7 @@ class CreateAssessmentCommandHandlerTest {
   val eventBus: EventBus = mockk()
   val commandBus: CommandBus = mockk()
   val assessmentAggregate: AssessmentAggregate = mockk()
+  val clock: Clock = mockk()
 
   val services = CommandHandlerServiceBundle(
     assessment = assessmentService,
@@ -55,15 +58,20 @@ class CreateAssessmentCommandHandlerTest {
     timeline = timelineService,
     eventBus = eventBus,
     commandBus = commandBus,
+    clock = clock,
   )
 
+  val now: LocalDateTime = LocalDateTime.now()
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
 
   val assessmentState: AssessmentState = AssessmentState(
     AggregateEntity(
-      assessment = AssessmentEntity(type = "TEST"),
+      assessment = AssessmentEntity(type = "TEST", createdAt = now),
       data = assessmentAggregate,
+      updatedAt = now,
+      eventsFrom = now,
+      eventsTo = now,
     ),
   )
 
@@ -102,6 +110,7 @@ class CreateAssessmentCommandHandlerTest {
   @BeforeEach
   fun setUp() {
     clearAllMocks()
+    every { clock.now() } returns now
   }
 
   @Test

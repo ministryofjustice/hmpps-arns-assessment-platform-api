@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.healt
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import java.time.format.DateTimeFormatter
 
@@ -25,7 +24,7 @@ class InfoTest : IntegrationTestBase() {
       .exchange()
       .expectStatus().isOk
       .expectBody().jsonPath("build.version").value<String> {
-        assertThat(it).startsWith(Clock.now().format(DateTimeFormatter.ISO_DATE))
+        assertThat(it).startsWith(clock.now().format(DateTimeFormatter.ISO_DATE))
       }
   }
 }

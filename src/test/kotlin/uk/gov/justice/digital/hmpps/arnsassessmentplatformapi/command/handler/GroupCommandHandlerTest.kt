@@ -12,6 +12,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.GroupCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
@@ -33,10 +34,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventServi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
+import java.time.LocalDateTime
 import java.util.UUID
 
 class GroupCommandHandlerTest {
-  val assessment = AssessmentEntity(type = "TEST")
+  val now = LocalDateTime.now()
+  val assessment = AssessmentEntity(type = "TEST", createdAt = now)
   val assessmentService: AssessmentService = mockk()
   val eventService: EventService = mockk()
   val stateService: StateService = mockk()
@@ -44,6 +47,7 @@ class GroupCommandHandlerTest {
   val timelineService: TimelineService = mockk()
   val eventBus: EventBus = mockk()
   val commandBus: CommandBus = mockk()
+  val clock: Clock = mockk()
 
   val services = CommandHandlerServiceBundle(
     assessment = assessmentService,
@@ -53,6 +57,7 @@ class GroupCommandHandlerTest {
     timeline = timelineService,
     eventBus = eventBus,
     commandBus = commandBus,
+    clock = clock,
   )
 
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
@@ -86,6 +91,7 @@ class GroupCommandHandlerTest {
   @BeforeEach
   fun setUp() {
     clearAllMocks()
+    every { clock.now() } returns now
   }
 
   @Test

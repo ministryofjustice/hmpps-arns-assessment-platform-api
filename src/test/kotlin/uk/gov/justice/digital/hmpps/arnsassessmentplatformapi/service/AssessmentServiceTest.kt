@@ -30,7 +30,7 @@ class AssessmentServiceTest {
   inner class FindByUuid {
     @Test
     fun `it finds and returns the assessment`() {
-      val assessment = AssessmentEntity(type = "TEST")
+      val assessment = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.now())
 
       every { assessmentRepository.findByUuid(assessment.uuid) } returns assessment
 
@@ -53,7 +53,7 @@ class AssessmentServiceTest {
   inner class FindByUuidIdentifier {
     @Test
     fun `it finds and returns the assessment`() {
-      val assessment = AssessmentEntity(type = "TEST")
+      val assessment = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.now())
 
       every { assessmentRepository.findByUuid(assessment.uuid) } returns assessment
 
@@ -74,10 +74,11 @@ class AssessmentServiceTest {
 
   @Nested
   inner class FindByExternalIdentifier {
-    val assessment = AssessmentEntity(type = "TEST")
+    val assessment = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.now())
     val identifier = AssessmentIdentifierEntity(
       externalIdentifier = IdentifierPair(IdentifierType.CRN, "CRN123"),
       assessment = assessment,
+      createdAt = LocalDateTime.now(),
     )
 
     val externalIdentifier = ExternalIdentifier(

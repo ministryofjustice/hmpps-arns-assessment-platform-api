@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentEventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
@@ -22,14 +22,14 @@ class AssessmentRolledBackEventHandler(
     event: EventEntity<AssessmentRolledBackEvent>,
     state: AssessmentState,
   ): AssessmentState {
-    val aggregate = state.getForWrite()
+    val aggregate = state.getForWrite(clock)
 
     val previousState = stateService.stateForType(AssessmentAggregate::class).fetchOrCreateStateForExactPointInTime(
       event.assessment,
       event.data.rolledBackTo,
     ) as AssessmentState
 
-    aggregate.apply { data = previousState.getForWrite().data.clone() }
+    aggregate.apply { data = previousState.getForWrite(clock).data.clone() }
 
     aggregate.data.apply {
       collaborators.add(event.user.uuid)

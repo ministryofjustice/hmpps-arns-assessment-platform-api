@@ -9,7 +9,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
@@ -92,6 +91,7 @@ class AssessmentVersionQueryTest(
       assessment = assessment,
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:05:00"),
+      updatedAt = clock.now(),
       data = aggregateData,
     )
       .apply { numberOfEventsApplied = events.size.toLong() }
@@ -188,12 +188,14 @@ class AssessmentVersionQueryTest(
         assessment = assessment,
         eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
         eventsTo = LocalDateTime.parse("2025-01-01T12:30:00"),
+        updatedAt = clock.now(),
         data = secondAggregateData,
       ).apply { numberOfEventsApplied = 2 },
       AggregateEntity(
         assessment = assessment,
         eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
         eventsTo = LocalDateTime.parse("2025-01-01T12:05:00"),
+        updatedAt = clock.now(),
         data = firstAggregateData,
       ).apply { numberOfEventsApplied = 1 },
     ).run(aggregateRepository::saveAll)
@@ -230,7 +232,7 @@ class AssessmentVersionQueryTest(
 
   @Test
   fun `it creates an aggregate for an assessment where none exists`() {
-    val assessment = AssessmentEntity(type = "TEST").run(assessmentRepository::save)
+    val assessment = AssessmentEntity(type = "TEST", createdAt = clock.now()).run(assessmentRepository::save)
 
     listOf(
       EventEntity(
@@ -305,7 +307,7 @@ class AssessmentVersionQueryTest(
     val persistedAggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessment.uuid,
       AssessmentAggregate::class.simpleName!!,
-      Clock.now(),
+      clock.now(),
     )
 
     assertThat(persistedAggregate).isNull()
@@ -405,7 +407,7 @@ class AssessmentVersionQueryTest(
     val persistedAggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessment.uuid,
       AssessmentAggregate::class.simpleName!!,
-      Clock.now(),
+      clock.now(),
     )
 
     assertThat(persistedAggregate).isNull()
@@ -456,6 +458,7 @@ class AssessmentVersionQueryTest(
       assessment = assessment,
       eventsFrom = event.createdAt,
       eventsTo = event.createdAt,
+      updatedAt = clock.now(),
       data = aggregateData,
     )
       .apply { numberOfEventsApplied = 1 }
@@ -486,29 +489,27 @@ class AssessmentVersionQueryTest(
     assertThat(response?.developerMessage).isEqualTo("Timestamp cannot be before the assessment created date")
   }
 
-  companion object {
-    @JvmStatic
-    fun assessmentAndIdentifierProvider() = AssessmentEntity(type = "TEST").apply {
-      identifiers.add(
-        AssessmentIdentifierEntity(
-          externalIdentifier = IdentifierPair(IdentifierType.CRN, UUID.randomUUID().toString()),
-          assessment = this,
-        ),
-      )
-    }.let { assessment ->
-      listOf(
-        Arguments.of(assessment, UuidIdentifier(assessment.uuid)),
-        Arguments.of(
-          assessment,
-          with(assessment.identifiers.first()) {
-            ExternalIdentifier(
-              identifier = externalIdentifier.id,
-              identifierType = externalIdentifier.type,
-              assessmentType = assessment.type,
-            )
-          },
-        ),
-      )
-    }
+  fun assessmentAndIdentifierProvider() = AssessmentEntity(type = "TEST", createdAt = clock.now()).apply {
+    identifiers.add(
+      AssessmentIdentifierEntity(
+        externalIdentifier = IdentifierPair(IdentifierType.CRN, UUID.randomUUID().toString()),
+        assessment = this,
+        createdAt = clock.now(),
+      ),
+    )
+  }.let { assessment ->
+    listOf(
+      Arguments.of(assessment, UuidIdentifier(assessment.uuid)),
+      Arguments.of(
+        assessment,
+        with(assessment.identifiers.first()) {
+          ExternalIdentifier(
+            identifier = externalIdentifier.id,
+            identifierType = externalIdentifier.type,
+            assessmentType = assessment.type,
+          )
+        },
+      ),
+    )
   }
 }

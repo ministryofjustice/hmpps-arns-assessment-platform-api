@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.SubjectAcces
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.exception.SubjectAccessRequestNoAssessmentsException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.SubjectAccessRequestAssessmentVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.SubjectAccessRequestQueryResult
-import java.time.LocalDateTime
 import java.time.LocalTime
 
 @Component
@@ -22,7 +21,7 @@ class SubjectAccessRequestQueryHandler(
 
     val results = assessments.map { assessment ->
       val aggregate = services.state.stateForType(AssessmentAggregate::class)
-        .fetchLatestStateBefore(assessment, query.to?.atTime(LocalTime.MAX) ?: query.timestamp ?: LocalDateTime.now())
+        .fetchLatestStateBefore(assessment, query.to?.atTime(LocalTime.MAX) ?: query.timestamp ?: services.clock.now())
         .let { it as AssessmentState }
         .getForRead()
 

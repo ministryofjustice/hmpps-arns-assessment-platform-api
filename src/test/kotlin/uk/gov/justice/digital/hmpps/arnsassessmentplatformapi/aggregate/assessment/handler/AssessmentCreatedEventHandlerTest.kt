@@ -27,6 +27,8 @@ class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCre
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
             data = AssessmentAggregate(),
             assessment = assessment,
+            updatedAt = now,
+            eventsTo = now,
           ),
         )
       }
@@ -63,6 +65,8 @@ class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCre
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
             data = AssessmentAggregate(),
             assessment = assessment,
+            updatedAt = now,
+            eventsTo = now,
           ),
         )
       }

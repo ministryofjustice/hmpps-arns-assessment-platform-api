@@ -64,17 +64,20 @@ class SubjectAccessRequestTest(
     val assessment = assessmentRepository.save(
       AssessmentEntity(
         type = "TEST",
+        createdAt = LocalDateTime.now(),
       ).apply {
         identifiers.add(
           AssessmentIdentifierEntity(
             externalIdentifier = IdentifierPair(IdentifierType.CRN, testCrn),
             assessment = this,
+            createdAt = LocalDateTime.now(),
           ),
         )
         identifiers.add(
           AssessmentIdentifierEntity(
             externalIdentifier = IdentifierPair(IdentifierType.PRN, testPrn),
             assessment = this,
+            createdAt = LocalDateTime.now(),
           ),
         )
       },

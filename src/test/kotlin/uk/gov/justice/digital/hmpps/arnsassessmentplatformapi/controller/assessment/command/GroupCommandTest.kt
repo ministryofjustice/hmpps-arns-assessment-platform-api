@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateForm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.GroupCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
@@ -155,7 +154,7 @@ class GroupCommandTest(
     val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
-      Clock.now(),
+      clock.now(),
     )
 
     assertThat(aggregate).isNotNull

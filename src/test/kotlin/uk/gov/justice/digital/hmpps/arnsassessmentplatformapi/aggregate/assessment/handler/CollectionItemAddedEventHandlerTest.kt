@@ -45,6 +45,8 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
           AggregateEntity(
             uuid = aggregateUuid,
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            updatedAt = now,
+            eventsTo = now,
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
@@ -146,6 +148,8 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
           AggregateEntity(
             uuid = aggregateUuid,
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
+            updatedAt = now,
+            eventsTo = now,
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"

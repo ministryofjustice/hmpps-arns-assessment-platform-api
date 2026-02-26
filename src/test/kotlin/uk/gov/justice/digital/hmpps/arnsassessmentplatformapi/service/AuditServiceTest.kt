@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -7,6 +8,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -21,7 +23,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
@@ -30,6 +31,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimelineQuer
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.hmpps.sqs.HmppsQueue
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
+import java.time.LocalDateTime
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
@@ -37,6 +39,7 @@ import java.util.stream.Stream
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuditServiceTest {
 
   private val mockQueueService: HmppsQueueService = mockk()
@@ -48,8 +51,15 @@ class AuditServiceTest {
 
   private val queueUrl = "http://sqs/audit-queue"
 
+  private val assessmentUuid = UUID.randomUUID()
+  private val user = UserDetails("test-user", "Test user")
+
+  private val now = LocalDateTime.now()
+
   @BeforeEach
   fun setup() {
+    clearAllMocks()
+
     val hmppsQueue = HmppsQueue("audit", mockSqsClient, "audit", mockk(relaxed = true))
     every { mockQueueService.findByQueueId("audit") } returns hmppsQueue
 
@@ -140,32 +150,26 @@ class AuditServiceTest {
     }
   }
 
-  companion object {
-    private val assessmentUuid = UUID.randomUUID()
-    private val user = UserDetails("test-user", "Test user")
-
-    @JvmStatic
-    fun provideAuditable(): Stream<Any> = Stream.of(
-      UpdateAssessmentPropertiesCommand(
-        user = user,
-        assessmentUuid = assessmentUuid.toReference(),
-        added = mapOf("STATUS" to SingleValue("TEST_STATUS")),
-        removed = emptyList(),
-        timeline = null,
-      ),
-      AssessmentVersionQuery(
-        user = user,
-        timestamp = Clock.now(),
-        assessmentIdentifier = UuidIdentifier(assessmentUuid),
-      ),
-      TimelineQuery(
-        user = user,
-        timestamp = Clock.now(),
-        pageNumber = 0,
-        pageSize = 10,
-        assessmentIdentifier = UuidIdentifier(assessmentUuid),
-        subject = UserDetails("test-subject", "Test subject"),
-      ),
-    )
-  }
+  fun provideAuditable(): Stream<Any> = Stream.of(
+    UpdateAssessmentPropertiesCommand(
+      user = user,
+      assessmentUuid = assessmentUuid.toReference(),
+      added = mapOf("STATUS" to SingleValue("TEST_STATUS")),
+      removed = emptyList(),
+      timeline = null,
+    ),
+    AssessmentVersionQuery(
+      user = user,
+      timestamp = now,
+      assessmentIdentifier = UuidIdentifier(assessmentUuid),
+    ),
+    TimelineQuery(
+      user = user,
+      timestamp = now,
+      pageNumber = 0,
+      pageSize = 10,
+      assessmentIdentifier = UuidIdentifier(assessmentUuid),
+      subject = UserDetails("test-subject", "Test subject"),
+    ),
+  )
 }

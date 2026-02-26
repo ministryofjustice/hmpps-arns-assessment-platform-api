@@ -31,6 +31,7 @@ class ReorderCollectionItemCommandHandler(
           collectionItemUuid = collectionItemUuid.value,
           index = command.index,
         ),
+        createdAt = services.clock.now(),
       )
     }
 

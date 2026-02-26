@@ -90,6 +90,9 @@ class CollectionItemQueryHandlerTest : AbstractQueryHandlerTest() {
 
   val aggregate = AggregateEntity(
     assessment = assessment,
+    eventsFrom = now,
+    eventsTo = now,
+    updatedAt = now,
     data = AssessmentAggregate().apply {
       formVersion = "1"
       collections.addAll(allCollections)

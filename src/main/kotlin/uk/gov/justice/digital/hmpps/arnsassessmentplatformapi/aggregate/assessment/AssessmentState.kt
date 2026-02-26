@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntityView
 
@@ -20,5 +21,5 @@ class AssessmentState(
 
   fun getForRead(): AggregateEntityView<out AssessmentAggregateView> = getLatest()
 
-  fun getForWrite() = getLatest().takeIf { it.numberOfEventsApplied < 50 } ?: getLatest().clone().also { aggregates.add(it) }
+  fun getForWrite(clock: Clock) = getLatest().takeIf { it.numberOfEventsApplied < 50 } ?: getLatest().clone(clock).also { aggregates.add(it) }
 }

@@ -12,7 +12,6 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.config.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
 import java.time.LocalDateTime
@@ -37,7 +36,7 @@ class EventEntity<E : Event>(
   val children: MutableList<EventEntity<*>> = mutableListOf(),
 
   @Column(name = "created_at", nullable = false)
-  val createdAt: LocalDateTime = Clock.now(),
+  val createdAt: LocalDateTime,
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_details_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)

@@ -18,6 +18,7 @@ class UpdateAssessmentPropertiesCommandHandler(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid.value),
         data = AssessmentPropertiesUpdatedEvent(added, removed),
+        createdAt = services.clock.now(),
       )
     }
 
