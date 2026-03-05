@@ -66,7 +66,9 @@ class ClockProviderTest {
 
     (1..1000).forEach { _ ->
       val currentTime = LocalDateTime.now(clockProvider.clock())
-      if (currentTime < previousTime) {failures++}
+      if (currentTime < previousTime) {
+        failures++
+      }
       previousTime = currentTime
     }
 

@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock
 
 import jakarta.servlet.http.HttpServletRequest
-import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 import org.springframework.web.context.annotation.RequestScope
 import java.time.Clock
@@ -15,7 +14,7 @@ class ClockProvider(
 ) {
   lateinit var clock: Clock
   init {
-      clock = createClock()
+    clock = createClock()
   }
   fun clock(): Clock = clock
   fun createClock(): Clock {
