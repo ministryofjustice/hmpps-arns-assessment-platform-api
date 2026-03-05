@@ -35,7 +35,7 @@ import java.time.LocalDateTime
 abstract class IntegrationTestBase {
 
   @LocalServerPort
-  private var port: Int = 0
+  public var port: Int = 0
 
   protected lateinit var webTestClient: WebTestClient
 

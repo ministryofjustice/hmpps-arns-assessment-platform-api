@@ -5,6 +5,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.0.4"
   id("org.jetbrains.kotlin.kapt") version "2.3.10"
+  id("au.com.dius.pact") version "4.7.0-beta.4"
   kotlin("plugin.spring") version "2.3.10"
   kotlin("plugin.jpa") version "2.3.10"
 }
@@ -36,6 +37,7 @@ dependencies {
     exclude(group = "io.swagger.core.v3")
   }
   testImplementation("com.ninja-squad:springmockk:5.0.1")
+  testImplementation("au.com.dius.pact.provider:spring7:4.7.0-beta.4")
 }
 
 kotlin {
