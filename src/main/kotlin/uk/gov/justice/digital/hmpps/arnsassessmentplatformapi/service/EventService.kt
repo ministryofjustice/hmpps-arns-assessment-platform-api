@@ -18,7 +18,20 @@ class EventService(
 
   fun findAllForPointInTime(assessmentUuid: UUID, pointInTime: LocalDateTime) = eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(assessmentUuid, pointInTime)
 
-  fun <E : Event> save(event: EventEntity<E>): EventEntity<E> = eventRepository.saveAndFlush(event.apply { parent = parentEvent.get() })
+  fun <E : Event> save(event: EventEntity<E>): EventEntity<E> =
+    parentEvent.get()?.let {
+      event.parent = it
+      it.children.add(event)
+      eventRepository.saveAndFlush(it)
+      event
+    } ?: eventRepository.saveAndFlush(event)
 
-  fun saveAll(events: List<EventEntity<*>>): List<EventEntity<*>> = eventRepository.saveAllAndFlush(events.map { it.apply { parent = parentEvent.get() } })
+  fun saveAll(events: List<EventEntity<*>>): List<EventEntity<*>> =
+    parentEvent.get()?.let { parent ->
+      events.map { it.apply { this.parent = parent } }
+        .also {
+          parent.children.addAll(it)
+          eventRepository.saveAndFlush(parent)
+        }
+    } ?: eventRepository.saveAllAndFlush(events)
 }
