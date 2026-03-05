@@ -66,13 +66,24 @@ class EventServiceTest {
   }
 
   @Nested
-  inner class SaveAll {
+  inner class Save {
     @Test
     fun `it saves events`() {
-      every { eventRepository.save(any<EventEntity<Event>>()) } answers { firstArg() }
+      every { eventRepository.saveAndFlush(any<EventEntity<Event>>()) } answers { firstArg() }
 
       service.save(events.first())
-      verify(exactly = 1) { eventRepository.save(events.first()) }
+      verify(exactly = 1) { eventRepository.saveAndFlush(events.first()) }
+    }
+  }
+
+  @Nested
+  inner class SaveAll {
+    @Test
+    fun `it saves all events`() {
+      every { eventRepository.saveAllAndFlush(any<List<EventEntity<Event>>>()) } answers { firstArg() }
+
+      service.saveAll(events)
+      verify(exactly = 1) { eventRepository.saveAllAndFlush(events) }
     }
   }
 }
