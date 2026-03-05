@@ -22,7 +22,6 @@ class EventService(
     parentEvent.get()?.let {
       event.parent = it
       it.children.add(event)
-      eventRepository.saveAndFlush(it)
       event
     } ?: eventRepository.saveAndFlush(event)
 
@@ -31,7 +30,6 @@ class EventService(
       events.map { it.apply { this.parent = parent } }
         .also {
           parent.children.addAll(it)
-          eventRepository.saveAndFlush(parent)
         }
     } ?: eventRepository.saveAllAndFlush(events)
 }

@@ -21,10 +21,10 @@ class GroupCommandHandler(
       )
     }
     services.eventBus.handle(event).run(services.state::persist)
-    services.event.save(event)
 
     services.event.setParentEvent(event)
     val commandsResponse = services.commandBus.dispatch(command.commands)
+    services.event.save(event)
     services.event.clearParentEvent()
 
     return GroupCommandResult(
