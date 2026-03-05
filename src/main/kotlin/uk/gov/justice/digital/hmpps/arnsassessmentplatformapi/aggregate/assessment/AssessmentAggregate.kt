@@ -32,6 +32,7 @@ class AssessmentAggregate :
     clone.collaborators.addAll(collaborators)
     clone.flags.addAll(flags)
     clone.formVersion = formVersion
+    clone.assignedUser = assignedUser
   }
 
   override fun getCollection(collectionUuid: UUID) = collections.firstOrNull { it.uuid == collectionUuid }

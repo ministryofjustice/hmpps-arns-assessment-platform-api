@@ -26,7 +26,7 @@ class StateService(
   private val clock: Clock,
 ) {
   fun persist(state: State) {
-    aggregateRepository.saveAll(state.values.map { it.aggregates }.flatten())
+    aggregateRepository.saveAllAndFlush(state.values.map { it.aggregates }.flatten())
   }
 
   fun stateForType(type: KClass<out Aggregate<*>>) = StateForType(type)
