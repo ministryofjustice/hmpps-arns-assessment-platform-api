@@ -1,6 +1,6 @@
 SHELL = '/bin/bash'
 LOCAL_COMPOSE_FILES = -f docker-compose.yml -f docker-compose.local.yml
-DEV_COMPOSE_FILES = -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.dev.yml
+DEV_COMPOSE_FILES = -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.dev.yml -f docker-compose.pact.yml
 PROJECT_NAME = hmpps-assess-risks-and-needs
 SERVICE_NAME = api
 
@@ -42,7 +42,7 @@ test: ## Runs all the test suites.
 	docker compose ${DEV_COMPOSE_FILES} exec \
 	   --env HMPPS_AUTH_URL=http://localhost:9090/auth \
       ${SERVICE_NAME} \
-      gradle test --parallel
+      gradle test --parallel -Dpactbroker.host=host.docker.internal -Dpactbroker.port=9292
 
 test-unit: ## Runs the unit test suite.
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle unitTests --parallel

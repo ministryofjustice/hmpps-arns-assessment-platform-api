@@ -19,6 +19,7 @@ import org.apache.hc.core5.http.HttpHeaders
 import au.com.dius.pact.provider.junitsupport.Provider
 import au.com.dius.pact.provider.junitsupport.State
 import au.com.dius.pact.provider.junitsupport.loader.PactFolder
+import au.com.dius.pact.provider.junitsupport.loader.PactBroker
 import au.com.dius.pact.provider.spring.spring7.PactVerificationSpring7Provider
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
@@ -49,8 +50,8 @@ import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertIs
 
-@Provider("MyProvider")
-@PactFolder("src/test/kotlin/uk/gov/justice/digital/hmpps/arnsassessmentplatformapi/controller/assessment/query/pacts")
+@Provider("hmpps-arns-assessment-platform-api")
+@PactBroker
 @ExtendWith(PactVerificationSpring7Provider::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AssessmentVersionQueryPactTest(

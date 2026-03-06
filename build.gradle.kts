@@ -10,6 +10,12 @@ plugins {
   kotlin("plugin.jpa") version "2.3.10"
 }
 
+version = "0.0.1-test"
+
+project.extra["pactbroker.url"] = project.properties["pactbroker.url"] ?: "http://host.docker.internal:9292"
+project.extra["pactbroker.host"] = project.properties["pactbroker.host"] ?: "host.docker.internal"
+project.extra["pactbroker.port"] = project.properties["pactbroker.port"] ?: "9292"
+
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
 }
@@ -52,6 +58,17 @@ tasks {
     jvmArgs = listOf(
       "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
     )
+  }
+  withType<Test>().configureEach {
+    systemProperties["pactbroker.url"] = "${project.extra["pactbroker.url"]}"
+    systemProperties["pact.provider.version"] = version
+    systemProperties["pact.verifier.publishResults"] = "true"
+  }
+}
+
+pact {
+  broker {
+    pactBrokerUrl = "${project.extra["pactbroker.url"]}"
   }
 }
 

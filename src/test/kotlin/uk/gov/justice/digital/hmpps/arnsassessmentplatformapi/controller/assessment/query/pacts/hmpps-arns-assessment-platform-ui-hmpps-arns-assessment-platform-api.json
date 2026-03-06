@@ -1,6 +1,6 @@
 {
   "consumer": {
-    "name": "MyConsumer"
+    "name": "hmpps-arns-assessment-platform-ui"
   },
   "interactions": [
     {
@@ -139,6 +139,6 @@
     }
   },
   "provider": {
-    "name": "MyProvider"
+    "name": "hmpps-arns-assessment-platform-api"
   }
 }
