@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.Reference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
+import java.time.LocalDateTime
 import java.util.UUID
 
 data class AddCollectionItemCommand(
@@ -17,4 +18,5 @@ data class AddCollectionItemCommand(
 ) : RequestableCommand {
   @JsonIgnore
   val collectionItemUuid: UUID = UUID.randomUUID()
+  override lateinit var receivedOn: LocalDateTime
 }

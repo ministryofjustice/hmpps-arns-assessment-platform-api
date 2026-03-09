@@ -28,8 +28,6 @@ class EventService(
   fun saveAll(events: List<EventEntity<*>>): List<EventEntity<*>> =
     parentEvent.get()?.let { parent ->
       events.map { it.apply { this.parent = parent } }
-        .also {
-          parent.children.addAll(it)
-        }
+        .also { parent.children.addAll(it) }
     } ?: eventRepository.saveAllAndFlush(events)
 }

@@ -25,7 +25,7 @@ class UpdateCollectionItemAnswersCommandHandler(
           added = added,
           removed = removed,
         ),
-        createdAt = services.clock.now(),
+        createdAt = command.receivedOn,
       )
     }
 

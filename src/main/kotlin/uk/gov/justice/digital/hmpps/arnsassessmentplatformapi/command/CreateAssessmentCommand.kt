@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import java.time.LocalDateTime
 import java.util.UUID
 
 data class CreateAssessmentCommand(
@@ -20,4 +21,5 @@ data class CreateAssessmentCommand(
 ) : RequestableCommand {
   @JsonIgnore
   override val assessmentUuid: Reference = UUID.randomUUID().toReference()
+  override lateinit var receivedOn: LocalDateTime
 }

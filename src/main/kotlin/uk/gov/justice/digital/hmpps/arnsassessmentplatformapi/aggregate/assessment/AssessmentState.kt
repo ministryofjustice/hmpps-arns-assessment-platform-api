@@ -15,9 +15,9 @@ class AssessmentState(
   }
 
   private fun getLatest() = aggregates.sortedWith(
-    compareBy<AggregateEntity<AssessmentAggregate>> { it.eventsTo }
+    compareByDescending<AggregateEntity<AssessmentAggregate>> { it.eventsTo }
       .thenByDescending { it.numberOfEventsApplied },
-  ).last()
+  ).first()
 
   fun getForRead(): AggregateEntityView<out AssessmentAggregateView> = getLatest()
 

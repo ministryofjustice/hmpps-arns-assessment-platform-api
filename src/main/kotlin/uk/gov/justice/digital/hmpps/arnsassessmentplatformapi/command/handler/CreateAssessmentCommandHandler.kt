@@ -22,14 +22,14 @@ class CreateAssessmentCommandHandler(
     val assessment = AssessmentEntity(
       uuid = command.assessmentUuid.value,
       type = command.assessmentType,
-      createdAt = services.clock.now(),
+      createdAt = command.receivedOn,
     ).apply {
       command.identifiers?.forEach {
         identifiers.add(
           AssessmentIdentifierEntity(
             assessment = this,
             externalIdentifier = IdentifierPair(it.key, it.value),
-            createdAt = services.clock.now(),
+            createdAt = command.receivedOn,
           ),
         )
       }
@@ -43,7 +43,7 @@ class CreateAssessmentCommandHandler(
       EventEntity(
         user = user,
         assessment = assessment,
-        createdAt = assessment.createdAt,
+        createdAt = command.receivedOn,
         data = AssessmentCreatedEvent(
           formVersion = formVersion,
           properties = properties ?: emptyMap(),

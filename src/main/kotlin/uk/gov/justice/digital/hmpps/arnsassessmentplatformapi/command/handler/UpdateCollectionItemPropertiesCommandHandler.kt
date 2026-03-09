@@ -25,7 +25,7 @@ class UpdateCollectionItemPropertiesCommandHandler(
           added = added,
           removed = removed,
         ),
-        createdAt = services.clock.now(),
+        createdAt = command.receivedOn,
       )
     }
 

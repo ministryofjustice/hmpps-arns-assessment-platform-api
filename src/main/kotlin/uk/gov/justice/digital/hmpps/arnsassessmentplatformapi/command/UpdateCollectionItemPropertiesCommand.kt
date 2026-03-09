@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.Reference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
+import java.time.LocalDateTime
 
 data class UpdateCollectionItemPropertiesCommand(
   val collectionItemUuid: Reference,
@@ -11,4 +12,6 @@ data class UpdateCollectionItemPropertiesCommand(
   override val user: UserDetails,
   override val assessmentUuid: Reference,
   override val timeline: Timeline? = null,
-) : RequestableCommand
+) : RequestableCommand {
+  override lateinit var receivedOn: LocalDateTime
+}
