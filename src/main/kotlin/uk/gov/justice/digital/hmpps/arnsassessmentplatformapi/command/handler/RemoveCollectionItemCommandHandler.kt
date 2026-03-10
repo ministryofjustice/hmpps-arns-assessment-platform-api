@@ -35,8 +35,10 @@ class RemoveCollectionItemCommandHandler(
       )
     }
 
-    services.eventBus.handle(event).run(services.state::persist)
-    services.event.save(event)
+    services.eventBus.handle(event)
+      .also { services.event.save(event) }
+      .run(services.state::persist)
+
     services.timeline.save(
       TimelineEntity.from(
         command,

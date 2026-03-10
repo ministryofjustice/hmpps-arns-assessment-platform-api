@@ -23,9 +23,9 @@ class CreateCollectionCommandHandler(
     }
 
     services.eventBus.handle(event)
+      .also { services.event.save(event) }
       .run(services.state::persist)
 
-    services.event.save(event)
     services.timeline.save(
       TimelineEntity.from(
         command,

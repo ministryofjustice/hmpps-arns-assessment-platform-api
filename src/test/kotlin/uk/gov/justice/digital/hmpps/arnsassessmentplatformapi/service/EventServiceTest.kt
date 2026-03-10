@@ -69,10 +69,10 @@ class EventServiceTest {
   inner class Save {
     @Test
     fun `it saves events`() {
-      every { eventRepository.saveAndFlush(any<EventEntity<Event>>()) } answers { firstArg() }
+      every { eventRepository.save(any<EventEntity<Event>>()) } answers { firstArg() }
 
       service.save(events.first())
-      verify(exactly = 1) { eventRepository.saveAndFlush(events.first()) }
+      verify(exactly = 1) { eventRepository.save(events.first()) }
     }
   }
 }

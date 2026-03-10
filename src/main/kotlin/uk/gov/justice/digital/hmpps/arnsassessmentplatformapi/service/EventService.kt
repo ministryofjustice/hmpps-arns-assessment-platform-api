@@ -23,6 +23,6 @@ class EventService(
       event.parent = it
       it.children.add(event)
     }
-    return eventRepository.saveAndFlush(event)
+    return eventRepository.save(event)
   }
 }

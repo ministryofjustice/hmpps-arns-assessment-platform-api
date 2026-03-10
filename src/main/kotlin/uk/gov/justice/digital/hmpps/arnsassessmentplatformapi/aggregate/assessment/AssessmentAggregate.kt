@@ -35,6 +35,29 @@ class AssessmentAggregate :
     clone.assignedUser = assignedUser
   }
 
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is AssessmentAggregate) return false
+    return formVersion == other.formVersion &&
+      assignedUser == other.assignedUser &&
+      properties == other.properties &&
+      answers == other.answers &&
+      collections == other.collections &&
+      collaborators == other.collaborators &&
+      flags == other.flags
+  }
+
+  override fun hashCode(): Int {
+    var result = formVersion.hashCode()
+    result = 31 * result + (assignedUser?.hashCode() ?: 0)
+    result = 31 * result + properties.hashCode()
+    result = 31 * result + answers.hashCode()
+    result = 31 * result + collections.hashCode()
+    result = 31 * result + collaborators.hashCode()
+    result = 31 * result + flags.hashCode()
+    return result
+  }
+
   override fun getCollection(collectionUuid: UUID) = collections.firstOrNull { it.uuid == collectionUuid }
     ?: collections.firstNotNullOfOrNull { collection ->
       collection.items.firstNotNullOfOrNull {

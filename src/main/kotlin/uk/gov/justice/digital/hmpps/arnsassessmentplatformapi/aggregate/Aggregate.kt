@@ -10,4 +10,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 )
 interface Aggregate<A : Aggregate<A>> : AggregateView {
   fun clone(): A
+  override fun equals(other: Any?): Boolean
+  override fun hashCode(): Int
 }
