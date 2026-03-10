@@ -45,10 +45,9 @@ class ClockProviderTest {
   fun `throws ClockException when backdateTo is in the future`() {
     val futureTime = LocalDateTime.now().plusDays(1)
     every { request.getParameter("backdateTo") } returns futureTime.toString()
-    val clockProvider = ClockProvider(request)
 
     val exception = assertThrows(ClockException::class.java) {
-      clockProvider.clock()
+      ClockProvider(request)
     }
 
     assertTrue(exception.message.contains("Invalid backdateTo parameter"))
@@ -66,7 +65,9 @@ class ClockProviderTest {
 
     (1..1000).forEach { _ ->
       val currentTime = LocalDateTime.now(clockProvider.clock())
-      if (currentTime < previousTime) {failures++}
+      if (currentTime < previousTime) {
+        failures++
+      }
       previousTime = currentTime
     }
 

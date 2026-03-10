@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock
 
 import jakarta.servlet.http.HttpServletRequest
-import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 import org.springframework.web.context.annotation.RequestScope
 import java.time.Clock
@@ -14,10 +13,15 @@ class ClockProvider(
   private val request: HttpServletRequest,
 ) {
   lateinit var clock: Clock
+  lateinit var requestDateTime: LocalDateTime
+
   init {
-      clock = createClock()
+    clock = createClock()
+    requestDateTime = LocalDateTime.now(clock)
   }
+
   fun clock(): Clock = clock
+
   fun createClock(): Clock {
     val baseClock = Clock.systemDefaultZone()
 

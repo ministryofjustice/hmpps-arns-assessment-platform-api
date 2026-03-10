@@ -92,6 +92,7 @@ class GroupCommandHandlerTest {
   fun setUp() {
     clearAllMocks()
     every { clock.now() } returns now
+    every { clock.requestDateTime() } returns now
   }
 
   @Test

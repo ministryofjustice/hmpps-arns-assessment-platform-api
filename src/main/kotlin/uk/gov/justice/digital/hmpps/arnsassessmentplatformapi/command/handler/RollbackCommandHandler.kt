@@ -20,7 +20,7 @@ class RollbackCommandHandler(
         data = AssessmentRolledBackEvent(
           rolledBackTo = command.pointInTime,
         ),
-        createdAt = command.receivedOn,
+        createdAt = services.clock.requestDateTime(),
       )
     }
 

@@ -75,15 +75,4 @@ class EventServiceTest {
       verify(exactly = 1) { eventRepository.saveAndFlush(events.first()) }
     }
   }
-
-  @Nested
-  inner class SaveAll {
-    @Test
-    fun `it saves all events`() {
-      every { eventRepository.saveAllAndFlush(any<List<EventEntity<Event>>>()) } answers { firstArg() }
-
-      service.saveAll(events)
-      verify(exactly = 1) { eventRepository.saveAllAndFlush(events) }
-    }
-  }
 }

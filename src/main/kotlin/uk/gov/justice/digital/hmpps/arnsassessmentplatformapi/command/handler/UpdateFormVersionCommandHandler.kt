@@ -18,7 +18,7 @@ class UpdateFormVersionCommandHandler(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid.value),
         data = FormVersionUpdatedEvent(version),
-        createdAt = command.receivedOn,
+        createdAt = services.clock.requestDateTime(),
       )
     }
     services.eventBus.handle(event).run(services.state::persist)

@@ -17,7 +17,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.addReceivedOn
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.bus.QueryBus
@@ -66,7 +65,7 @@ class AssessmentController(
   fun executeCommands(
     @RequestBody
     request: CommandsRequest,
-  ): CommandsResponse = commandDispatcher.dispatch(request.commands.apply { addReceivedOn(clock.now()) })
+  ): CommandsResponse = commandDispatcher.dispatch(request.commands)
 
   @RequestMapping(path = ["/query"], method = [RequestMethod.POST])
   @Operation(description = "Execute queries on an assessment")

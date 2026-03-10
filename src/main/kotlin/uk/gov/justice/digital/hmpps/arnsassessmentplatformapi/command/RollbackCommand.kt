@@ -9,6 +9,4 @@ data class RollbackCommand(
   override val assessmentUuid: Reference,
   val pointInTime: LocalDateTime,
   override val timeline: Timeline? = null,
-) : RequestableCommand {
-  override lateinit var receivedOn: LocalDateTime
-}
+) : RequestableCommand

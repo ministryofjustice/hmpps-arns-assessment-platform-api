@@ -31,7 +31,7 @@ class RemoveCollectionItemCommandHandler(
         data = CollectionItemRemovedEvent(
           collectionItemUuid = collectionItemUuid.value,
         ),
-        createdAt = command.receivedOn,
+        createdAt = services.clock.requestDateTime(),
       )
     }
 

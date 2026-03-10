@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import java.time.LocalDateTime
 
 data class Timeline(
   val type: String,
@@ -26,5 +25,4 @@ data class Timeline(
 )
 sealed interface Command {
   val timeline: Timeline?
-  var receivedOn: LocalDateTime
 }

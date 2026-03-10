@@ -17,14 +17,12 @@ class GroupCommandHandler(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid.value),
         data = GroupEvent(command.commands.count()),
-        createdAt = command.receivedOn,
+        createdAt = services.clock.requestDateTime(),
       )
     }
     services.eventBus.handle(event).run(services.state::persist)
-
-    services.event.setParentEvent(event)
+    services.event.save(event).run(services.event::setParentEvent)
     val commandsResponse = services.commandBus.dispatch(command.commands)
-    services.event.save(event)
     services.event.clearParentEvent()
 
     return GroupCommandResult(

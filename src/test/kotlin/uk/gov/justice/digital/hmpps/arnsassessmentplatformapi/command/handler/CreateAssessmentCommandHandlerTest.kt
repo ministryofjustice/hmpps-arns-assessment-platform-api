@@ -111,6 +111,7 @@ class CreateAssessmentCommandHandlerTest {
   fun setUp() {
     clearAllMocks()
     every { clock.now() } returns now
+    every { clock.requestDateTime() } returns now
   }
 
   @Test
@@ -123,14 +124,14 @@ class CreateAssessmentCommandHandlerTest {
     val assessment = slot<AssessmentEntity>()
     every { assessmentService.save(capture(assessment)) } answers { firstArg() }
 
-    val persistedEvent = slot<List<EventEntity<out Event>>>()
-
     val handledEvents = mutableListOf<EventEntity<out Event>>()
+    val persistedEvents = mutableListOf<EventEntity<out Event>>()
+
     val state: State = mockk()
 
     every { eventBus.handle(capture(handledEvents)) } returns state
     every { stateService.persist(state) } just Runs
-    every { eventService.saveAll(capture(persistedEvent)) } answers { firstArg() }
+    every { eventService.save(capture(persistedEvents)) } answers { firstArg() }
     every { userDetailsService.findOrCreate(commandUser) } returns user
     every { state[AssessmentAggregate::class] } returns assessmentState
     every { timelineService.saveAll(any()) } answers { firstArg() }
@@ -143,7 +144,7 @@ class CreateAssessmentCommandHandlerTest {
     verify(exactly = 1) { userDetailsService.findOrCreate(commandUser) }
     verify(exactly = 2) { eventBus.handle(any<EventEntity<out Event>>()) }
     verify(exactly = 2) { stateService.persist(state) }
-    verify(exactly = 1) { eventService.saveAll(any<List<EventEntity<out Event>>>()) }
+    verify(exactly = 2) { eventService.save(any<EventEntity<out Event>>()) }
 
     assertThat(assessment.captured.uuid).isEqualTo(command.assessmentUuid.value)
     assertThat(assessment.captured.type).isEqualTo(command.assessmentType)
@@ -162,7 +163,7 @@ class CreateAssessmentCommandHandlerTest {
       assertThat(handledEvent.user.authSource).isEqualTo(command.user.authSource)
       assertThat(handledEvent.data).isEqualTo(expectedEvents[index])
 
-      assertThat(handledEvent).isEqualTo(persistedEvent.captured[index])
+      assertThat(handledEvent).isEqualTo(persistedEvents[index])
       assertThat(handledEvent.createdAt).isEqualTo(assessment.captured.createdAt)
     }
 

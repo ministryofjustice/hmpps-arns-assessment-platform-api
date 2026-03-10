@@ -24,7 +24,7 @@ class EventBus(
         eventService
           .findAllForPointInTime(event.assessment.uuid, event.createdAt)
           .plus(event)
-          .sortedBy { it.createdAt }
+          .sortedBy { it.id }
           .fold(state) { acc, event -> execute(event, acc) }
       } else {
         state[aggregateType] = handler.handle(event, stateForType)

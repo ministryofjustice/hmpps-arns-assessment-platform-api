@@ -8,6 +8,6 @@ import java.util.UUID
 
 @Repository
 interface EventRepository : JpaRepository<EventEntity<*>, Long> {
-  fun findAllByAssessmentUuid(uuid: UUID): List<EventEntity<*>>
+  fun findAllByAssessmentUuidOrderById(uuid: UUID): List<EventEntity<*>>
   fun findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(uuid: UUID, dateTime: LocalDateTime): List<EventEntity<*>>
 }
