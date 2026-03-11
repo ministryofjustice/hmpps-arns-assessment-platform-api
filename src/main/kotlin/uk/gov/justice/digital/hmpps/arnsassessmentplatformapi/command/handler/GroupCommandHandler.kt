@@ -1,12 +1,11 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.GroupCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.GroupCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 
-@Component
 class GroupCommandHandler(
   private val services: CommandHandlerServiceBundle,
 ) : CommandHandler<GroupCommand> {
@@ -21,8 +20,8 @@ class GroupCommandHandler(
       )
     }
     services.eventBus.handle(event)
-      .also { services.event.save(event).run(services.event::setParentEvent) }
-      .run(services.state::persist)
+    services.event.save(event).run(services.event::setParentEvent)
+
     val commandsResponse = services.commandBus.dispatch(command.commands)
     services.event.clearParentEvent()
 

@@ -1,13 +1,12 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFormVersionCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
-@Component
 class UpdateFormVersionCommandHandler(
   private val services: CommandHandlerServiceBundle,
 ) : CommandHandler<UpdateFormVersionCommand> {
@@ -22,8 +21,7 @@ class UpdateFormVersionCommandHandler(
       )
     }
     services.eventBus.handle(event)
-      .also { services.event.save(event) }
-      .run(services.state::persist)
+    services.event.save(event)
 
     services.timeline.save(
       TimelineEntity.from(

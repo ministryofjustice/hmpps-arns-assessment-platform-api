@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFormVersionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.GroupCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
@@ -110,7 +111,6 @@ class GroupCommandHandlerTest {
     val state: State = mockk()
 
     every { eventBus.handle(capture(handledEvent)) } returns state
-    every { stateService.persist(state) } just Runs
     every { eventService.save(capture(persistedEvent)) } answers { firstArg() }
     every { eventService.setParentEvent(any<EventEntity<GroupEvent>>()) } just Runs
     every { eventService.clearParentEvent() } just Runs
@@ -121,7 +121,6 @@ class GroupCommandHandlerTest {
 
     verify(exactly = 1) { assessmentService.findBy(assessment.uuid) }
     verify(exactly = 1) { eventBus.handle(any<EventEntity<*>>()) }
-    verify(exactly = 1) { stateService.persist(state) }
     verify(exactly = 1) { eventService.save(any<EventEntity<*>>()) }
     verify(exactly = 1) { eventService.setParentEvent(any()) }
     verify(exactly = 1) { eventService.clearParentEvent() }

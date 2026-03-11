@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
@@ -29,7 +28,6 @@ class AssessmentController(
   private val commandDispatcher: CommandDispatcher,
   private val queryBus: QueryBus,
   private val assessmentService: AssessmentService,
-  private val clock: Clock,
 ) {
   @RequestMapping(path = ["/command"], method = [RequestMethod.POST])
   @Parameter(
