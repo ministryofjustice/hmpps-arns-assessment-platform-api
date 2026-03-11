@@ -1,0 +1,14 @@
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus
+
+import org.springframework.stereotype.Component
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+
+@Component
+class EventBusFactory(
+  val registry: EventHandlerRegistry,
+  val stateService: StateService,
+  val eventService: EventService,
+) {
+  fun create() = EventBus(registry, stateService, eventService)
+}

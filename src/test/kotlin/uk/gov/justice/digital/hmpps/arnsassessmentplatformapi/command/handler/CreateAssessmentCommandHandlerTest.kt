@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
@@ -17,6 +15,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
@@ -130,7 +129,6 @@ class CreateAssessmentCommandHandlerTest {
     val state: State = mockk()
 
     every { eventBus.handle(capture(handledEvents)) } returns state
-    every { stateService.persist(state) } just Runs
     every { eventService.save(capture(persistedEvents)) } answers { firstArg() }
     every { userDetailsService.findOrCreate(commandUser) } returns user
     every { state[AssessmentAggregate::class] } returns assessmentState
@@ -143,7 +141,6 @@ class CreateAssessmentCommandHandlerTest {
     verify(exactly = 1) { assessmentService.save(any<AssessmentEntity>()) }
     verify(exactly = 1) { userDetailsService.findOrCreate(commandUser) }
     verify(exactly = 2) { eventBus.handle(any<EventEntity<out Event>>()) }
-    verify(exactly = 2) { stateService.persist(state) }
     verify(exactly = 2) { eventService.save(any<EventEntity<out Event>>()) }
 
     assertThat(assessment.captured.uuid).isEqualTo(command.assessmentUuid.value)

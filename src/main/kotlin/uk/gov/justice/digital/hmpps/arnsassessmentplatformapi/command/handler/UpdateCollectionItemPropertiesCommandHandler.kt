@@ -1,16 +1,15 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
-@Component
 class UpdateCollectionItemPropertiesCommandHandler(
   private val services: CommandHandlerServiceBundle,
 ) : CommandHandler<UpdateCollectionItemPropertiesCommand> {
@@ -31,7 +30,6 @@ class UpdateCollectionItemPropertiesCommandHandler(
 
     val collection = services.eventBus.handle(event)
       .also { services.event.save(event) }
-      .also { updatedState -> services.state.persist(updatedState) }
       .run { get(AssessmentAggregate::class) as AssessmentState }
       .getForRead().data.getCollectionWithItem(command.collectionItemUuid.value)
       ?: throw CollectionItemNotFoundException(command.collectionItemUuid.value)

@@ -1,42 +1,54 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus
 
-import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.StateCollection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.exception.NoStateFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import kotlin.reflect.full.createInstance
 
-@Component
 class EventBus(
   val registry: EventHandlerRegistry,
   val stateService: StateService,
   val eventService: EventService,
 ) {
-  private fun <E : Event, S : State> execute(event: EventEntity<E>, state: S): S {
-    registry.getHandlersFor(event.data::class).map { handler ->
+  private val state: StateCollection = mutableMapOf()
+
+  fun persistState() {
+    stateService.persist(state)
+    state.clear()
+  }
+
+  private fun <E : Event> execute(event: EventEntity<E>) {
+    registry.getHandlersFor(event.data::class).forEach { handler ->
       val aggregateType = handler.stateType.createInstance().type
+      val stateForAssessment: State = state[event.assessment.uuid] ?: mutableMapOf()
       val stateProvider = stateService.stateForType(aggregateType)
-      val stateForType = state[aggregateType] ?: stateProvider.fetchLatestStateBefore(event.assessment, event.createdAt)
+      val stateForType = stateForAssessment[aggregateType]
+        ?: stateProvider.fetchLatestStateBefore(event.assessment, event.createdAt)
       if (stateForType == null) {
-        state[aggregateType] = stateProvider.blankState(event.assessment)
+        stateForAssessment[aggregateType] = stateProvider.blankState(event.assessment)
+        state[event.assessment.uuid] = stateForAssessment
         eventService
           .findAllForPointInTime(event.assessment.uuid, event.createdAt)
           .plus(event)
           .sortedBy { it.id }
-          .fold(state) { acc, event -> execute(event, acc) }
+          .forEach { execute(it) }
       } else {
-        state[aggregateType] = handler.handle(event, stateForType)
+        stateForAssessment[aggregateType] = handler.handle(event, stateForType)
+        state[event.assessment.uuid] = stateForAssessment
       }
     }
 
-    return event.children
+    event.children
       .sortedBy { it.createdAt }
-      .fold(state) { acc, event -> execute(event, acc) }
+      .forEach { execute(it) }
   }
 
-  fun handle(event: EventEntity<*>) = handle(listOf(event))
+  fun handle(event: EventEntity<*>): State = handle(listOf(event))[event.assessment.uuid]
+    ?: throw NoStateFoundException("No state found for assessment ${event.assessment.uuid}")
 
-  fun handle(events: List<EventEntity<*>>) = events.fold(mutableMapOf()) { acc: State, event -> execute(event, acc) }
+  fun handle(events: List<EventEntity<*>>): StateCollection = events.forEach { execute(it) }.let { state }
 }
