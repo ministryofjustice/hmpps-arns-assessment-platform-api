@@ -78,3 +78,5 @@ sonar-project.properties
 .DS_Store
 typescript-client/.cache
 typescript-client/src
+
+.sql
