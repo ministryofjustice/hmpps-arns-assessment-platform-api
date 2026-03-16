@@ -56,4 +56,5 @@ jobs:
               repo: 'hmpps-arns-integrations-test-playwright',
               workflow_id: '${{ env[inputs.environment] }}',
               ref: 'main'
+              inputs: { "source":"aap" }
             })
