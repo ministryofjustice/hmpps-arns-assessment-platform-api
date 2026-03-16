@@ -116,6 +116,7 @@ class GroupCommandHandlerTest {
     every { eventService.clearParentEvent() } just Runs
     every { commandBus.dispatch(any<List<RequestableCommand>>()) } answers { commandsResponse }
     every { userDetailsService.findOrCreate(commandUser) } returns user
+    every { services.timeline.save(any()) } answers { firstArg() }
 
     val result = handler.execute(command)
 
