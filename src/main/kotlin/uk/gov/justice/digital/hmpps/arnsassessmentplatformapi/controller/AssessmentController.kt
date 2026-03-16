@@ -117,7 +117,7 @@ class AssessmentController(
       ),
     ],
   )
-  @PreAuthorize("hasAnyRole('ROLE_AAP__COORDINATOR_RW')")
+  @PreAuthorize("hasAnyRole('ROLE_AAP__COORDINATOR_RW', 'ROLE_SENTENCE_PLAN_WRITE')")
   fun deleteAssessment(
     @PathVariable("assessmentUuid") assessmentUuid: UUID,
   ) {
