@@ -20,7 +20,7 @@ class CreateCollectionCommandHandler(
       )
     }
 
-    services.eventBus.handle(event).with(command.timeline)
+    services.eventBus.handle(event).createTimeline(command.timeline)
 
     return CreateCollectionCommandResult(command.collectionUuid)
   }

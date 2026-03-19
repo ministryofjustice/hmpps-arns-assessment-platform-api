@@ -57,8 +57,8 @@ class CreateAssessmentCommandHandler(
       ),
     )
 
-    services.eventBus.handle(createEvent).with(command.timeline)
-    services.eventBus.handle(assignEvent).with(command.timeline)
+    services.eventBus.handle(createEvent).createTimeline(command.timeline)
+    services.eventBus.handle(assignEvent).createTimeline(command.timeline)
 
     return CreateAssessmentCommandResult(assessment.uuid)
   }

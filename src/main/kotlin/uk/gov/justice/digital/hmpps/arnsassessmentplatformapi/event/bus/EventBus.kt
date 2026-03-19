@@ -31,8 +31,8 @@ class EventBus(
   }
 
   private fun resolve(resolvers: List<TimelineResolver>): TimelinesResolver = object : TimelinesResolver {
-    override fun with(customTimeline: Timeline?) {
-      resolvers.forEach { resolver -> resolver(customTimeline).run(timeline::add) }
+    override fun createTimeline(custom: Timeline?) {
+      resolvers.forEach { resolver -> resolver(custom).run(timeline::add) }
     }
   }
 

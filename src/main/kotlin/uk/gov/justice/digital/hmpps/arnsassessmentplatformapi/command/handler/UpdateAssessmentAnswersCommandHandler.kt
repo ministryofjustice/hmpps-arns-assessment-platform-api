@@ -23,7 +23,7 @@ class UpdateAssessmentAnswersCommandHandler(
       )
     }
 
-    services.eventBus.handle(event).with(command.timeline)
+    services.eventBus.handle(event).createTimeline(command.timeline)
 
     return CommandSuccessCommandResult()
   }
