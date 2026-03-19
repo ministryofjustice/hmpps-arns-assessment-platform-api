@@ -80,7 +80,7 @@ class CreateAssessmentCommandTest(
     assertThat(assessment?.identifiers).hasSize(1)
     assertThat(assessment?.identifiers?.first()?.toIdentifier()).isEqualTo(expectedIdentifier)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentUuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentUuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(2)
 

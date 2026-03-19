@@ -166,7 +166,7 @@ class ReorderCollectionItemCommandTest(
     assertThat(response?.commands?.first()?.request).isEqualTo(request.commands.first())
     assertIs<CommandSuccessCommandResult>(response?.commands?.first()?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(5)
     assertThat(eventsForAssessment.last().data).isInstanceOf(CollectionItemReorderedEvent::class.java)

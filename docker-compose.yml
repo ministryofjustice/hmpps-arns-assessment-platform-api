@@ -1,5 +1,5 @@
 services:
-  api:
+  aap-api:
     build:
       context: .
     networks:

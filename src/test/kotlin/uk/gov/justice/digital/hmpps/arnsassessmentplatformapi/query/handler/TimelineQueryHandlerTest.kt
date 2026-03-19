@@ -70,7 +70,7 @@ class TimelineQueryHandlerTest {
   val count: Int = 10
   val totalPages: Int = 5
   val pageNumber: Int = 0
-  val pageRequest: PageRequest = PageRequest.of(pageNumber, count, Sort.by(Sort.Direction.DESC, "createdAt"))
+  val pageRequest: PageRequest = PageRequest.of(pageNumber, count, Sort.by(Sort.Direction.DESC, "id"))
 
   @BeforeEach
   fun setup() {

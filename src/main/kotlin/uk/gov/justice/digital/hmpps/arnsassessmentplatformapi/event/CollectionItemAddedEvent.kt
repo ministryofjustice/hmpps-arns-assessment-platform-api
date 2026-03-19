@@ -9,5 +9,4 @@ data class CollectionItemAddedEvent(
   val answers: Map<String, Value>,
   val properties: Map<String, Value>,
   val index: Int?,
-
 ) : Event

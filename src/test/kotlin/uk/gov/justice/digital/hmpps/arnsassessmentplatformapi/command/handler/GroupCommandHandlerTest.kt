@@ -92,6 +92,7 @@ class GroupCommandHandlerTest {
   fun setUp() {
     clearAllMocks()
     every { clock.now() } returns now
+    every { clock.requestDateTime() } returns now
   }
 
   @Test
@@ -115,6 +116,7 @@ class GroupCommandHandlerTest {
     every { eventService.clearParentEvent() } just Runs
     every { commandBus.dispatch(any<List<RequestableCommand>>()) } answers { commandsResponse }
     every { userDetailsService.findOrCreate(commandUser) } returns user
+    every { services.timeline.save(any()) } answers { firstArg() }
 
     val result = handler.execute(command)
 

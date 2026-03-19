@@ -50,13 +50,37 @@ class ResourceSecurityTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Ensure command and query endpoints require ROLE_AAP__FRONTEND_RW or ROLE_AAP__COORDINATOR_RW`() {
+  fun `Ensure the command endpoint requires ROLE_AAP__FRONTEND_RW, ROLE_AAP__COORDINATOR_RW or ROLE_SENTENCE_PLAN_WRITE`() {
     val beans = context.getBeansOfType(RequestMappingHandlerMapping::class.java)
     beans.forEach { (_, mapping) ->
       mapping.handlerMethods.forEach { (mappingInfo, method) ->
         val paths = mappingInfo.pathPatternsCondition?.patternValues ?: emptySet()
 
-        if (paths.any { it == "/command" || it == "/query" }) {
+        if (paths.any { it == "/command" }) {
+          val classAnnotation = method.beanType.getAnnotation(PreAuthorize::class.java)
+          val methodAnnotation = method.getMethodAnnotation(PreAuthorize::class.java)
+          val annotation = methodAnnotation ?: classAnnotation
+
+          assertThat(annotation).withFailMessage {
+            "Endpoint ${paths.first()} must have @PreAuthorize annotation"
+          }.isNotNull()
+
+          assertThat(annotation?.value).withFailMessage {
+            "Endpoint ${paths.first()} must require ROLE_AAP__FRONTEND_RW, ROLE_AAP__COORDINATOR_RW or ROLE_SENTENCE_PLAN_WRITE, but has: ${annotation?.value}"
+          }.isEqualTo("hasAnyRole('ROLE_AAP__FRONTEND_RW', 'ROLE_AAP__COORDINATOR_RW', 'ROLE_SENTENCE_PLAN_WRITE')")
+        }
+      }
+    }
+  }
+
+  @Test
+  fun `Ensure the query endpoint requires ROLE_AAP__FRONTEND_RW or ROLE_AAP__COORDINATOR_RW`() {
+    val beans = context.getBeansOfType(RequestMappingHandlerMapping::class.java)
+    beans.forEach { (_, mapping) ->
+      mapping.handlerMethods.forEach { (mappingInfo, method) ->
+        val paths = mappingInfo.pathPatternsCondition?.patternValues ?: emptySet()
+
+        if (paths.any { it == "/query" }) {
           val classAnnotation = method.beanType.getAnnotation(PreAuthorize::class.java)
           val methodAnnotation = method.getMethodAnnotation(PreAuthorize::class.java)
           val annotation = methodAnnotation ?: classAnnotation

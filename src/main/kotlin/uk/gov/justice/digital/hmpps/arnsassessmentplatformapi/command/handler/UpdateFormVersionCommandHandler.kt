@@ -18,12 +18,13 @@ class UpdateFormVersionCommandHandler(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid.value),
         data = FormVersionUpdatedEvent(version),
-        createdAt = services.clock.now(),
+        createdAt = services.clock.requestDateTime(),
       )
     }
-    services.eventBus.handle(event).run(services.state::persist)
-    services.event.save(event)
-    services.event.save(event)
+    services.eventBus.handle(event)
+      .also { services.event.save(event) }
+      .run(services.state::persist)
+
     services.timeline.save(
       TimelineEntity.from(
         command,
