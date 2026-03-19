@@ -126,8 +126,8 @@ class SentencePlanService(
           data = mapOf(
             "Goals removed" to goalsToRemove.size,
           ),
-        )
-      )
+        ),
+      ),
     )
 
     commandDispatcher.dispatch(listOf(goalCommands, agreementCommands, timelineCommands).flatten())

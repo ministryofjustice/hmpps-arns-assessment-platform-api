@@ -54,17 +54,16 @@ class TimelineEntity(
   val customData: Map<String, Any>? = null,
 ) {
   companion object {
-    fun resolver(event: EventEntity<*>, data: Map<String, Any>): TimelineResolver =
-      { custom: Timeline? ->
-        TimelineEntity(
-          createdAt = event.createdAt,
-          user = event.user,
-          assessment = event.assessment,
-          eventType = event.data::class.simpleName,
-          data = data,
-          customType = custom?.type,
-          customData = custom?.data,
-        )
-      }
+    fun resolver(event: EventEntity<*>, data: Map<String, Any>): TimelineResolver = { custom: Timeline? ->
+      TimelineEntity(
+        createdAt = event.createdAt,
+        user = event.user,
+        assessment = event.assessment,
+        eventType = event.data::class.simpleName,
+        data = data,
+        customType = custom?.type,
+        customData = custom?.data,
+      )
+    }
   }
 }
