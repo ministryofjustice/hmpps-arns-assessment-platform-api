@@ -79,6 +79,6 @@ class CreateTimelineItemCommandTest(
     assertThat(timeline.customData).containsExactlyEntriesOf(mapOf("foo" to "bar"))
     assertThat(timeline.createdAt).isEqualTo(command.timestamp)
     assertThat(timeline.assessment.uuid).isEqualTo(assessmentEntity.uuid)
-    assertThat(timeline.user.uuid).isSameAs(testUserDetailsEntity.uuid)
+    assertThat(timeline.user.uuid).isEqualTo(testUserDetailsEntity.uuid)
   }
 }
