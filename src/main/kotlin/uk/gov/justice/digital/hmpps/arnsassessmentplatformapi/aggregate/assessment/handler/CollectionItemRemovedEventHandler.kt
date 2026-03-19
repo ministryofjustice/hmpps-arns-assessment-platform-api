@@ -6,7 +6,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemRemovedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
 class CollectionItemRemovedEventHandler(
@@ -18,12 +20,18 @@ class CollectionItemRemovedEventHandler(
   override fun handle(
     event: EventEntity<CollectionItemRemovedEvent>,
     state: AssessmentState,
-  ): AssessmentState {
+  ): EventHandlerResult<AssessmentState> {
     val aggregate = state.getForWrite(clock)
 
-    if (!aggregate.data.collections.any { collection -> collection.removeItem(event.data.collectionItemUuid) }) {
-      throw CollectionItemNotFoundException(event.data.collectionItemUuid, aggregate.uuid)
-    }
+    val collection = aggregate.data.getCollectionWithItem(event.data.collectionItemUuid)
+      ?: throw CollectionItemNotFoundException(event.data.collectionItemUuid, aggregate.uuid)
+
+    val timelineData = mapOf(
+      "collection" to collection.name,
+      "index" to collection.items.indexOf(collection.findItem(event.data.collectionItemUuid)),
+    )
+
+    collection.removeItem(event.data.collectionItemUuid)
 
     aggregate.data.apply {
       collaborators.add(event.user.uuid)
@@ -35,6 +43,9 @@ class CollectionItemRemovedEventHandler(
       numberOfEventsApplied += 1
     }
 
-    return state
+    return EventHandlerResult(
+      state = state,
+      timeline = TimelineEntity.resolver(event, timelineData),
+    )
   }
 }

@@ -14,11 +14,7 @@ class AssessmentState(
     aggregates.add(aggregate)
   }
 
-  override fun getLatest() = aggregates.sortedWith(
-    compareBy<AggregateEntity<AssessmentAggregate>> { it.eventsTo }
-      .thenByDescending { it.numberOfEventsApplied }
-      .thenBy(nullsLast()) { it.id },
-  ).last()
+  override fun getLatest() = aggregates.last()
 
   override fun getForRead(): AggregateEntityView<out AssessmentAggregateView> = getLatest()
 

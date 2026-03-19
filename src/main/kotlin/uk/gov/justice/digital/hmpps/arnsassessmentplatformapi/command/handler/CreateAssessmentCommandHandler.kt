@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUserEvent
@@ -9,9 +9,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
-@Component
 class CreateAssessmentCommandHandler(
   private val services: CommandHandlerServiceBundle,
 ) : CommandHandler<CreateAssessmentCommand> {
@@ -59,31 +57,8 @@ class CreateAssessmentCommandHandler(
       ),
     )
 
-    listOf(createEvent, assignEvent).forEach { event ->
-      services.eventBus.handle(event)
-        .also { services.event.save(event) }
-        .run(services.state::persist)
-    }
-
-    services.timeline.saveAll(
-      listOf(
-        TimelineEntity.from(
-          command,
-          createEvent,
-          mapOf(
-            "formVersion" to command.formVersion,
-            "properties" to (command.properties?.keys ?: emptySet()),
-          ),
-        ),
-        TimelineEntity.from(
-          command,
-          assignEvent,
-          mapOf(
-            "assignee" to user,
-          ),
-        ),
-      ),
-    )
+    services.eventBus.handle(createEvent).createTimeline(command.timeline)
+    services.eventBus.handle(assignEvent).createTimeline(command.timeline)
 
     return CreateAssessmentCommandResult(assessment.uuid)
   }

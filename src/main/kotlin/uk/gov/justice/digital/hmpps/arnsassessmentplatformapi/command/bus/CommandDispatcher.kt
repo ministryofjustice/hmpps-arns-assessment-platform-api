@@ -10,7 +10,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AuditServi
 
 @Service
 class CommandDispatcher(
-  private val commandBus: CommandBus,
+  private val commandBusFactory: CommandBusFactory,
   private val auditService: AuditService,
 ) {
   @Retryable(
@@ -18,6 +18,6 @@ class CommandDispatcher(
     maxAttempts = 3,
     backoff = Backoff(50),
   )
-  fun dispatch(commands: List<Command>) = commandBus.dispatch(commands)
+  fun dispatch(commands: List<Command>) = commandBusFactory.create().dispatchAndPersist(commands)
     .also { commands.forEach { command -> if (command is RequestableCommand) auditService.audit(command) } }
 }

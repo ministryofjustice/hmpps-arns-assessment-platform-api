@@ -21,9 +21,10 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AuditServi
 import kotlin.test.assertEquals
 
 class CommandDispatcherTest : IntegrationTestBase() {
+  val commandBus: CommandBus = mockk()
 
   @MockkBean
-  private lateinit var commandBus: CommandBus
+  private lateinit var commandBusFactory: CommandBusFactory
 
   @MockkBean
   private lateinit var auditService: AuditService
@@ -36,6 +37,7 @@ class CommandDispatcherTest : IntegrationTestBase() {
   @BeforeEach
   fun setUp() {
     clearAllMocks()
+    every { commandBusFactory.create() } returns commandBus
   }
 
   @Test
@@ -44,13 +46,13 @@ class CommandDispatcherTest : IntegrationTestBase() {
     val command2 = TestableCommand()
     val commands = listOf(command1, command2)
 
-    every { commandBus.dispatch(commands) } returns response
+    every { commandBus.dispatchAndPersist(commands) } returns response
 
     val result = commandDispatcher.dispatch(commands)
 
     assertEquals(response, result)
 
-    verify(exactly = 1) { commandBus.dispatch(commands) }
+    verify(exactly = 1) { commandBus.dispatchAndPersist(commands) }
     verify { auditService wasNot Called }
   }
 
@@ -60,14 +62,14 @@ class CommandDispatcherTest : IntegrationTestBase() {
     val nonRequestableCommand = TestableCommand()
     val commands = listOf(requestableCommand, nonRequestableCommand)
 
-    every { commandBus.dispatch(commands) } returns response
+    every { commandBus.dispatchAndPersist(commands) } returns response
     every { auditService.audit(requestableCommand) } just Runs
 
     val result = commandDispatcher.dispatch(commands)
 
     assertEquals(response, result)
 
-    verify(exactly = 1) { commandBus.dispatch(commands) }
+    verify(exactly = 1) { commandBus.dispatchAndPersist(commands) }
     verify(exactly = 1) { auditService.audit(requestableCommand) }
   }
 
@@ -76,13 +78,13 @@ class CommandDispatcherTest : IntegrationTestBase() {
     val command = TestableCommand()
     val commands = listOf(command)
 
-    every { commandBus.dispatch(commands) } returns response
+    every { commandBus.dispatchAndPersist(commands) } returns response
 
     val result = commandDispatcher.dispatch(commands)
 
     assertEquals(response, result)
 
-    verify(exactly = 1) { commandBus.dispatch(commands) }
+    verify(exactly = 1) { commandBus.dispatchAndPersist(commands) }
     verify { auditService wasNot Called }
   }
 
@@ -91,7 +93,7 @@ class CommandDispatcherTest : IntegrationTestBase() {
     val command = mockk<RequestableCommand>()
     val commands = listOf(command)
 
-    every { commandBus.dispatch(commands) } throws
+    every { commandBus.dispatchAndPersist(commands) } throws
       ObjectOptimisticLockingFailureException("Test", "id") andThenThrows
       ObjectOptimisticLockingFailureException("Test", "id") andThen
       response
@@ -101,7 +103,7 @@ class CommandDispatcherTest : IntegrationTestBase() {
 
     assertEquals(response, result)
 
-    verify(exactly = 3) { commandBus.dispatch(commands) }
+    verify(exactly = 3) { commandBus.dispatchAndPersist(commands) }
     verify(exactly = 1) { auditService.audit(command) }
   }
 
@@ -110,7 +112,7 @@ class CommandDispatcherTest : IntegrationTestBase() {
     val command = mockk<RequestableCommand>()
     val commands = listOf(command)
 
-    every { commandBus.dispatch(commands) } throws
+    every { commandBus.dispatchAndPersist(commands) } throws
       ObjectOptimisticLockingFailureException("Test", "id")
     every { auditService.audit(command) } just Runs
 
@@ -118,7 +120,7 @@ class CommandDispatcherTest : IntegrationTestBase() {
       commandDispatcher.dispatch(commands)
     }
 
-    verify(exactly = 3) { commandBus.dispatch(commands) }
+    verify(exactly = 3) { commandBus.dispatchAndPersist(commands) }
     verify(exactly = 0) { auditService.audit(command) }
   }
 }

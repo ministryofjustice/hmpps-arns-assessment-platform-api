@@ -11,9 +11,11 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import java.time.LocalDateTime
 import java.util.UUID
+
+typealias TimelineResolver = (custom: Timeline?) -> TimelineEntity
 
 @Entity
 @Table(name = "timeline")
@@ -52,14 +54,16 @@ class TimelineEntity(
   val customData: Map<String, Any>? = null,
 ) {
   companion object {
-    fun from(command: Command, event: EventEntity<*>, data: Map<String, Any>) = TimelineEntity(
-      createdAt = event.createdAt,
-      user = event.user,
-      assessment = event.assessment,
-      eventType = event.data::class.simpleName,
-      data = data,
-      customType = command.timeline?.type,
-      customData = command.timeline?.data,
-    )
+    fun resolver(event: EventEntity<*>, data: Map<String, Any>): TimelineResolver = { custom: Timeline? ->
+      TimelineEntity(
+        createdAt = event.createdAt,
+        user = event.user,
+        assessment = event.assessment,
+        eventType = event.data::class.simpleName,
+        data = data,
+        customType = custom?.type,
+        customData = custom?.data,
+      )
+    }
   }
 }

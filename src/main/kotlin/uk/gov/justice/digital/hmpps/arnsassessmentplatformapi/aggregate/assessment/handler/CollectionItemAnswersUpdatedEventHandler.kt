@@ -6,7 +6,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
 class CollectionItemAnswersUpdatedEventHandler(
@@ -18,14 +20,21 @@ class CollectionItemAnswersUpdatedEventHandler(
   override fun handle(
     event: EventEntity<CollectionItemAnswersUpdatedEvent>,
     state: AssessmentState,
-  ): AssessmentState {
+  ): EventHandlerResult<AssessmentState> {
     val aggregate = state.getForWrite(clock)
 
-    aggregate.data.getCollectionItem(event.data.collectionItemUuid)?.run {
+    val collection = aggregate.data.getCollectionWithItem(event.data.collectionItemUuid)
+    val item = collection?.findItem(event.data.collectionItemUuid)
+
+    if (collection == null || item == null) {
+      throw CollectionItemNotFoundException(event.data.collectionItemUuid, aggregate.uuid)
+    }
+
+    item.run {
       updatedAt = event.createdAt
       event.data.added.forEach { answers.put(it.key, it.value) }
       event.data.removed.forEach { answers.remove(it) }
-    } ?: throw CollectionItemNotFoundException(event.data.collectionItemUuid, aggregate.uuid)
+    }
 
     aggregate.data.apply {
       collaborators.add(event.user.uuid)
@@ -37,6 +46,17 @@ class CollectionItemAnswersUpdatedEventHandler(
       numberOfEventsApplied += 1
     }
 
-    return state
+    return EventHandlerResult(
+      state = state,
+      timeline = TimelineEntity.resolver(
+        event,
+        mapOf(
+          "collection" to collection.name,
+          "index" to collection.items.indexOf(item),
+          "added" to event.data.added.keys,
+          "removed" to event.data.removed,
+        ),
+      ),
+    )
   }
 }
