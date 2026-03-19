@@ -22,7 +22,7 @@ services:
       - localstack
 
   postgres:
-    image: postgres:16
+    image: postgres:18
     restart: always
     networks:
       - hmpps
