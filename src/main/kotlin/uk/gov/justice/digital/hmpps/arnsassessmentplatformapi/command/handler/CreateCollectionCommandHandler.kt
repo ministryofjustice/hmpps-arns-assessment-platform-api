@@ -5,7 +5,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.co
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateCollectionCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 class CreateCollectionCommandHandler(
   private val services: CommandHandlerServiceBundle,
@@ -21,19 +20,7 @@ class CreateCollectionCommandHandler(
       )
     }
 
-    services.eventBus.handle(event)
-    services.event.save(event)
-
-    services.timeline.save(
-      TimelineEntity.from(
-        command,
-        event,
-        mapOf(
-          "collection" to command.name,
-          "collectionUuid" to command.collectionUuid,
-        ),
-      ),
-    )
+    services.eventBus.handle(event).with(command.timeline)
 
     return CreateCollectionCommandResult(command.collectionUuid)
   }

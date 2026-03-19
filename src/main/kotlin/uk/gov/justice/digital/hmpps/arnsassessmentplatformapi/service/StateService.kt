@@ -79,8 +79,11 @@ class StateService(
       .findAllForPointInTime(assessment.uuid, pointInTime)
       .sortedBy { it.id }
       .ifEmpty { null }
-      ?.run(eventBusFactory.create()::handle)
-      ?.get(assessment.uuid)
+      ?.let { events ->
+        val eventBus = eventBusFactory.create()
+        eventBus.handle(events)
+        eventBus.getState()
+      }?.get(assessment.uuid)
       ?.get(type)
       .let { it ?: blankState(assessment) }
       .let { it as AggregateState<A> }

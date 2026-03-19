@@ -5,7 +5,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.co
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 class UpdateFormVersionCommandHandler(
   private val services: CommandHandlerServiceBundle,
@@ -20,18 +19,8 @@ class UpdateFormVersionCommandHandler(
         createdAt = services.clock.requestDateTime(),
       )
     }
-    services.eventBus.handle(event)
-    services.event.save(event)
 
-    services.timeline.save(
-      TimelineEntity.from(
-        command,
-        event,
-        mapOf(
-          "version" to command.version,
-        ),
-      ),
-    )
+    services.eventBus.handle(event).with(command.timeline)
 
     return CommandSuccessCommandResult()
   }

@@ -3,7 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.sentencePlan
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.GroupCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateTimelineItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
@@ -116,18 +116,20 @@ class SentencePlanService(
         )
       } ?: emptyList()
 
-    GroupCommand(
-      user = userDetails,
-      assessmentUuid = assessmentUuid.toReference(),
-      commands = listOf(goalCommands, agreementCommands).flatten(),
-      timeline = Timeline(
-        type = "NEW_PERIOD_OF_SUPERVISION",
-        data = mapOf(
-          "Goals removed" to goalsToRemove.size,
-        ),
-      ),
-    ).let {
-      commandDispatcher.dispatch(listOf(it))
-    }
+    val timelineCommands = listOf(
+      CreateTimelineItemCommand(
+        timestamp = LocalDateTime.now(),
+        user = userDetails,
+        assessmentUuid = assessmentUuid.toReference(),
+        timeline = Timeline(
+          type = "NEW_PERIOD_OF_SUPERVISION",
+          data = mapOf(
+            "Goals removed" to goalsToRemove.size,
+          ),
+        )
+      )
+    )
+
+    commandDispatcher.dispatch(listOf(goalCommands, agreementCommands, timelineCommands).flatten())
   }
 }

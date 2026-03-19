@@ -6,7 +6,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateTimelineItemCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.GroupCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.ReorderCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollbackCommand
@@ -20,7 +19,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.Ad
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.CreateAssessmentCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.CreateCollectionCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.CreateTimelineItemCommandHandler
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.GroupCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.RemoveCollectionItemCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.ReorderCollectionItemCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.RollbackCommandHandler
@@ -37,7 +35,6 @@ class CommandHandlerFactory {
     is CreateAssessmentCommand -> CreateAssessmentCommandHandler(serviceBundle)
     is CreateCollectionCommand -> CreateCollectionCommandHandler(serviceBundle)
     is CreateTimelineItemCommand -> CreateTimelineItemCommandHandler(serviceBundle)
-    is GroupCommand -> GroupCommandHandler(serviceBundle)
     is RemoveCollectionItemCommand -> RemoveCollectionItemCommandHandler(serviceBundle)
     is ReorderCollectionItemCommand -> ReorderCollectionItemCommandHandler(serviceBundle)
     is RollbackCommand -> RollbackCommandHandler(serviceBundle)

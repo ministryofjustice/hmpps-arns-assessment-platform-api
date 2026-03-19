@@ -6,7 +6,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.PropertyNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
 class AssessmentPropertiesUpdatedEventHandler(
@@ -18,7 +20,7 @@ class AssessmentPropertiesUpdatedEventHandler(
   override fun handle(
     event: EventEntity<AssessmentPropertiesUpdatedEvent>,
     state: AssessmentState,
-  ): AssessmentState {
+  ): EventHandlerResult<AssessmentState> {
     updateProperties(state, event.data)
     state.getForWrite(clock).data.apply {
       collaborators.add(event.user.uuid)
@@ -30,7 +32,16 @@ class AssessmentPropertiesUpdatedEventHandler(
       numberOfEventsApplied += 1
     }
 
-    return state
+    return EventHandlerResult(
+      state = state,
+      timeline = TimelineEntity.resolver(
+        event,
+        mapOf(
+          "added" to event.data.added.keys,
+          "removed" to event.data.removed,
+        ),
+      ),
+    )
   }
 
   private fun updateProperties(state: AssessmentState, event: AssessmentPropertiesUpdatedEvent) {

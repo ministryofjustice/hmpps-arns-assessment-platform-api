@@ -5,7 +5,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.co
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 class UpdateAssessmentPropertiesCommandHandler(
   private val services: CommandHandlerServiceBundle,
@@ -21,19 +20,7 @@ class UpdateAssessmentPropertiesCommandHandler(
       )
     }
 
-    services.eventBus.handle(event)
-    services.event.save(event)
-
-    services.timeline.save(
-      TimelineEntity.from(
-        command,
-        event,
-        mapOf(
-          "added" to command.added.keys,
-          "removed" to command.removed,
-        ),
-      ),
-    )
+    services.eventBus.handle(event).with(command.timeline)
 
     return CommandSuccessCommandResult()
   }

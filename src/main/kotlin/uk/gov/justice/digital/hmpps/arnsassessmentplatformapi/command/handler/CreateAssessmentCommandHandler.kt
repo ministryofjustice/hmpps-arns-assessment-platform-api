@@ -9,7 +9,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 class CreateAssessmentCommandHandler(
   private val services: CommandHandlerServiceBundle,
@@ -58,30 +57,8 @@ class CreateAssessmentCommandHandler(
       ),
     )
 
-    listOf(createEvent, assignEvent).forEach { event ->
-      services.eventBus.handle(event)
-      services.event.save(event)
-    }
-
-    services.timeline.saveAll(
-      listOf(
-        TimelineEntity.from(
-          command,
-          createEvent,
-          mapOf(
-            "formVersion" to command.formVersion,
-            "properties" to (command.properties?.keys ?: emptySet()),
-          ),
-        ),
-        TimelineEntity.from(
-          command,
-          assignEvent,
-          mapOf(
-            "assignee" to user,
-          ),
-        ),
-      ),
-    )
+    services.eventBus.handle(createEvent).with(command.timeline)
+    services.eventBus.handle(assignEvent).with(command.timeline)
 
     return CreateAssessmentCommandResult(assessment.uuid)
   }

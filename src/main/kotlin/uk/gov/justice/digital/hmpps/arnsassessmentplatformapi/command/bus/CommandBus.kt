@@ -25,7 +25,7 @@ open class CommandBus(
   private val serviceBundleFactory: CommandHandlerServiceBundleFactory,
 ) {
   private fun handle(command: Command): CommandResult {
-    val serviceBundle = serviceBundleFactory.create(eventBus, this)
+    val serviceBundle = serviceBundleFactory.create(eventBus)
     val handler = commandHandlerFactory.create(command, serviceBundle)
     return handler.execute(command)
   }
