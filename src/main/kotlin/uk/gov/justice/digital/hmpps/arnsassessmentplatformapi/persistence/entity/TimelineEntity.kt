@@ -12,6 +12,7 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateTimelineItemCommand
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -37,8 +38,8 @@ class TimelineEntity(
   @JoinColumn(name = "assessment_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
   val assessment: AssessmentEntity,
 
-  @Column(name = "event_type", nullable = false, updatable = false)
-  val eventType: String,
+  @Column(name = "event_type", nullable = true, updatable = false)
+  val eventType: String? = null,
 
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "data", columnDefinition = "jsonb", nullable = false, updatable = false)
@@ -56,7 +57,7 @@ class TimelineEntity(
       createdAt = event.createdAt,
       user = event.user,
       assessment = event.assessment,
-      eventType = event.data::class.simpleName ?: "Unknown",
+      eventType = event.data::class.simpleName,
       data = data,
       customType = command.timeline?.type,
       customData = command.timeline?.data,
