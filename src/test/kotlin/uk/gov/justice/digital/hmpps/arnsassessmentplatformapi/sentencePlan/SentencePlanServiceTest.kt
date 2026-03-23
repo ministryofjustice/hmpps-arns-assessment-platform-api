@@ -211,7 +211,7 @@ class SentencePlanServiceTest {
       assertThat(createCollectionCommands.first().name).isEqualTo("NOTES")
       assertThat(createCollectionCommands.first().parentCollectionItemUuid?.value).isEqualTo(goalWithoutNotes.uuid)
       assertThat(addItemCommands).hasSize(1)
-      assertThat(commands).hasSize(4)
+      assertThat(commands).hasSize(5)
     }
 
     @Test
