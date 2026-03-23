@@ -34,7 +34,7 @@ class CommandBusTest {
   fun setup() {
     clearAllMocks()
     every { handler.execute(any()) } answers { TestableCommandResult("result-${firstArg<TestableCommand>().param}") }
-    every { serviceBundleFactory.create(any(), any()) } returns mockk()
+    every { serviceBundleFactory.create(any()) } returns mockk()
     every { commandHandlerFactory.create(any(), any()) } returns handler
     every { eventBus.persistState() } just Runs
   }
@@ -61,7 +61,7 @@ class CommandBusTest {
       assertEquals(TestableCommand(param = "test-3"), response.commands[2].request)
       assertEquals(TestableCommandResult("result-test-3"), response.commands[2].result)
 
-      verify(exactly = 3) { serviceBundleFactory.create(any(), any()) }
+      verify(exactly = 3) { serviceBundleFactory.create(any()) }
       verify(exactly = 3) { commandHandlerFactory.create(any(), any()) }
       verify(exactly = 3) { handler.execute(any()) }
       verify(exactly = 1) { eventBus.persistState() }
@@ -73,7 +73,7 @@ class CommandBusTest {
 
       assertEquals(0, response.commands.size)
 
-      verify(exactly = 0) { serviceBundleFactory.create(any(), any()) }
+      verify(exactly = 0) { serviceBundleFactory.create(any()) }
       verify(exactly = 0) { commandHandlerFactory.create(any(), any()) }
       verify(exactly = 0) { handler.execute(any()) }
     }

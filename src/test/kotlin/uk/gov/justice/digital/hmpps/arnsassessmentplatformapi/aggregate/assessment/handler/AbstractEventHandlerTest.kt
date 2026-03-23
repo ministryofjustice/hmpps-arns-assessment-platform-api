@@ -88,7 +88,7 @@ abstract class AbstractEventHandlerTest<E : Event> {
     when (scenario) {
       is Scenario.Executes -> {
         val result = scenario.events.fold(scenario.initialState) { state, event ->
-          getHandler().handle(event, state)
+          getHandler().handle(event, state).state
         }
 
         assertThat(result.type).isEqualTo(scenario.expectedState.type)
@@ -103,7 +103,7 @@ abstract class AbstractEventHandlerTest<E : Event> {
 
         assertThrows(th.expectedException.java) {
           th.events.fold(th.initialState) { state, event ->
-            getHandler().handle(event, state)
+            getHandler().handle(event, state).state
           }
         }
       }

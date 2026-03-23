@@ -14,7 +14,6 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
@@ -119,16 +118,12 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
     val handledEvent = slot<EventEntity<out Event>>()
     val persistedEvent = slot<EventEntity<out Event>>()
     val savedTimeline = slot<TimelineEntity>()
-    val state: State = mockk()
     val stateForType: StateService.StateForType<AssessmentAggregate> = mockk()
 
     every { services.assessment.findBy(assessment.uuid) } returns assessment
-    every { services.eventBus.handle(capture(handledEvent)) } returns state
-    every { services.state.stateForType(AssessmentAggregate::class) } returns stateForType
+    every { services.eventBus.handle(capture(handledEvent)) } returns mockk()
     every { stateForType.fetchOrCreateLatestState(assessment) } returns assessmentState
-    every { services.event.save(capture(persistedEvent)) } answers { firstArg() }
     every { services.userDetails.findOrCreate(commandUser) } returns user
-    every { state[AssessmentAggregate::class] } returns assessmentState
     every { collection.name } returns "TEST_COLLECTION_NAME"
     every { collection.findItem(any()) } returns collectionItem
     every { collection.items } returns mutableListOf(collectionItem)

@@ -15,12 +15,14 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
 
 class EventBusTest {
   val stateService = mockk<StateService>()
   val eventService = mockk<EventService>()
+  val timelineService = mockk<TimelineService>()
   val stateProvider = mockk<StateService.StateForType<AssessmentAggregate>>()
   val state: AggregateState<AssessmentAggregate> = mockk()
   val assessment = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.now())
@@ -45,10 +47,16 @@ class EventBusTest {
     val handler1 = mockk<EventHandler<AssessmentCreatedEvent, AggregateState<out Aggregate<*>>>>()
     val handler2 = mockk<EventHandler<AssessmentCreatedEvent, AggregateState<out Aggregate<*>>>>()
 
-    every { handler1.handle(any<EventEntity<AssessmentCreatedEvent>>(), state) } returns state
+    val handler1Result = mockk<EventHandlerResult<AggregateState<out Aggregate<*>>>>()
+    every { handler1Result.state } returns state
+
+    val handler2Result = mockk<EventHandlerResult<AggregateState<out Aggregate<*>>>>()
+    every { handler2Result.state } returns state
+
+    every { handler1.handle(any<EventEntity<AssessmentCreatedEvent>>(), state) } returns handler1Result
     every { handler1.stateType } returns AssessmentState::class
 
-    every { handler2.handle(any<EventEntity<AssessmentCreatedEvent>>(), state) } returns state
+    every { handler2.handle(any<EventEntity<AssessmentCreatedEvent>>(), state) } returns handler2Result
     every { handler2.stateType } returns AssessmentState::class
 
     every { stateProvider.fetchLatestStateBefore(assessment, event.createdAt) } returns state
@@ -62,6 +70,7 @@ class EventBusTest {
       stateService = stateService,
       eventService = eventService,
       registry = registry,
+      timelineService = timelineService,
     )
 
     eventBus.handle(event)

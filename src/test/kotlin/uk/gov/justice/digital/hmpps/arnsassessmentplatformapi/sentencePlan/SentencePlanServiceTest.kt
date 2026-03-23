@@ -10,8 +10,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.GroupCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateTimelineItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveCollectionItemCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandDispatcher
@@ -127,21 +128,22 @@ class SentencePlanServiceTest {
 
       service.newPeriodOfSupervision(assessmentUuid, userDetails)
 
-      val commandsSlot = slot<List<GroupCommand>>()
+      val commandsSlot = slot<List<RequestableCommand>>()
       verify { commandDispatcher.dispatch(capture(commandsSlot)) }
 
-      val groupCommand = commandsSlot.captured.first()
-      val subCommands = groupCommand.commands
+      val subCommands = commandsSlot.captured
 
       val updatePropsCommands = subCommands.filterIsInstance<UpdateCollectionItemPropertiesCommand>()
       val updateAnswersCommands = subCommands.filterIsInstance<UpdateCollectionItemAnswersCommand>()
       val addItemCommands = subCommands.filterIsInstance<AddCollectionItemCommand>()
       val removeItemCommands = subCommands.filterIsInstance<RemoveCollectionItemCommand>()
+      val timelineCommands = subCommands.filterIsInstance<CreateTimelineItemCommand>()
 
       assertThat(updatePropsCommands).hasSize(2)
       assertThat(updateAnswersCommands).hasSize(2)
       assertThat(addItemCommands).hasSize(2)
       assertThat(removeItemCommands).hasSize(1)
+      assertThat(timelineCommands).hasSize(1)
 
       assertThat(updatePropsCommands).allMatch {
         it.added["status"] == SingleValue("REMOVED")
@@ -151,8 +153,8 @@ class SentencePlanServiceTest {
       }
       assertThat(removeItemCommands.first().collectionItemUuid.value).isEqualTo(agreement.uuid)
 
-      assertThat(groupCommand.timeline?.type).isEqualTo("NEW_PERIOD_OF_SUPERVISION")
-      assertThat(groupCommand.timeline?.data?.get("Goals removed")).isEqualTo(2)
+      assertThat(timelineCommands.first().timeline.type).isEqualTo("NEW_PERIOD_OF_SUPERVISION")
+      assertThat(timelineCommands.first().timeline.data["Goals removed"]).isEqualTo(2)
     }
 
     @Test
@@ -166,11 +168,10 @@ class SentencePlanServiceTest {
 
       service.newPeriodOfSupervision(assessmentUuid, userDetails)
 
-      val commandsSlot = slot<List<GroupCommand>>()
+      val commandsSlot = slot<List<RequestableCommand>>()
       verify { commandDispatcher.dispatch(capture(commandsSlot)) }
 
-      val groupCommand = commandsSlot.captured.first()
-      val subCommands = groupCommand.commands
+      val subCommands = commandsSlot.captured
 
       assertThat(subCommands.filterIsInstance<UpdateCollectionItemPropertiesCommand>()).isEmpty()
       assertThat(subCommands.filterIsInstance<UpdateCollectionItemAnswersCommand>()).isEmpty()
@@ -198,19 +199,19 @@ class SentencePlanServiceTest {
 
       service.newPeriodOfSupervision(assessmentUuid, userDetails)
 
-      val commandsSlot = slot<List<GroupCommand>>()
+      val commandsSlot = slot<List<RequestableCommand>>()
       verify { commandDispatcher.dispatch(capture(commandsSlot)) }
 
-      val groupCommand = commandsSlot.captured.first()
+      val commands = commandsSlot.captured
 
-      val createCollectionCommands = groupCommand.commands.filterIsInstance<CreateCollectionCommand>()
-      val addItemCommands = groupCommand.commands.filterIsInstance<AddCollectionItemCommand>()
+      val createCollectionCommands = commands.filterIsInstance<CreateCollectionCommand>()
+      val addItemCommands = commands.filterIsInstance<AddCollectionItemCommand>()
 
       assertThat(createCollectionCommands).hasSize(1)
       assertThat(createCollectionCommands.first().name).isEqualTo("NOTES")
       assertThat(createCollectionCommands.first().parentCollectionItemUuid?.value).isEqualTo(goalWithoutNotes.uuid)
       assertThat(addItemCommands).hasSize(1)
-      assertThat(groupCommand.commands).hasSize(4)
+      assertThat(commands).hasSize(4)
     }
 
     @Test
@@ -226,10 +227,10 @@ class SentencePlanServiceTest {
 
       service.newPeriodOfSupervision(assessmentUuid, userDetails)
 
-      val commandsSlot = slot<List<GroupCommand>>()
+      val commandsSlot = slot<List<RequestableCommand>>()
       verify { commandDispatcher.dispatch(capture(commandsSlot)) }
 
-      val addItemCommands = commandsSlot.captured.first().commands.filterIsInstance<AddCollectionItemCommand>()
+      val addItemCommands = commandsSlot.captured.filterIsInstance<AddCollectionItemCommand>()
       val noteValue = addItemCommands.first().answers["note"] as SingleValue
 
       assertThat(noteValue.value).isEqualTo("Automatically removed as John's previous supervision period has ended.")
@@ -245,10 +246,10 @@ class SentencePlanServiceTest {
 
       service.newPeriodOfSupervision(assessmentUuid, userDetails)
 
-      val commandsSlot = slot<List<GroupCommand>>()
+      val commandsSlot = slot<List<RequestableCommand>>()
       verify { commandDispatcher.dispatch(capture(commandsSlot)) }
 
-      val addItemCommands = commandsSlot.captured.first().commands.filterIsInstance<AddCollectionItemCommand>()
+      val addItemCommands = commandsSlot.captured.filterIsInstance<AddCollectionItemCommand>()
       val noteValue = addItemCommands.first().answers["note"] as SingleValue
 
       assertThat(noteValue.value).isEqualTo("Automatically removed as the previous supervision period has ended.")

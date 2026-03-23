@@ -8,13 +8,11 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
@@ -32,7 +30,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import java.time.LocalDateTime
@@ -41,22 +38,17 @@ import java.util.UUID
 class CreateAssessmentCommandHandlerTest {
   val assessmentService: AssessmentService = mockk()
   val eventService: EventService = mockk()
-  val stateService: StateService = mockk()
   val userDetailsService: UserDetailsService = mockk()
   val timelineService: TimelineService = mockk()
   val eventBus: EventBus = mockk()
-  val commandBus: CommandBus = mockk()
   val assessmentAggregate: AssessmentAggregate = mockk()
   val clock: Clock = mockk()
 
   val services = CommandHandlerServiceBundle(
     assessment = assessmentService,
-    event = eventService,
-    state = stateService,
     userDetails = userDetailsService,
     timeline = timelineService,
     eventBus = eventBus,
-    commandBus = commandBus,
     clock = clock,
   )
 
@@ -126,12 +118,9 @@ class CreateAssessmentCommandHandlerTest {
     val handledEvents = mutableListOf<EventEntity<out Event>>()
     val persistedEvents = mutableListOf<EventEntity<out Event>>()
 
-    val state: State = mockk()
-
-    every { eventBus.handle(capture(handledEvents)) } returns state
+    every { eventBus.handle(capture(handledEvents)) } returns mockk()
     every { eventService.save(capture(persistedEvents)) } answers { firstArg() }
     every { userDetailsService.findOrCreate(commandUser) } returns user
-    every { state[AssessmentAggregate::class] } returns assessmentState
     every { timelineService.saveAll(any()) } answers { firstArg() }
 
     val result = handler.handle(command)
