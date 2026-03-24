@@ -23,8 +23,11 @@ spring:
       max-in-memory-size: 10MB
   data:
     redis:
-      host: ${redis.host:localhost}
-      port: ${redis.port:6379}
+      host: ${cache.redis.host:localhost}
+      port: ${cache.redis.port:6379}
+      password: ${cache.redis.auth-token:}
+      ssl:
+        enabled: ${cache.redis.ssl.enabled:false}
   web:
     error:
       include-message: always
