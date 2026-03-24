@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentIdentifierRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.cache.AssessmentCache
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.criteria.AssessmentsByExternalIdentifiersCriteria
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
@@ -18,8 +19,10 @@ import java.util.UUID
 class AssessmentService(
   private val assessmentRepository: AssessmentRepository,
   private val assessmentIdentifierRepository: AssessmentIdentifierRepository,
+  private val assessmentCache: AssessmentCache,
 ) {
-  fun findBy(uuid: UUID) = findBy(UuidIdentifier(uuid), LocalDateTime.now())
+  fun findBy(uuid: UUID) = assessmentCache.get(uuid)
+    ?: assessmentCache.put(findBy(UuidIdentifier(uuid), LocalDateTime.now()))
 
   fun findBy(assessmentIdentifier: AssessmentIdentifier, pointInTime: LocalDateTime) = when (assessmentIdentifier) {
     is ExternalIdentifier -> with(assessmentIdentifier) {

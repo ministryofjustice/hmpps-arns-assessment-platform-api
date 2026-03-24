@@ -1,13 +1,17 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentIdentifierRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.cache.AssessmentCache
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
@@ -21,10 +25,18 @@ import java.util.UUID
 class AssessmentServiceTest {
   val assessmentRepository: AssessmentRepository = mockk()
   val assessmentIdentifierRepository: AssessmentIdentifierRepository = mockk()
+  val assessmentCache: AssessmentCache = mockk()
+
   val service = AssessmentService(
     assessmentRepository = assessmentRepository,
     assessmentIdentifierRepository = assessmentIdentifierRepository,
+    assessmentCache = assessmentCache,
   )
+
+  @BeforeEach
+  fun setUp() {
+    clearAllMocks()
+  }
 
   @Nested
   inner class FindByUuid {
@@ -33,14 +45,34 @@ class AssessmentServiceTest {
       val assessment = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.now())
 
       every { assessmentRepository.findByUuid(assessment.uuid) } returns assessment
+      every { assessmentCache.get(assessment.uuid) } returns null
+      every { assessmentCache.put(assessment) } returns assessment
 
       val result = service.findBy(assessment.uuid)
 
       assertThat(result).isEqualTo(assessment)
+
+      verify(exactly = 1) { assessmentRepository.findByUuid(assessment.uuid) }
+      verify(exactly = 1) { assessmentCache.get(assessment.uuid) }
+      verify(exactly = 1) { assessmentCache.put(assessment) }
+    }
+
+    @Test
+    fun `it finds from cache and returns the assessment`() {
+      val assessment = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.now())
+
+      every { assessmentCache.get(assessment.uuid) } returns assessment
+
+      val result = service.findBy(assessment.uuid)
+
+      assertThat(result).isEqualTo(assessment)
+
+      verify(exactly = 1) { assessmentCache.get(assessment.uuid) }
     }
 
     @Test
     fun `it throws when unable to find the assessment`() {
+      every { assessmentCache.get(any<UUID>()) } returns null
       every { assessmentRepository.findByUuid(any<UUID>()) } returns null
 
       assertThrows<AssessmentNotFoundException> {
@@ -55,7 +87,7 @@ class AssessmentServiceTest {
     fun `it finds and returns the assessment`() {
       val assessment = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.now())
 
-      every { assessmentRepository.findByUuid(assessment.uuid) } returns assessment
+      every { assessmentCache.get(assessment.uuid) } returns assessment
 
       val result = service.findBy(UuidIdentifier(assessment.uuid), LocalDateTime.now())
 
@@ -64,6 +96,7 @@ class AssessmentServiceTest {
 
     @Test
     fun `it throws when unable to find the assessment`() {
+      every { assessmentCache.get(any<UUID>()) } returns null
       every { assessmentRepository.findByUuid(any<UUID>()) } returns null
 
       assertThrows<AssessmentNotFoundException> {

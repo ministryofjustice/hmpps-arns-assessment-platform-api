@@ -10,9 +10,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregat
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineResolver
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
@@ -48,10 +50,14 @@ class EventBusTest {
     val handler2 = mockk<EventHandler<AssessmentCreatedEvent, AggregateState<out Aggregate<*>>>>()
 
     val handler1Result = mockk<EventHandlerResult<AggregateState<out Aggregate<*>>>>()
+    val handler1Timeline = mockk<TimelineResolver>()
     every { handler1Result.state } returns state
+    every { handler1Result.timeline } returns handler1Timeline
 
     val handler2Result = mockk<EventHandlerResult<AggregateState<out Aggregate<*>>>>()
+    val handler2Timeline = mockk<TimelineResolver>()
     every { handler2Result.state } returns state
+    every { handler2Result.timeline } returns handler2Timeline
 
     every { handler1.handle(any<EventEntity<AssessmentCreatedEvent>>(), state) } returns handler1Result
     every { handler1.stateType } returns AssessmentState::class
@@ -73,12 +79,18 @@ class EventBusTest {
       timelineService = timelineService,
     )
 
-    eventBus.handle(event)
+    val result = eventBus.handle(event)
 
     verify(exactly = 1) { registry.getHandlersFor(AssessmentCreatedEvent::class) }
     verify(exactly = 1) { handler1.handle(event, state) }
     verify(exactly = 1) { handler2.handle(event, state) }
     verify(exactly = 1) { stateProvider.fetchLatestStateBefore(assessment, event.createdAt) }
     verify(exactly = 2) { stateService.stateForType(AssessmentAggregate::class) }
+
+    result.createTimeline(Timeline(type = "custom_type", data = mapOf("key" to "value")))
+
+    eventBus.persistState()
+
+    verify(exactly = 1) { timelineService.saveAll(any()) }
   }
 }
