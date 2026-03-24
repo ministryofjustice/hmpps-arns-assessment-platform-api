@@ -3,6 +3,8 @@ LOCAL_COMPOSE_FILES = -f docker-compose.yml -f docker-compose.local.yml
 DEV_COMPOSE_FILES = -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.dev.yml
 PROJECT_NAME = hmpps-assess-risks-and-needs
 SERVICE_NAME = api
+CLIENT_ID := $(shell kubectl -n hmpps-arns-assessment-platform-dev get secret hmpps-arns-assessment-platform-ui-client-creds -o jsonpath='{.data.CLIENT_CREDS_CLIENT_ID}' | base64 -d)
+CLIENT_SECRET := $(shell kubectl -n hmpps-arns-assessment-platform-dev get secret hmpps-arns-assessment-platform-ui-client-creds -o jsonpath='{.data.CLIENT_CREDS_CLIENT_SECRET}' | base64 -d)
 
 export COMPOSE_PROJECT_NAME=${PROJECT_NAME}
 
@@ -41,6 +43,8 @@ watch: ## Watches for file changes and live-reloads the API. To be used in conju
 test: ## Runs all the test suites.
 	docker compose ${DEV_COMPOSE_FILES} exec \
 	   --env HMPPS_AUTH_URL=http://localhost:9090/auth \
+	   --env AAP_CLIENT_ID="${CLIENT_ID}" \
+       --env AAP_CLIENT_SECRET="${CLIENT_SECRET}" \
       ${SERVICE_NAME} \
       gradle test --parallel
 
