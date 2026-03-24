@@ -2,7 +2,7 @@
 # Per environment values which override defaults in hmpps-arns-assessment-platform-api/values.yaml
 
 generic-service:
-  replicaCount: 2
+  replicaCount: 4 #TODO: Lower once we finish load testing
 
   ingress:
     host: arns-assessment-platform-api-dev.hmpps.service.justice.gov.uk
