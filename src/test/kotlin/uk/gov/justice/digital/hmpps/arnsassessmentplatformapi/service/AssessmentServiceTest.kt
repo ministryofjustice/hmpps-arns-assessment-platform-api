@@ -87,7 +87,7 @@ class AssessmentServiceTest {
     fun `it finds and returns the assessment`() {
       val assessment = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.now())
 
-      every { assessmentCache.get(assessment.uuid) } returns assessment
+      every { assessmentRepository.findByUuid(assessment.uuid) } returns assessment
 
       val result = service.findBy(UuidIdentifier(assessment.uuid), LocalDateTime.now())
 
@@ -96,7 +96,6 @@ class AssessmentServiceTest {
 
     @Test
     fun `it throws when unable to find the assessment`() {
-      every { assessmentCache.get(any<UUID>()) } returns null
       every { assessmentRepository.findByUuid(any<UUID>()) } returns null
 
       assertThrows<AssessmentNotFoundException> {
