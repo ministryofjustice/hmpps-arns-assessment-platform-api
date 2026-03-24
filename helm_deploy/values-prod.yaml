@@ -3,6 +3,7 @@
 
 generic-service:
   ingress:
+    enabled: false # Disable ingress until we are ready for users to access the service in production
     host: arns-assessment-platform-api.hmpps.service.justice.gov.uk
 
   env:
