@@ -65,6 +65,12 @@ class AssessmentVersionQueryHandlerTest : AbstractQueryHandlerTest() {
     )
 
     test(query, aggregate, expectedResult)
+
+    if (timestamp == null) {
+      verify(exactly = 1) { cacheService.cacheLatest(expectedResult) }
+    } else {
+      verify(exactly = 0) { cacheService.cacheLatest(any()) }
+    }
   }
 
   override fun assertSuccessMockCallCount() {
