@@ -12,11 +12,11 @@ import java.util.UUID
 interface AggregateRepository : JpaRepository<AggregateEntity<*>, Long> {
   @Query(
     value = """
-        SELECT * FROM aggregate 
-        WHERE assessment_uuid = :assessmentUuid 
-          AND data ->> 'type' = :aggregateType 
-          AND events_to <= :beforeDate 
-        ORDER BY events_to DESC 
+        SELECT * FROM aggregate
+        WHERE assessment_uuid = :assessmentUuid
+          AND data ->> 'type' = :aggregateType
+          AND events_to <= :beforeDate
+        ORDER BY id DESC
         LIMIT 1
     """,
     nativeQuery = true,
@@ -33,7 +33,7 @@ interface AggregateRepository : JpaRepository<AggregateEntity<*>, Long> {
         WHERE assessment_uuid = :assessmentUuid 
           AND data ->> 'type' = :aggregateType 
           AND events_to = :beforeDate 
-        ORDER BY events_to DESC 
+        ORDER BY id DESC 
         LIMIT 1
     """,
     nativeQuery = true,

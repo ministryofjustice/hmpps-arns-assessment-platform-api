@@ -2,7 +2,7 @@ SHELL = '/bin/bash'
 LOCAL_COMPOSE_FILES = -f docker-compose.yml -f docker-compose.local.yml
 DEV_COMPOSE_FILES = -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.dev.yml
 PROJECT_NAME = hmpps-assess-risks-and-needs
-SERVICE_NAME = api
+SERVICE_NAME = aap-api
 
 export COMPOSE_PROJECT_NAME=${PROJECT_NAME}
 

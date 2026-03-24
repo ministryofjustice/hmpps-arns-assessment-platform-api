@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
+import org.springframework.transaction.support.TransactionTemplate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.GroupCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
@@ -41,6 +42,9 @@ class GroupCommandTest(
 ) : IntegrationTestBase() {
   @Autowired
   private lateinit var eventRepository: EventRepository
+
+  @Autowired
+  lateinit var transactionTemplate: TransactionTemplate
 
   @BeforeEach
   fun setUp() {
@@ -139,28 +143,30 @@ class GroupCommandTest(
     assertThat(result.commands[2].request).isEqualTo(updateCommand.commands[2])
     assertIs<CommandSuccessCommandResult>(result.commands[2].result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid).sortedBy { it.createdAt }
+    transactionTemplate.execute {
+      val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
-    assertThat(eventsForAssessment.size).isEqualTo(6)
-    assertThat(eventsForAssessment[2].data).isInstanceOf(GroupEvent::class.java)
-    assertNull(eventsForAssessment[2].parent)
-    assertThat(eventsForAssessment[3].data).isInstanceOf(FormVersionUpdatedEvent::class.java)
-    assertThat(eventsForAssessment[3].parent?.uuid).isEqualTo(eventsForAssessment[2].uuid)
-    assertThat(eventsForAssessment[4].data).isInstanceOf(AssessmentAnswersUpdatedEvent::class.java)
-    assertThat(eventsForAssessment[4].parent?.uuid).isEqualTo(eventsForAssessment[2].uuid)
-    assertThat(eventsForAssessment[5].data).isInstanceOf(AssessmentPropertiesUpdatedEvent::class.java)
-    assertThat(eventsForAssessment[5].parent?.uuid).isEqualTo(eventsForAssessment[2].uuid)
+      assertThat(eventsForAssessment.size).isEqualTo(6)
+      assertThat(eventsForAssessment[2].data).isInstanceOf(GroupEvent::class.java)
+      assertNull(eventsForAssessment[2].parent)
+      assertThat(eventsForAssessment[3].data).isInstanceOf(FormVersionUpdatedEvent::class.java)
+      assertThat(eventsForAssessment[3].parent?.uuid).isEqualTo(eventsForAssessment[2].uuid)
+      assertThat(eventsForAssessment[4].data).isInstanceOf(AssessmentAnswersUpdatedEvent::class.java)
+      assertThat(eventsForAssessment[4].parent?.uuid).isEqualTo(eventsForAssessment[2].uuid)
+      assertThat(eventsForAssessment[5].data).isInstanceOf(AssessmentPropertiesUpdatedEvent::class.java)
+      assertThat(eventsForAssessment[5].parent?.uuid).isEqualTo(eventsForAssessment[2].uuid)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
-      assessmentEntity.uuid,
-      AssessmentAggregate::class.simpleName!!,
-      clock.now(),
-    )
+      val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+        assessmentEntity.uuid,
+        AssessmentAggregate::class.simpleName!!,
+        clock.now(),
+      )
 
-    assertThat(aggregate).isNotNull
-    val data = assertIs<AssessmentAggregate>(aggregate?.data)
-    assertThat(data.formVersion).isEqualTo("2")
-    assertThat(data.answers).isEqualTo(mapOf("bar" to SingleValue("baz")))
-    assertThat(data.properties).isEqualTo(mapOf("foo" to SingleValue("baz")))
+      assertThat(aggregate).isNotNull
+      val data = assertIs<AssessmentAggregate>(aggregate?.data)
+      assertThat(data.formVersion).isEqualTo("2")
+      assertThat(data.answers).isEqualTo(mapOf("bar" to SingleValue("baz")))
+      assertThat(data.properties).isEqualTo(mapOf("foo" to SingleValue("baz")))
+    }
   }
 }

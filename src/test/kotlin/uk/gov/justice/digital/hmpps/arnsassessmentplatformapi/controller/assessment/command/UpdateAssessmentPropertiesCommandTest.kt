@@ -114,7 +114,7 @@ class UpdateAssessmentPropertiesCommandTest(
     assertThat(response?.commands[0]?.request).isEqualTo(request.commands[0])
     assertIs<CommandSuccessCommandResult>(response?.commands[0]?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(3)
     assertThat(eventsForAssessment.last().data).isInstanceOf(AssessmentPropertiesUpdatedEvent::class.java)

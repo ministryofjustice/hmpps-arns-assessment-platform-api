@@ -14,11 +14,11 @@ import java.time.LocalDateTime
 class ClockProviderTest {
 
   private val request: HttpServletRequest = mockk()
-  private val clockProvider = ClockProvider(request)
 
   @Test
   fun `returns system clock when backdateTo parameter is null`() {
     every { request.getParameter("backdateTo") } returns null
+    val clockProvider = ClockProvider(request)
 
     val clock = clockProvider.clock()
 
@@ -30,6 +30,7 @@ class ClockProviderTest {
   fun `returns offset clock when backdateTo is in the past`() {
     val pastTime = LocalDateTime.now().minusDays(1)
     every { request.getParameter("backdateTo") } returns pastTime.toString()
+    val clockProvider = ClockProvider(request)
 
     val clock = clockProvider.clock()
 
@@ -46,9 +47,30 @@ class ClockProviderTest {
     every { request.getParameter("backdateTo") } returns futureTime.toString()
 
     val exception = assertThrows(ClockException::class.java) {
-      clockProvider.clock()
+      ClockProvider(request)
     }
 
     assertTrue(exception.message.contains("Invalid backdateTo parameter"))
+  }
+
+  @Test
+  fun `works all the time, every time, never fails`() {
+    val pastTime = LocalDateTime.now().minusDays(1)
+    every { request.getParameter("backdateTo") } returns pastTime.toString()
+    val clockProvider = ClockProvider(request)
+
+    val clock = clockProvider.clock()
+    var previousTime = LocalDateTime.now(clock)
+    var failures = 0
+
+    (1..1000).forEach { _ ->
+      val currentTime = LocalDateTime.now(clockProvider.clock())
+      if (currentTime < previousTime) {
+        failures++
+      }
+      previousTime = currentTime
+    }
+
+    assertEquals(0, failures)
   }
 }

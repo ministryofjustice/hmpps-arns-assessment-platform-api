@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.GroupComma
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.GroupCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
 class GroupCommandHandler(
@@ -17,15 +18,22 @@ class GroupCommandHandler(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid.value),
         data = GroupEvent(command.commands.count()),
-        createdAt = services.clock.now(),
+        createdAt = services.clock.requestDateTime(),
       )
     }
-    services.eventBus.handle(event).run(services.state::persist)
-    services.event.save(event)
-
-    services.event.setParentEvent(event)
+    services.eventBus.handle(event)
+      .also { services.event.save(event).run(services.event::setParentEvent) }
+      .run(services.state::persist)
     val commandsResponse = services.commandBus.dispatch(command.commands)
     services.event.clearParentEvent()
+
+    services.timeline.save(
+      TimelineEntity.from(
+        command,
+        event,
+        mapOf(),
+      ),
+    )
 
     return GroupCommandResult(
       commands = commandsResponse.commands,

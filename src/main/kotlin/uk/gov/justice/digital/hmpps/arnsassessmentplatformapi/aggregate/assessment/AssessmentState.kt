@@ -14,12 +14,13 @@ class AssessmentState(
     aggregates.add(aggregate)
   }
 
-  private fun getLatest() = aggregates.sortedWith(
+  override fun getLatest() = aggregates.sortedWith(
     compareBy<AggregateEntity<AssessmentAggregate>> { it.eventsTo }
-      .thenByDescending { it.numberOfEventsApplied },
+      .thenByDescending { it.numberOfEventsApplied }
+      .thenBy(nullsLast()) { it.id },
   ).last()
 
-  fun getForRead(): AggregateEntityView<out AssessmentAggregateView> = getLatest()
+  override fun getForRead(): AggregateEntityView<out AssessmentAggregateView> = getLatest()
 
-  fun getForWrite(clock: Clock) = getLatest().takeIf { it.numberOfEventsApplied < 50 } ?: getLatest().clone(clock).also { aggregates.add(it) }
+  override fun getForWrite(clock: Clock) = getLatest().takeIf { it.numberOfEventsApplied < 50 } ?: getLatest().clone(clock).also { aggregates.add(it) }
 }
