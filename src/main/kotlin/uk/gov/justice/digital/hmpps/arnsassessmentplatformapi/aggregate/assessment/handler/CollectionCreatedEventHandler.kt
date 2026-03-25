@@ -32,9 +32,11 @@ class CollectionCreatedEventHandler(
 
     val aggregate = state.getForWrite(clock)
 
-    val collections = if (event.data.parentCollectionItemUuid != null) {
-      aggregate.data.getCollectionItem(event.data.parentCollectionItemUuid)?.collections
-        ?: throw CollectionItemNotFoundException(event.data.parentCollectionItemUuid, aggregate.uuid)
+    val parentCollectionItemUuid = event.data.parentCollectionItemUuid
+
+    val collections = if (parentCollectionItemUuid != null) {
+      aggregate.data.getCollectionItem(parentCollectionItemUuid)?.collections
+        ?: throw CollectionItemNotFoundException(parentCollectionItemUuid, aggregate.uuid)
     } else {
       aggregate.data.collections
     }
