@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHan
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
 import java.util.UUID
@@ -31,15 +33,17 @@ sealed interface Scenario<E : Event> {
   class Executes<E : Event>(
     override val name: String,
   ) : Scenario<E> {
-    lateinit var events: List<EventEntity<E>>
+    lateinit var event: EventEntity<E>
+    var commandTimeline: Timeline? = null
     lateinit var initialState: AssessmentState
     lateinit var expectedState: AssessmentState
+    lateinit var expectedTimeline: TimelineEntity
   }
 
   class Throws<E : Event, T : Throwable>(
     override val name: String,
   ) : Scenario<E> {
-    lateinit var events: List<EventEntity<E>>
+    lateinit var event: EventEntity<E>
     lateinit var initialState: AssessmentState
     lateinit var expectedException: KClass<out T>
   }
@@ -74,6 +78,16 @@ abstract class AbstractEventHandlerTest<E : Event> {
     data = eventData,
   )
 
+  protected fun timelineEntityFor(eventEntity: EventEntity<E>, data: Map<String, Any>, commandTimeline: Timeline?) = TimelineEntity(
+    createdAt = eventEntity.createdAt,
+    user = eventEntity.user,
+    assessment = eventEntity.assessment,
+    eventType = eventEntity.data::class.simpleName,
+    data = data,
+    customType = commandTimeline?.type,
+    customData = commandTimeline?.data,
+  )
+
   @Test
   fun `it handles the correct event type`() {
     assertThat(getHandler().eventType).isEqualTo(eventType)
@@ -87,14 +101,24 @@ abstract class AbstractEventHandlerTest<E : Event> {
   ) {
     when (scenario) {
       is Scenario.Executes -> {
-        val result = scenario.events.fold(scenario.initialState) { state, event ->
-          getHandler().handle(event, state).state
-        }
+        val result = getHandler().handle(scenario.event, scenario.initialState)
 
-        assertThat(result.type).isEqualTo(scenario.expectedState.type)
-        assertThat(result.aggregates)
+        assertThat(result.state.type).isEqualTo(scenario.expectedState.type)
+        assertThat(result.state.aggregates)
           .usingRecursiveComparison()
           .isEqualTo(scenario.expectedState.aggregates)
+
+        val timeline = result.timeline?.let { it(scenario.commandTimeline) }
+
+        assertNotNull(timeline)
+
+        assertThat(timeline.createdAt).isEqualTo(scenario.expectedTimeline.createdAt)
+        assertThat(timeline.eventType).isEqualTo(scenario.expectedTimeline.eventType)
+        assertThat(timeline.data).isEqualTo(scenario.expectedTimeline.data)
+        assertThat(timeline.user).isEqualTo(scenario.expectedTimeline.user)
+        assertThat(timeline.assessment).isEqualTo(scenario.expectedTimeline.assessment)
+        assertThat(timeline.customType).isEqualTo(scenario.expectedTimeline.customType)
+        assertThat(timeline.customData).isEqualTo(scenario.expectedTimeline.customData)
       }
 
       is Scenario.Throws<*, *> -> {
@@ -102,9 +126,7 @@ abstract class AbstractEventHandlerTest<E : Event> {
         val th = scenario as Scenario.Throws<E, Throwable>
 
         assertThrows(th.expectedException.java) {
-          th.events.fold(th.initialState) { state, event ->
-            getHandler().handle(event, state).state
-          }
+          getHandler().handle(scenario.event, scenario.initialState)
         }
       }
     }

@@ -95,7 +95,7 @@ class EventBusTest {
 
     verify(exactly = 1) { registry.getHandlersFor(AssessmentCreatedEvent::class) }
     verify(exactly = 1) { handler1.handle(event, initialState) }
-    verify(exactly = 1) { handler2.handle(event, initialState) }
+    verify(exactly = 1) { handler2.handle(event, handler1State) }
     verify(exactly = 1) { stateProvider.fetchLatestStateBefore(assessment, event.createdAt) }
     verify(exactly = 2) { stateService.stateForType(AssessmentAggregate::class) }
 

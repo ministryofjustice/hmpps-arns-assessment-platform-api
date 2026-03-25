@@ -28,6 +28,6 @@ class UpdateCollectionItemAnswersCommandHandlerTest : AbstractCommandHandlerTest
         removed = command.removed,
       )
       expectedResult = CommandSuccessCommandResult()
-    }
+    },
   )
 }

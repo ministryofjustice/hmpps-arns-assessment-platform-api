@@ -1,8 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import io.mockk.every
-import org.mockito.kotlin.any
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
@@ -26,6 +23,6 @@ class RemoveCollectionItemCommandHandlerTest : AbstractCommandHandlerTest<Remove
         collectionItemUuid = command.collectionItemUuid.value,
       )
       expectedResult = CommandSuccessCommandResult()
-    }
+    },
   )
 }

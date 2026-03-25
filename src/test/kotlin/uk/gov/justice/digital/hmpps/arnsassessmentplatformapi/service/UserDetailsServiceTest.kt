@@ -55,8 +55,8 @@ class UserDetailsServiceTest {
 
     // then
     assertEquals(existingEntity, result)
-    verify(exactly = 1) { userCache.get(commandUser)  }
-    verify(exactly = 1) { userCache.put(existingEntity)  }
+    verify(exactly = 1) { userCache.get(commandUser) }
+    verify(exactly = 1) { userCache.put(existingEntity) }
     verify(exactly = 1) {
       userDetailsRepository.findByUserIdAndAuthSource(
         commandUser.id,
@@ -90,8 +90,8 @@ class UserDetailsServiceTest {
 
     // then
     assertEquals(existingEntity, result)
-    verify(exactly = 1) { userCache.get(commandUser)  }
-    verify(exactly = 0) { userCache.put(any())  }
+    verify(exactly = 1) { userCache.get(commandUser) }
+    verify(exactly = 0) { userCache.put(any()) }
     verify(exactly = 0) { userDetailsRepository.findByUserIdAndAuthSource(any(), any()) }
     verify(exactly = 0) { userDetailsRepository.save(any()) }
   }
@@ -127,7 +127,7 @@ class UserDetailsServiceTest {
     assertEquals(commandUser.name, result.displayName)
     assertEquals(commandUser.authSource, result.authSource)
 
-    verify(exactly = 1) { userCache.get(commandUser)  }
+    verify(exactly = 1) { userCache.get(commandUser) }
 
     verify(exactly = 1) {
       userDetailsRepository.findByUserIdAndAuthSource(

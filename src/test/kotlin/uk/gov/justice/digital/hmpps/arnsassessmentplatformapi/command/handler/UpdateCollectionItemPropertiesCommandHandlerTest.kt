@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
@@ -29,6 +28,6 @@ class UpdateCollectionItemPropertiesCommandHandlerTest : AbstractCommandHandlerT
         removed = command.removed,
       )
       expectedResult = CommandSuccessCommandResult()
-    }
+    },
   )
 }

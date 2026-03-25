@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import io.mockk.every
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.AddCollectionItemCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
@@ -40,6 +38,6 @@ class AddCollectionItemCommandHandlerTest : AbstractCommandHandlerTest<AddCollec
       expectedResult = AddCollectionItemCommandResult(
         collectionItemUuid = command.collectionItemUuid,
       )
-    }
+    },
   )
 }
