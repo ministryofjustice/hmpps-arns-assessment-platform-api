@@ -3,6 +3,10 @@ services:
     ports:
       - "5432:5432"
 
+  redis:
+    ports:
+      - "6379:6379"
+
   localstack:
     ports:
       - "4566:4566"

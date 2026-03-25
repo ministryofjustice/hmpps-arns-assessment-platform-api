@@ -25,10 +25,13 @@ class StateService(
   private val eventService: EventService,
   @param:Lazy private val eventBusFactory: EventBusFactory,
   private val clock: Clock,
+  private val assessmentVersionCacheService: AssessmentVersionCacheService,
 ) {
   fun persist(state: MutableMap<UUID, State>) {
     state.values.flatMap { it.values.flatMap { aggregateState -> aggregateState.aggregates } }
       .run(aggregateRepository::saveAll)
+
+    state.keys.forEach(assessmentVersionCacheService::evictLatestAfterCommit)
   }
 
   fun stateForType(type: KClass<out Aggregate<*>>) = StateForType(type)
