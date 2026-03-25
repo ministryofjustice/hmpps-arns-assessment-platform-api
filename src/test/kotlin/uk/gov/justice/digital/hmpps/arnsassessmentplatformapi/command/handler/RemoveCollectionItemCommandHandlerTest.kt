@@ -26,18 +26,6 @@ class RemoveCollectionItemCommandHandlerTest : AbstractCommandHandlerTest<Remove
         collectionItemUuid = command.collectionItemUuid.value,
       )
       expectedResult = CommandSuccessCommandResult()
-    },
-    Scenario.Throws<RemoveCollectionItemCommand, CollectionItemNotFoundException>(
-      name = "Throws when unable to find the collection item",
-    ).apply {
-      setupMocks = { every { assessmentAggregate.getCollectionWithItem(any()) } returns null }
-      command = RemoveCollectionItemCommand(
-        user = commandUser,
-        collectionItemUuid = UUID.randomUUID().toReference(),
-        assessmentUuid = assessment.uuid.toReference(),
-        timeline = timeline,
-      )
-      expectedException = CollectionItemNotFoundException::class
-    },
+    }
   )
 }

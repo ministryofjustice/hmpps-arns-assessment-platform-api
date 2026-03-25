@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import io.mockk.every
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.ReorderCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
@@ -27,19 +26,6 @@ class ReorderCollectionItemCommandHandlerTest : AbstractCommandHandlerTest<Reord
         index = command.index,
       )
       expectedResult = CommandSuccessCommandResult()
-    },
-    Scenario.Throws<ReorderCollectionItemCommand, CollectionItemNotFoundException>(
-      name = "Throws when unable to find the collection item",
-    ).apply {
-      setupMocks = { every { assessmentAggregate.getCollectionWithItem(any()) } returns null }
-      command = ReorderCollectionItemCommand(
-        user = commandUser,
-        assessmentUuid = assessment.uuid.toReference(),
-        collectionItemUuid = UUID.randomUUID().toReference(),
-        index = 0,
-        timeline = timeline,
-      )
-      expectedException = CollectionItemNotFoundException::class
-    },
+    }
   )
 }

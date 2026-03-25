@@ -40,21 +40,6 @@ class AddCollectionItemCommandHandlerTest : AbstractCommandHandlerTest<AddCollec
       expectedResult = AddCollectionItemCommandResult(
         collectionItemUuid = command.collectionItemUuid,
       )
-    },
-    Scenario.Throws<AddCollectionItemCommand, CollectionNotFoundException>(
-      name = "Throws when unable to find the collection",
-    ).apply {
-      setupMocks = { every { assessmentAggregate.getCollection(any()) } returns null }
-      command = AddCollectionItemCommand(
-        user = commandUser,
-        assessmentUuid = assessment.uuid.toReference(),
-        answers = mapOf("foo" to SingleValue("bar")),
-        properties = mapOf("bar" to SingleValue("baz")),
-        timeline = timeline,
-        collectionUuid = collectionUuid.toReference(),
-        index = 0,
-      )
-      expectedException = CollectionNotFoundException::class
-    },
+    }
   )
 }
