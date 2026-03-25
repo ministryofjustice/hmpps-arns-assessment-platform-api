@@ -35,8 +35,10 @@ class CollectionItemAddedEventHandler(
     val collection = aggregate.data.getCollection(event.data.collectionUuid)
       ?: throw CollectionNotFoundException(event.data.collectionUuid, aggregate.uuid)
 
-    if (event.data.index != null && event.data.index <= collection.items.size) {
-      collection.items.add(event.data.index, collectionItem)
+    val index = event.data.index
+
+    if (index != null && index <= collection.items.size) {
+      collection.items.add(index, collectionItem)
     } else {
       collection.items.add(collectionItem)
     }
