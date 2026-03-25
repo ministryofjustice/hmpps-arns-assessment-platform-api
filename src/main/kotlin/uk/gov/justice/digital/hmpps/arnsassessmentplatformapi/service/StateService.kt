@@ -26,10 +26,16 @@ class StateService(
   @param:Lazy val eventBus: EventBus,
   private val clock: Clock,
   private val entityManager: EntityManager,
+  private val assessmentVersionCacheService: AssessmentVersionCacheService,
 ) {
   fun persist(state: State) {
     state.values.flatMap { it.aggregates }
       .run(aggregateRepository::saveAllAndFlush)
+
+    state.values
+      .map { aggregateState -> aggregateState.getLatest().assessment.uuid }
+      .toSet()
+      .forEach(assessmentVersionCacheService::evictLatestAfterCommit)
 
     state.values.forEach { aggregateState ->
       aggregateState.apply {

@@ -21,6 +21,13 @@ spring:
   http:
     codecs:
       max-in-memory-size: 10MB
+  data:
+    redis:
+      host: ${cache.redis.host:localhost}
+      port: ${cache.redis.port:6379}
+      password: ${cache.redis.auth-token:}
+      ssl:
+        enabled: ${cache.redis.ssl.enabled:false}
   web:
     error:
       include-message: always
