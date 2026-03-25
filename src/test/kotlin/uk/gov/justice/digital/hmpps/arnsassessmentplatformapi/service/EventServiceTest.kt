@@ -66,7 +66,7 @@ class EventServiceTest {
   }
 
   @Nested
-  inner class SaveAll {
+  inner class Save {
     @Test
     fun `it saves events`() {
       every { eventRepository.save(any<EventEntity<Event>>()) } answers { firstArg() }

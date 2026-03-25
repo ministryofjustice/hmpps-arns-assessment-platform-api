@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
 import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
@@ -22,14 +20,14 @@ class CreateAssessmentCommandHandler(
     val assessment = AssessmentEntity(
       uuid = command.assessmentUuid.value,
       type = command.assessmentType,
-      createdAt = services.clock.now(),
+      createdAt = services.clock.requestDateTime(),
     ).apply {
       command.identifiers?.forEach {
         identifiers.add(
           AssessmentIdentifierEntity(
             assessment = this,
             externalIdentifier = IdentifierPair(it.key, it.value),
-            createdAt = services.clock.now(),
+            createdAt = services.clock.requestDateTime(),
           ),
         )
       }
@@ -43,7 +41,7 @@ class CreateAssessmentCommandHandler(
       EventEntity(
         user = user,
         assessment = assessment,
-        createdAt = assessment.createdAt,
+        createdAt = services.clock.requestDateTime(),
         data = AssessmentCreatedEvent(
           formVersion = formVersion,
           properties = properties ?: emptyMap(),
@@ -61,21 +59,21 @@ class CreateAssessmentCommandHandler(
       ),
     )
 
-    val events = listOf(createEvent, assignEvent)
-
-    events.map { event ->
+    listOf(createEvent, assignEvent).forEach { event ->
       services.eventBus.handle(event)
-        .also { updatedState -> services.state.persist(updatedState) }
-        .run { get(AssessmentAggregate::class) as AssessmentState }
+        .also { services.event.save(event) }
+        .run(services.state::persist)
     }
 
-    services.event.saveAll(events)
     services.timeline.saveAll(
       listOf(
         TimelineEntity.from(
           command,
           createEvent,
-          mapOf(),
+          mapOf(
+            "formVersion" to command.formVersion,
+            "properties" to (command.properties?.keys ?: emptySet()),
+          ),
         ),
         TimelineEntity.from(
           command,

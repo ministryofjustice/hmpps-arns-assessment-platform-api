@@ -24,14 +24,16 @@ class EventBus(
         eventService
           .findAllForPointInTime(event.assessment.uuid, event.createdAt)
           .plus(event)
-          .sortedBy { it.createdAt }
-          .fold(state) { acc: State, event -> execute(event, acc) }
+          .sortedBy { it.id }
+          .fold(state) { acc, event -> execute(event, acc) }
       } else {
         state[aggregateType] = handler.handle(event, stateForType)
       }
     }
-    event.children.sortedBy { it.createdAt }.fold(state) { acc: State, event -> execute(event, acc) }
-    return state
+
+    return event.children
+      .sortedBy { it.createdAt }
+      .fold(state) { acc, event -> execute(event, acc) }
   }
 
   fun handle(event: EventEntity<*>) = handle(listOf(event))

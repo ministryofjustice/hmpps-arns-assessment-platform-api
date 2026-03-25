@@ -102,6 +102,7 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
   fun setUp() {
     clearAllMocks()
     every { clock.now() } returns now
+    every { clock.requestDateTime() } returns now
   }
 
   private fun getHandler() = handler.primaryConstructor!!.call(services)

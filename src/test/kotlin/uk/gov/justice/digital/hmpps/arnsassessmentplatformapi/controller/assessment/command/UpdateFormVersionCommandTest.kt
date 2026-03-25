@@ -94,7 +94,7 @@ class UpdateFormVersionCommandTest(
     assertThat(response?.commands[0]?.request).isEqualTo(updateCommand)
     assertIs<CommandSuccessCommandResult>(response?.commands[0]?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid).sortedBy { it.createdAt }
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid).sortedBy { it.createdAt }
 
     assertThat(eventsForAssessment.size).isEqualTo(2)
     assertThat(eventsForAssessment[1].data).isInstanceOf(FormVersionUpdatedEvent::class.java)

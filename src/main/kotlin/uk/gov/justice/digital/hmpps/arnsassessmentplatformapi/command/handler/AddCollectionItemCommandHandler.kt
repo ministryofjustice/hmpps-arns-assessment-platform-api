@@ -27,17 +27,17 @@ class AddCollectionItemCommandHandler(
           properties,
           index,
         ),
-        createdAt = services.clock.now(),
+        createdAt = services.clock.requestDateTime(),
       )
     }
 
     val collection = services.eventBus.handle(event)
+      .also { services.event.save(event) }
       .also { updatedState -> services.state.persist(updatedState) }
       .run { get(AssessmentAggregate::class) as AssessmentState }
       .getForRead().data.getCollection(command.collectionUuid.value)
       ?: throw CollectionNotFoundException(command.collectionUuid.value)
 
-    services.event.save(event)
     services.timeline.save(
       TimelineEntity.from(
         command,

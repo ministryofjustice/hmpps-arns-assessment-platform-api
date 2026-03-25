@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
+import jakarta.persistence.EntityManager
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
@@ -24,9 +25,26 @@ class StateService(
   private val eventService: EventService,
   @param:Lazy val eventBus: EventBus,
   private val clock: Clock,
+  private val entityManager: EntityManager,
+  private val assessmentVersionCacheService: AssessmentVersionCacheService,
 ) {
   fun persist(state: State) {
-    aggregateRepository.saveAll(state.values.map { it.aggregates }.flatten())
+    state.values.flatMap { it.aggregates }
+      .run(aggregateRepository::saveAllAndFlush)
+
+    state.values
+      .map { aggregateState -> aggregateState.getLatest().assessment.uuid }
+      .toSet()
+      .forEach(assessmentVersionCacheService::evictLatestAfterCommit)
+
+    state.values.forEach { aggregateState ->
+      aggregateState.apply {
+        val latest = getLatest()
+        val outdated = aggregates.filter { it != latest }.toSet()
+        aggregates.removeAll(outdated)
+        outdated.forEach { entityManager.detach(it) }
+      }
+    }
   }
 
   fun stateForType(type: KClass<out Aggregate<*>>) = StateForType(type)
@@ -75,7 +93,7 @@ class StateService(
       pointInTime: LocalDateTime,
     ): AggregateState<A> = eventService
       .findAllForPointInTime(assessment.uuid, pointInTime)
-      .sortedBy { it.createdAt }
+      .sortedBy { it.id }
       .ifEmpty { null }
       ?.run(eventBus::handle)
       ?.get(type)
