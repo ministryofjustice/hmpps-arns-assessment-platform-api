@@ -1,28 +1,16 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.ReorderCollectionItemCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemReorderedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
-@Component
 class ReorderCollectionItemCommandHandler(
   private val services: CommandHandlerServiceBundle,
 ) : CommandHandler<ReorderCollectionItemCommand> {
   override val type = ReorderCollectionItemCommand::class
   override fun handle(command: ReorderCollectionItemCommand): CommandSuccessCommandResult {
-    val assessment = services.assessment.findBy(command.assessmentUuid.value)
-    val state = services.state
-      .stateForType(AssessmentAggregate::class)
-      .fetchOrCreateLatestState(assessment) as AssessmentState
-    val collection = state.getForRead().data.getCollectionWithItem(command.collectionItemUuid.value)
-      ?: throw CollectionItemNotFoundException(command.collectionItemUuid.value)
-
     val event = with(command) {
       EventEntity(
         user = services.userDetails.findOrCreate(user),
@@ -35,22 +23,7 @@ class ReorderCollectionItemCommandHandler(
       )
     }
 
-    services.eventBus.handle(event)
-      .also { services.event.save(event) }
-      .run(services.state::persist)
-
-    services.timeline.save(
-      TimelineEntity.from(
-        command,
-        event,
-        mapOf(
-          "collection" to collection.name,
-          "collectionItemUuid" to command.collectionItemUuid,
-          "index" to command.index,
-          "previousIndex" to collection.items.indexOf(collection.findItem(command.collectionItemUuid.value)),
-        ),
-      ),
-    )
+    services.eventBus.handle(event).createTimeline(command.timeline)
 
     return CommandSuccessCommandResult()
   }

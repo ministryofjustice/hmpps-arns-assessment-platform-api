@@ -8,12 +8,10 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -27,13 +25,6 @@ class EventEntity<E : Event>(
 
   @Column(name = "uuid", nullable = false, updatable = false)
   val uuid: UUID = UUID.randomUUID(),
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "parent_uuid", referencedColumnName = "uuid", updatable = false)
-  var parent: EventEntity<GroupEvent>? = null,
-
-  @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
-  val children: MutableList<EventEntity<*>> = mutableListOf(),
 
   @Column(name = "created_at", nullable = false, updatable = false)
   val createdAt: LocalDateTime,

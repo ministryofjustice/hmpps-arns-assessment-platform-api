@@ -1,7 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import io.mockk.every
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
@@ -30,19 +28,6 @@ class UpdateCollectionItemAnswersCommandHandlerTest : AbstractCommandHandlerTest
         removed = command.removed,
       )
       expectedResult = CommandSuccessCommandResult()
-    },
-    Scenario.Throws<UpdateCollectionItemAnswersCommand, CollectionItemNotFoundException>(
-      name = "Throws when unable to find the collection item",
-    ).apply {
-      setupMocks = { every { assessmentAggregate.getCollectionWithItem(any()) } returns null }
-      command = UpdateCollectionItemAnswersCommand(
-        user = commandUser,
-        assessmentUuid = assessment.uuid.toReference(),
-        collectionItemUuid = UUID.randomUUID().toReference(),
-        added = mapOf("foo" to SingleValue("foo_value")),
-        removed = listOf("bar"),
-      )
-      expectedException = CollectionItemNotFoundException::class
     },
   )
 }

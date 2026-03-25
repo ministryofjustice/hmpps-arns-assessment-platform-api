@@ -10,21 +10,18 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUserEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.TimelinesResolver
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -32,48 +29,27 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import java.time.LocalDateTime
 import java.util.UUID
 
 class CreateAssessmentCommandHandlerTest {
   val assessmentService: AssessmentService = mockk()
-  val eventService: EventService = mockk()
-  val stateService: StateService = mockk()
   val userDetailsService: UserDetailsService = mockk()
-  val timelineService: TimelineService = mockk()
   val eventBus: EventBus = mockk()
-  val commandBus: CommandBus = mockk()
-  val assessmentAggregate: AssessmentAggregate = mockk()
   val clock: Clock = mockk()
 
   val services = CommandHandlerServiceBundle(
     assessment = assessmentService,
-    event = eventService,
-    state = stateService,
     userDetails = userDetailsService,
-    timeline = timelineService,
+    timeline = mockk(),
     eventBus = eventBus,
-    commandBus = commandBus,
     clock = clock,
   )
 
   val now: LocalDateTime = LocalDateTime.now()
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
-
-  val assessmentState: AssessmentState = AssessmentState(
-    AggregateEntity(
-      assessment = AssessmentEntity(type = "TEST", createdAt = now),
-      data = assessmentAggregate,
-      updatedAt = now,
-      eventsFrom = now,
-      eventsTo = now,
-    ),
-  )
 
   val handler = CreateAssessmentCommandHandler(services)
 
@@ -125,16 +101,16 @@ class CreateAssessmentCommandHandlerTest {
     every { assessmentService.save(capture(assessment)) } answers { firstArg() }
 
     val handledEvents = mutableListOf<EventEntity<out Event>>()
-    val persistedEvents = mutableListOf<EventEntity<out Event>>()
 
-    val state: State = mockk()
+    val assessmentCreatedTimelinesResolver: TimelinesResolver = mockk()
+    val assignedToUserTimelinesResolver: TimelinesResolver = mockk()
 
-    every { eventBus.handle(capture(handledEvents)) } returns state
-    every { stateService.persist(state) } just Runs
-    every { eventService.save(capture(persistedEvents)) } answers { firstArg() }
+    every { assessmentCreatedTimelinesResolver.createTimeline(command.timeline) } just Runs
+    every { assignedToUserTimelinesResolver.createTimeline(command.timeline) } just Runs
+
+    every { eventBus.handle(capture(handledEvents)) } returns assessmentCreatedTimelinesResolver andThen assignedToUserTimelinesResolver
+
     every { userDetailsService.findOrCreate(commandUser) } returns user
-    every { state[AssessmentAggregate::class] } returns assessmentState
-    every { timelineService.saveAll(any()) } answers { firstArg() }
 
     val result = handler.handle(command)
 
@@ -143,8 +119,8 @@ class CreateAssessmentCommandHandlerTest {
     verify(exactly = 1) { assessmentService.save(any<AssessmentEntity>()) }
     verify(exactly = 1) { userDetailsService.findOrCreate(commandUser) }
     verify(exactly = 2) { eventBus.handle(any<EventEntity<out Event>>()) }
-    verify(exactly = 2) { stateService.persist(state) }
-    verify(exactly = 2) { eventService.save(any<EventEntity<out Event>>()) }
+    verify(exactly = 1) { assessmentCreatedTimelinesResolver.createTimeline(command.timeline) }
+    verify(exactly = 1) { assignedToUserTimelinesResolver.createTimeline(command.timeline) }
 
     assertThat(assessment.captured.uuid).isEqualTo(command.assessmentUuid.value)
     assertThat(assessment.captured.type).isEqualTo(command.assessmentType)
@@ -162,8 +138,6 @@ class CreateAssessmentCommandHandlerTest {
       assertThat(handledEvent.user.displayName).isEqualTo(command.user.name)
       assertThat(handledEvent.user.authSource).isEqualTo(command.user.authSource)
       assertThat(handledEvent.data).isEqualTo(expectedEvents[index])
-
-      assertThat(handledEvent).isEqualTo(persistedEvents[index])
       assertThat(handledEvent.createdAt).isEqualTo(assessment.captured.createdAt)
     }
 

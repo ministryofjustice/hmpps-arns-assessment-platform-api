@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemReorderedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
@@ -20,14 +21,26 @@ class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<Collect
       val collectionUuid: UUID = UUID.randomUUID()
       val firstCollectionItemUuid: UUID = UUID.randomUUID()
       val secondCollectionItemUuid: UUID = UUID.randomUUID()
-      val collectionItemRemovedEvent = eventEntityFor(
+
+      commandTimeline = Timeline(type = "CUSTOM_TIMELINE", data = mapOf("foo" to "bar"))
+
+      event = eventEntityFor(
         CollectionItemReorderedEvent(
           collectionItemUuid = firstCollectionItemUuid,
           index = 0,
         ),
       )
 
-      events = listOf(collectionItemRemovedEvent)
+      expectedTimeline = timelineEntityFor(
+        event,
+        mapOf(
+          "collection" to "TOP_LEVEL_COLLECTION",
+          "collectionItemUuid" to event.data.collectionItemUuid,
+          "index" to 0,
+          "previousIndex" to 1,
+        ),
+        commandTimeline,
+      )
 
       initialState = AssessmentState().also { state ->
         state.aggregates.add(
@@ -78,7 +91,7 @@ class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<Collect
             uuid = aggregateUuid,
             updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-            eventsTo = events.last().createdAt,
+            eventsTo = event.createdAt,
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
@@ -121,14 +134,24 @@ class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<Collect
       val collectionUuid: UUID = UUID.randomUUID()
       val firstCollectionItemUuid: UUID = UUID.randomUUID()
       val secondCollectionItemUuid: UUID = UUID.randomUUID()
-      val collectionItemRemovedEvent = eventEntityFor(
+
+      event = eventEntityFor(
         CollectionItemReorderedEvent(
           collectionItemUuid = firstCollectionItemUuid,
           index = 0,
         ),
       )
 
-      events = listOf(collectionItemRemovedEvent)
+      expectedTimeline = timelineEntityFor(
+        event,
+        mapOf(
+          "collection" to "TOP_LEVEL_COLLECTION",
+          "collectionItemUuid" to event.data.collectionItemUuid,
+          "index" to 0,
+          "previousIndex" to 1,
+        ),
+        null,
+      )
 
       initialState = AssessmentState().also { state ->
         state.aggregates.add(
@@ -179,7 +202,7 @@ class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<Collect
             uuid = aggregateUuid,
             updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-            eventsTo = events.last().createdAt,
+            eventsTo = event.createdAt,
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
@@ -220,14 +243,13 @@ class CollectionItemReorderedEventHandlerTest : AbstractEventHandlerTest<Collect
     },
     Scenario.Throws<CollectionItemReorderedEvent, CollectionItemNotFoundException>("throws when collection does not exist")
       .apply {
-        events = listOf(
+        event =
           eventEntityFor(
             CollectionItemReorderedEvent(
               collectionItemUuid = UUID.randomUUID(),
               index = 0,
             ),
-          ),
-        )
+          )
 
         initialState = AssessmentState().also { state ->
           state.aggregates.add(

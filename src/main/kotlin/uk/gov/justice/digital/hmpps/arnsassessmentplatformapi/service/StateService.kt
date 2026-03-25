@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
-import jakarta.persistence.EntityManager
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
@@ -9,13 +8,14 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBusFactory
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AggregateTypeNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.InvalidTimestampException
 import java.time.LocalDateTime
+import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
@@ -23,28 +23,15 @@ import kotlin.reflect.full.createInstance
 class StateService(
   private val aggregateRepository: AggregateRepository,
   private val eventService: EventService,
-  @param:Lazy val eventBus: EventBus,
+  @param:Lazy private val eventBusFactory: EventBusFactory,
   private val clock: Clock,
-  private val entityManager: EntityManager,
   private val assessmentVersionCacheService: AssessmentVersionCacheService,
 ) {
-  fun persist(state: State) {
-    state.values.flatMap { it.aggregates }
-      .run(aggregateRepository::saveAllAndFlush)
+  fun persist(state: MutableMap<UUID, State>) {
+    state.values.flatMap { it.values.flatMap { aggregateState -> aggregateState.aggregates } }
+      .run(aggregateRepository::saveAll)
 
-    state.values
-      .map { aggregateState -> aggregateState.getLatest().assessment.uuid }
-      .toSet()
-      .forEach(assessmentVersionCacheService::evictLatestAfterCommit)
-
-    state.values.forEach { aggregateState ->
-      aggregateState.apply {
-        val latest = getLatest()
-        val outdated = aggregates.filter { it != latest }.toSet()
-        aggregates.removeAll(outdated)
-        outdated.forEach { entityManager.detach(it) }
-      }
-    }
+    state.keys.forEach(assessmentVersionCacheService::evictLatestAfterCommit)
   }
 
   fun stateForType(type: KClass<out Aggregate<*>>) = StateForType(type)
@@ -95,7 +82,11 @@ class StateService(
       .findAllForPointInTime(assessment.uuid, pointInTime)
       .sortedBy { it.id }
       .ifEmpty { null }
-      ?.run(eventBus::handle)
+      ?.let { events ->
+        val eventBus = eventBusFactory.create()
+        eventBus.handle(events)
+        eventBus.getState()
+      }?.get(assessment.uuid)
       ?.get(type)
       .let { it ?: blankState(assessment) }
       .let { it as AggregateState<A> }

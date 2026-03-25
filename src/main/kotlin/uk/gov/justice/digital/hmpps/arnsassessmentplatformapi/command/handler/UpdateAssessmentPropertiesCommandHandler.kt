@@ -1,13 +1,11 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
-@Component
 class UpdateAssessmentPropertiesCommandHandler(
   private val services: CommandHandlerServiceBundle,
 ) : CommandHandler<UpdateAssessmentPropertiesCommand> {
@@ -22,20 +20,7 @@ class UpdateAssessmentPropertiesCommandHandler(
       )
     }
 
-    services.eventBus.handle(event)
-      .also { services.event.save(event) }
-      .run(services.state::persist)
-
-    services.timeline.save(
-      TimelineEntity.from(
-        command,
-        event,
-        mapOf(
-          "added" to command.added.keys,
-          "removed" to command.removed,
-        ),
-      ),
-    )
+    services.eventBus.handle(event).createTimeline(command.timeline)
 
     return CommandSuccessCommandResult()
   }
