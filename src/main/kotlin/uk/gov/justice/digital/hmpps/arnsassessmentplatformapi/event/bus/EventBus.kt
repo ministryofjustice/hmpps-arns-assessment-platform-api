@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.StateCollection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineResolver
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
@@ -24,16 +24,16 @@ open class EventBus(
   val timelineService: TimelineService,
 ) {
   private val state: StateCollection = mutableMapOf()
-  private val events: MutableList<EventProto<*>> = mutableListOf()
+  private val events: MutableList<EventEntity<*>> = mutableListOf()
   private val timeline: MutableList<TimelineEntity> = mutableListOf()
 
   fun getState() = state
 
   @Transactional
   open fun persistState() {
+    stateService.persist(state).also { state.clear() }
     eventService.saveAll(events).also { events.clear() }
     timelineService.saveAll(timeline).also { timeline.clear() }
-    stateService.persist(state).also { state.clear() }
   }
 
   private fun resolve(resolvers: List<TimelineResolver>): TimelinesResolver = object : TimelinesResolver {
@@ -42,7 +42,7 @@ open class EventBus(
     }
   }
 
-  private fun getAssessmentStateForType(event: EventProto<*>, aggregateType: KClass<out Aggregate<*>>): Pair<State, AggregateState<out Aggregate<*>>> {
+  private fun getAssessmentStateForType(event: EventEntity<*>, aggregateType: KClass<out Aggregate<*>>): Pair<State, AggregateState<out Aggregate<*>>> {
     val stateProvider = stateService.stateForType(aggregateType)
     val stateForAssessment: State = state[event.assessment.uuid] ?: mutableMapOf()
     val stateForType = stateForAssessment[aggregateType]
@@ -54,7 +54,6 @@ open class EventBus(
       eventService
         .findAllForPointInTime(event.assessment.uuid, event.createdAt)
         .sortedBy { it.id }
-        .map { EventProto.from(it) }
         .forEach { execute(it) }
 
       return getAssessmentStateForType(event, aggregateType)
@@ -63,7 +62,7 @@ open class EventBus(
     return Pair(stateForAssessment, stateForType)
   }
 
-  private fun <E : Event> execute(event: EventProto<E>): TimelinesResolver {
+  private fun <E : Event> execute(event: EventEntity<E>): TimelinesResolver {
     val timelineResolvers = mutableListOf<TimelineResolver>()
 
     registry.getHandlersFor(event.data::class).forEach { handler ->
@@ -80,9 +79,9 @@ open class EventBus(
     return resolve(timelineResolvers)
   }
 
-  fun handle(event: EventProto<*>) = execute(event)
+  fun handle(event: EventEntity<*>) = execute(event)
 
-  fun handle(events: List<EventProto<*>>) {
+  fun handle(events: List<EventEntity<*>>) {
     events.forEach { execute(it) }
   }
 }

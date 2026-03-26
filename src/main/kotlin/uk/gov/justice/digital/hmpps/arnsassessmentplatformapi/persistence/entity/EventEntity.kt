@@ -45,15 +45,4 @@ class EventEntity<E : Event>(
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "data", columnDefinition = "jsonb", updatable = false, nullable = false)
   val data: E,
-) {
-  companion object {
-    fun <E: Event>from(prototype: EventProto<E>): EventEntity<E> {
-      return EventEntity(
-        createdAt = prototype.createdAt,
-        user = prototype.user,
-        assessment = prototype.assessment,
-        data = prototype.data,
-      )
-    }
-  }
-}
+)

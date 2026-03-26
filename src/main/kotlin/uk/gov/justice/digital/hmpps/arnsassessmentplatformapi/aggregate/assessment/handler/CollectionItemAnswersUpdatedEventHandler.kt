@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exceptio
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
@@ -18,7 +18,7 @@ class CollectionItemAnswersUpdatedEventHandler(
   override val stateType = AssessmentState::class
 
   override fun handle(
-    event: EventProto<CollectionItemAnswersUpdatedEvent>,
+    event: EventEntity<CollectionItemAnswersUpdatedEvent>,
     state: AssessmentState,
   ): EventHandlerResult<AssessmentState> {
     val aggregate = state.getForWrite(clock)

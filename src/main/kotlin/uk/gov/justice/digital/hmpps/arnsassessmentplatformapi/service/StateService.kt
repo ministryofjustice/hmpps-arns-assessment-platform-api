@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AggregateTypeNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.InvalidTimestampException
 import java.time.LocalDateTime
@@ -85,7 +84,7 @@ class StateService(
       .ifEmpty { null }
       ?.let { events ->
         val eventBus = eventBusFactory.create()
-        eventBus.handle(events.map { EventProto.from(it) })
+        eventBus.handle(events)
         eventBus.getState()
       }?.get(assessment.uuid)
       ?.get(type)

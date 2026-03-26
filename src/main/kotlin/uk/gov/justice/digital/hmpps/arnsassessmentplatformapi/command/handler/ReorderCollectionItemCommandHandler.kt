@@ -4,7 +4,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.ReorderCol
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemReorderedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 
 class ReorderCollectionItemCommandHandler(
   private val services: CommandHandlerServiceBundle,
@@ -12,7 +12,7 @@ class ReorderCollectionItemCommandHandler(
   override val type = ReorderCollectionItemCommand::class
   override fun handle(command: ReorderCollectionItemCommand): CommandSuccessCommandResult {
     val event = with(command) {
-      EventProto(
+      EventEntity(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid.value),
         data = CollectionItemReorderedEvent(

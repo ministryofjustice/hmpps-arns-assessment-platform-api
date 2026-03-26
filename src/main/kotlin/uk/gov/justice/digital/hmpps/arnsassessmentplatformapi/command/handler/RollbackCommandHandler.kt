@@ -4,7 +4,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RollbackCo
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 
 class RollbackCommandHandler(
   private val services: CommandHandlerServiceBundle,
@@ -12,7 +12,7 @@ class RollbackCommandHandler(
   override val type = RollbackCommand::class
   override fun handle(command: RollbackCommand): CommandSuccessCommandResult {
     val event = with(command) {
-      EventProto(
+      EventEntity(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid.value),
         data = AssessmentRolledBackEvent(

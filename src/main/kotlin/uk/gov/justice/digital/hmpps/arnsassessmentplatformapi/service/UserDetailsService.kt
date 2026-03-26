@@ -26,6 +26,6 @@ class UserDetailsService(
           userId = user.id,
           displayName = user.name,
           authSource = user.authSource,
-        ).run(userDetailsRepository::save).let { userDetailsRepository.getReferenceById(it.id!!) },
+        ).run(userDetailsRepository::save),
     )
 }

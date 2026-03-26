@@ -13,7 +13,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
 
@@ -27,13 +27,13 @@ class EventServiceTest {
   val user = UserDetailsEntity(userId = "FOO_USER", displayName = "Foo User", authSource = AuthSource.HMPPS_AUTH)
 
   val events = listOf(
-    EventProto(
+    EventEntity(
       user = user,
       assessment = assessment,
       createdAt = now,
       data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap()),
     ),
-    EventProto(
+    EventEntity(
       user = user,
       assessment = assessment,
       createdAt = now,
@@ -69,7 +69,7 @@ class EventServiceTest {
   inner class Save {
     @Test
     fun `it saves events`() {
-      every { eventRepository.save(any<EventProto<Event>>()) } answers { firstArg() }
+      every { eventRepository.save(any<EventEntity<Event>>()) } answers { firstArg() }
 
       service.save(events.first())
       verify(exactly = 1) { eventRepository.save(events.first()) }

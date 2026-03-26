@@ -7,7 +7,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUserEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
 
 class CreateAssessmentCommandHandler(
@@ -36,7 +36,7 @@ class CreateAssessmentCommandHandler(
     val user = services.userDetails.findOrCreate(command.user)
 
     val createEvent = with(command) {
-      EventProto(
+      EventEntity(
         user = user,
         assessment = assessment,
         createdAt = services.clock.requestDateTime(),
@@ -48,7 +48,7 @@ class CreateAssessmentCommandHandler(
       )
     }
 
-    val assignEvent = EventProto(
+    val assignEvent = EventEntity(
       user = user,
       assessment = assessment,
       createdAt = assessment.createdAt,

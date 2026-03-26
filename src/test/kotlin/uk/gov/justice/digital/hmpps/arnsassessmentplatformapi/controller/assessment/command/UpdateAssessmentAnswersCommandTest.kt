@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.Assess
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
@@ -66,7 +66,7 @@ class UpdateAssessmentAnswersCommandTest(
 
     eventRepository.saveAll(
       listOf(
-        EventProto(
+        EventEntity(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
@@ -75,7 +75,7 @@ class UpdateAssessmentAnswersCommandTest(
             properties = emptyMap(),
           ),
         ),
-        EventProto(
+        EventEntity(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),

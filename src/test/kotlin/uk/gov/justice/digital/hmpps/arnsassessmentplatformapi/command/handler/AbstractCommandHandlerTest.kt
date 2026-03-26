@@ -26,7 +26,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.TimelinesResolver
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
 import java.util.*
@@ -96,7 +96,7 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
     @Suppress("UNUSED_PARAMETER") name: String,
     scenario: Scenario<C>,
   ) {
-    val handledEvent = slot<EventProto<out Event>>()
+    val handledEvent = slot<EventEntity<out Event>>()
     val timelinesResolver: TimelinesResolver = mockk()
 
     every { services.assessment.findBy(assessment.uuid) } returns assessment
@@ -109,7 +109,7 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
       is Scenario.Executes<C> -> {
         val result = getHandler().execute(scenario.command)
 
-        verify(exactly = 1) { services.eventBus.handle(any<EventProto<out Event>>()) }
+        verify(exactly = 1) { services.eventBus.handle(any<EventEntity<out Event>>()) }
         verify(exactly = 1) { services.userDetails.findOrCreate(commandUser) }
 
         assertThat(handledEvent.captured.assessment.uuid).isEqualTo(assessment.uuid)
