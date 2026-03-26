@@ -54,17 +54,17 @@ class CreateTimelineItemCommandHandlerTest {
 
   @Test
   fun `it handles the command`() {
-    every { services.assessment.findBy(command.assessmentUuid.value) } answers { assessment }
-    every { services.userDetails.findOrCreate(commandUser) } returns user
+    every { services.eventBus.persistenceContext.findAssessment(command.assessmentUuid.value) } answers { assessment }
+    every { services.eventBus.persistenceContext.findUserDetails(commandUser) } returns user
 
     val timeline = slot<TimelineEntity>()
 
-    every { services.timeline.save(capture(timeline)) } answers { firstArg() }
+    every { services.eventBus.persistenceContext.timeline.add(capture(timeline)) } returns true
 
     val result = handler.handle(command)
 
-    verify(exactly = 1) { services.assessment.findBy(command.assessmentUuid.value) }
-    verify(exactly = 1) { services.userDetails.findOrCreate(commandUser) }
+    verify(exactly = 1) { services.eventBus.persistenceContext.findAssessment(command.assessmentUuid.value) }
+    verify(exactly = 1) { services.eventBus.persistenceContext.findUserDetails(commandUser) }
 
     assertThat(timeline.captured.data).isEmpty()
     assertThat(timeline.captured.eventType).isNull()

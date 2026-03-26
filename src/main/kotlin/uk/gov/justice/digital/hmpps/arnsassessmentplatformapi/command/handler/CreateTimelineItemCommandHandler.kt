@@ -13,7 +13,7 @@ class CreateTimelineItemCommandHandler(
     val assessment = services.eventBus.persistenceContext.findAssessment(command.assessmentUuid.value)
     val user = services.eventBus.persistenceContext.findUserDetails(command.user)
 
-    services.timeline.save(
+    services.eventBus.persistenceContext.timeline.add(
       TimelineEntity(
         createdAt = command.timestamp,
         user = user,

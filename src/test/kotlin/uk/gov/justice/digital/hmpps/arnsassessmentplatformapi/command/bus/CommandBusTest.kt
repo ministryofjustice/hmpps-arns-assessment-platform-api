@@ -36,7 +36,7 @@ class CommandBusTest {
     every { handler.execute(any()) } answers { TestableCommandResult("result-${firstArg<TestableCommand>().param}") }
     every { serviceBundleFactory.create(any()) } returns mockk()
     every { commandHandlerFactory.create(any(), any()) } returns handler
-    every { eventBus.persistState() } just Runs
+    every { eventBus.persistenceContext.persist() } just Runs
   }
 
   @Nested
@@ -64,7 +64,7 @@ class CommandBusTest {
       verify(exactly = 3) { serviceBundleFactory.create(any()) }
       verify(exactly = 3) { commandHandlerFactory.create(any(), any()) }
       verify(exactly = 3) { handler.execute(any()) }
-      verify(exactly = 1) { eventBus.persistState() }
+      verify(exactly = 1) { eventBus.persistenceContext.persist() }
     }
 
     @Test

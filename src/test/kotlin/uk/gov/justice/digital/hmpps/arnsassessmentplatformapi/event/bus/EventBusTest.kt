@@ -88,7 +88,7 @@ class EventBusTest {
       stateService = stateService,
       eventService = eventService,
       registry = registry,
-      timelineService = timelineService,
+      persistenceContext = mockk(),
     )
 
     eventBus.handle(event).createTimeline(commandTimeline)
@@ -107,7 +107,7 @@ class EventBusTest {
     every { eventService.saveAll(listOf(event)) } answers { firstArg() }
     every { timelineService.saveAll(listOf(handler1TimelineEntity, handler2TimelineEntity)) } answers { firstArg() }
 
-    eventBus.persistState()
+    eventBus.persistenceContext.persist()
 
     verify(exactly = 1) { stateService.persist(any()) }
     verify(exactly = 1) { eventService.saveAll(any()) }

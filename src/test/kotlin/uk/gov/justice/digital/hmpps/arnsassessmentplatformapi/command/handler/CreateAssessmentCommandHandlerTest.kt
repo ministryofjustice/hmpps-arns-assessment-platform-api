@@ -28,21 +28,14 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 import java.time.LocalDateTime
 import java.util.UUID
 
 class CreateAssessmentCommandHandlerTest {
-  val assessmentService: AssessmentService = mockk()
-  val userDetailsService: UserDetailsService = mockk()
   val eventBus: EventBus = mockk()
   val clock: Clock = mockk()
 
   val services = CommandHandlerServiceBundle(
-    assessment = assessmentService,
-    userDetails = userDetailsService,
-    timeline = mockk(),
     eventBus = eventBus,
     clock = clock,
   )
@@ -98,7 +91,7 @@ class CreateAssessmentCommandHandlerTest {
   @Test
   fun `it handles the command`() {
     val assessment = slot<AssessmentEntity>()
-    every { assessmentService.save(capture(assessment)) } answers { firstArg() }
+    every { eventBus.persistenceContext.assessments.add(capture(assessment)) } answers { firstArg() }
 
     val handledEvents = mutableListOf<EventEntity<out Event>>()
 
@@ -110,14 +103,14 @@ class CreateAssessmentCommandHandlerTest {
 
     every { eventBus.handle(capture(handledEvents)) } returns assessmentCreatedTimelinesResolver andThen assignedToUserTimelinesResolver
 
-    every { userDetailsService.findOrCreate(commandUser) } returns user
+    every { eventBus.persistenceContext.findUserDetails(commandUser) } returns user
 
     val result = handler.handle(command)
 
     val expectedIdentifier = ExternalIdentifier("CRN123", IdentifierType.CRN, "TEST")
 
-    verify(exactly = 1) { assessmentService.save(any<AssessmentEntity>()) }
-    verify(exactly = 1) { userDetailsService.findOrCreate(commandUser) }
+    verify(exactly = 1) { eventBus.persistenceContext.assessments.add(any<AssessmentEntity>()) }
+    verify(exactly = 1) { eventBus.persistenceContext.findUserDetails(commandUser) }
     verify(exactly = 2) { eventBus.handle(any<EventEntity<out Event>>()) }
     verify(exactly = 1) { assessmentCreatedTimelinesResolver.createTimeline(command.timeline) }
     verify(exactly = 1) { assignedToUserTimelinesResolver.createTimeline(command.timeline) }

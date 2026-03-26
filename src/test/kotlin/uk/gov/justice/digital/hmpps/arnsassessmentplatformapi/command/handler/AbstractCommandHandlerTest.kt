@@ -99,9 +99,9 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
     val handledEvent = slot<EventEntity<out Event>>()
     val timelinesResolver: TimelinesResolver = mockk()
 
-    every { services.assessment.findBy(assessment.uuid) } returns assessment
+    every { services.eventBus.persistenceContext.findAssessment(assessment.uuid) } returns assessment
     every { services.eventBus.handle(capture(handledEvent)) } returns timelinesResolver
-    every { services.userDetails.findOrCreate(commandUser) } returns user
+    every { services.eventBus.persistenceContext.findUserDetails(commandUser) } returns user
     every { timelinesResolver.createTimeline(timeline) } just Runs
     every { services.clock } returns clock
 
@@ -110,7 +110,7 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
         val result = getHandler().execute(scenario.command)
 
         verify(exactly = 1) { services.eventBus.handle(any<EventEntity<out Event>>()) }
-        verify(exactly = 1) { services.userDetails.findOrCreate(commandUser) }
+        verify(exactly = 1) { services.eventBus.persistenceContext.findUserDetails(commandUser) }
 
         assertThat(handledEvent.captured.assessment.uuid).isEqualTo(assessment.uuid)
         assertThat(handledEvent.captured.user.userId).isEqualTo(scenario.command.user.id)
