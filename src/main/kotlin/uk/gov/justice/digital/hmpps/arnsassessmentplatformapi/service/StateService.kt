@@ -85,7 +85,7 @@ class StateService(
       ?.let { events ->
         val eventBus = eventBusFactory.create()
         eventBus.handle(events)
-        eventBus.getState()
+        eventBus.persistenceContext.state
       }?.get(assessment.uuid)
       ?.get(type)
       .let { it ?: blankState(assessment) }

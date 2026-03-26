@@ -10,8 +10,8 @@ class CreateTimelineItemCommandHandler(
 ) : CommandHandler<CreateTimelineItemCommand> {
   override val type = CreateTimelineItemCommand::class
   override fun handle(command: CreateTimelineItemCommand): CommandSuccessCommandResult {
-    val assessment = services.assessment.findBy(command.assessmentUuid.value)
-    val user = services.userDetails.findOrCreate(command.user)
+    val assessment = services.eventBus.persistenceContext.findAssessment(command.assessmentUuid.value)
+    val user = services.eventBus.persistenceContext.findUserDetails(command.user)
 
     services.timeline.save(
       TimelineEntity(

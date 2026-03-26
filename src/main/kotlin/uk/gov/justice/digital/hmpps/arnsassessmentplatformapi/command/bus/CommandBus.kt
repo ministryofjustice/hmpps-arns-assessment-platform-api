@@ -38,7 +38,7 @@ open class CommandBus(
   )
 
   @Transactional
-  open fun dispatchAndPersist(commands: List<Command>) = dispatch(commands).also { eventBus.persistState() }
+  open fun dispatchAndPersist(commands: List<Command>) = dispatch(commands).also { eventBus.persistenceContext.persist() }
 }
 
 data class PlaceholderNotFoundException(val index: Int) :

@@ -48,7 +48,7 @@ class AuditService(
     }.chunked(batchSize)
 
     batches.forEachIndexed { index, entries ->
-      log.info("Sending batch ${index + 1}/${batches.size} - audit events ${index*batchSize} to ${index*batchSize+entries.size}")
+      log.info("Sending batch ${index + 1}/${batches.size} - audit events ${index * batchSize} to ${index * batchSize + entries.size}")
 
       sqsClient.sendMessageBatch {
         it.queueUrl(queueUrl)

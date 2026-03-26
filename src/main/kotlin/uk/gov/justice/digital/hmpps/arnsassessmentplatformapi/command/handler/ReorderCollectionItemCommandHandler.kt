@@ -13,8 +13,8 @@ class ReorderCollectionItemCommandHandler(
   override fun handle(command: ReorderCollectionItemCommand): CommandSuccessCommandResult {
     val event = with(command) {
       EventEntity(
-        user = services.userDetails.findOrCreate(user),
-        assessment = services.assessment.findBy(assessmentUuid.value),
+        user = services.eventBus.persistenceContext.findUserDetails(user),
+        assessment = services.eventBus.persistenceContext.findAssessment(assessmentUuid.value),
         data = CollectionItemReorderedEvent(
           collectionItemUuid = collectionItemUuid.value,
           index = command.index,

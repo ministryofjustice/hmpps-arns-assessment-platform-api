@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.SequenceGenerator
 import jakarta.persistence.Table
 import java.util.UUID
 
@@ -20,7 +21,12 @@ enum class AuthSource {
 @Table(name = "user_details")
 data class UserDetailsEntity(
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_details_sequence_gen")
+  @SequenceGenerator(
+    name = "user_details_sequence_gen",
+    sequenceName = "user_details_sequence",
+    allocationSize = 100,
+  )
   var id: Long? = null,
 
   @Column(name = "uuid", nullable = false)

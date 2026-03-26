@@ -57,7 +57,7 @@ tasks {
   withType<Test> {
     jvmArgs(
       "-javaagent:/glowroot/glowroot.jar",
-      "-Dglowroot.agent.id=test"
+      "-Dglowroot.agent.id=test",
     )
   }
 }

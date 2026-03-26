@@ -55,3 +55,21 @@ SELECT setval(
                false
        );
 
+ALTER TABLE user_details
+    ALTER COLUMN id DROP IDENTITY IF EXISTS;
+
+CREATE SEQUENCE user_details_sequence
+    START WITH 1
+    INCREMENT BY 100;
+
+ALTER SEQUENCE user_details_sequence
+    OWNED BY user_details.id;
+
+ALTER TABLE user_details
+    ALTER COLUMN id SET DEFAULT nextval('user_details_sequence');
+
+SELECT setval(
+               'user_details_sequence',
+               COALESCE((SELECT MAX(id) FROM user_details), 0) + 1,
+               false
+       );
