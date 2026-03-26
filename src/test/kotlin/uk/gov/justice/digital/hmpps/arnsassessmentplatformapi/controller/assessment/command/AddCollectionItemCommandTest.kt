@@ -124,7 +124,7 @@ class AddCollectionItemCommandTest(
     assertThat(response?.commands?.first()?.request).isEqualTo(request.commands.first())
     assertIs<AddCollectionItemCommandResult>(response?.commands?.first()?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(3)
     assertThat(eventsForAssessment.last().data).isInstanceOf(CollectionItemAddedEvent::class.java)
@@ -261,7 +261,7 @@ class AddCollectionItemCommandTest(
     assertThat(response?.commands?.first()?.request).isEqualTo(request.commands.first())
     assertIs<AddCollectionItemCommandResult>(response?.commands?.first()?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(5)
     assertThat(eventsForAssessment.last().data).isInstanceOf(CollectionItemAddedEvent::class.java)

@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAddedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
@@ -16,28 +17,31 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
 
   override val scenarios = listOf(
     Scenario.Executes<CollectionItemAddedEvent>("handles the event").apply {
-      val collectionUuid: UUID = UUID.randomUUID()
-      val collectionItemUuid: UUID = UUID.randomUUID()
+      val existingCollectionUuid: UUID = UUID.randomUUID()
+      val existingCollectionItemUuid: UUID = UUID.randomUUID()
 
-      events = listOf(
+      commandTimeline = Timeline(type = "CUSTOM_TIMELINE", data = mapOf("foo" to "bar"))
+
+      event =
         eventEntityFor(
           CollectionItemAddedEvent(
-            collectionUuid = collectionUuid,
-            collectionItemUuid = collectionItemUuid,
+            collectionUuid = existingCollectionUuid,
+            collectionItemUuid = UUID.randomUUID(),
             answers = mapOf("foo" to SingleValue("first_foo")),
             properties = mapOf("bar" to SingleValue("first_bar")),
             index = 0,
           ),
+        )
+
+      expectedTimeline = timelineEntityFor(
+        event,
+        mapOf(
+          "index" to 0,
+          "collection" to "TOP_LEVEL_COLLECTION",
+          "collectionItemUuid" to event.data.collectionItemUuid,
+          "collectionUuid" to event.data.collectionUuid,
         ),
-        eventEntityFor(
-          CollectionItemAddedEvent(
-            collectionUuid = collectionUuid,
-            collectionItemUuid = collectionItemUuid,
-            answers = mapOf("foo" to SingleValue("second_foo")),
-            properties = mapOf("bar" to SingleValue("second_bar")),
-            index = null,
-          ),
-        ),
+        commandTimeline,
       )
 
       initialState = AssessmentState().also { state ->
@@ -53,13 +57,13 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
               collections.addAll(
                 listOf(
                   Collection(
-                    uuid = collectionUuid,
+                    uuid = existingCollectionUuid,
                     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     name = "TOP_LEVEL_COLLECTION",
                     items = mutableListOf(
                       CollectionItem(
-                        uuid = collectionItemUuid,
+                        uuid = existingCollectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         answers = mutableMapOf("foo" to SingleValue("existing_foo")),
@@ -81,8 +85,8 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
             uuid = aggregateUuid,
             updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-            eventsTo = events.last().createdAt,
-            numberOfEventsApplied = 2,
+            eventsTo = event.createdAt,
+            numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
@@ -90,13 +94,13 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
               collections.addAll(
                 listOf(
                   Collection(
-                    uuid = collectionUuid,
+                    uuid = existingCollectionUuid,
                     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     name = "TOP_LEVEL_COLLECTION",
                     items = mutableListOf(
                       CollectionItem(
-                        uuid = collectionItemUuid,
+                        uuid = event.data.collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         answers = mutableMapOf("foo" to SingleValue("first_foo")),
@@ -104,19 +108,11 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
                         collections = mutableListOf(),
                       ),
                       CollectionItem(
-                        uuid = collectionItemUuid,
+                        uuid = existingCollectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         answers = mutableMapOf("foo" to SingleValue("existing_foo")),
                         properties = mutableMapOf("bar" to SingleValue("existing_bar")),
-                        collections = mutableListOf(),
-                      ),
-                      CollectionItem(
-                        uuid = collectionItemUuid,
-                        createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("foo" to SingleValue("second_foo")),
-                        properties = mutableMapOf("bar" to SingleValue("second_bar")),
                         collections = mutableListOf(),
                       ),
                     ),
@@ -129,19 +125,29 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
       }
     },
     Scenario.Executes<CollectionItemAddedEvent>("handles when no timeline provided").apply {
-      val collectionUuid: UUID = UUID.randomUUID()
-      val collectionItemUuid: UUID = UUID.randomUUID()
-      val collectionItemAddedEvent = eventEntityFor(
-        CollectionItemAddedEvent(
-          collectionUuid = collectionUuid,
-          collectionItemUuid = collectionItemUuid,
-          answers = mapOf("foo" to SingleValue("foo_value")),
-          properties = mapOf("bar" to SingleValue("bar_value")),
-          index = 0,
-        ),
-      )
+      val existingCollectionUuid: UUID = UUID.randomUUID()
 
-      events = listOf(collectionItemAddedEvent)
+      event =
+        eventEntityFor(
+          CollectionItemAddedEvent(
+            collectionUuid = existingCollectionUuid,
+            collectionItemUuid = UUID.randomUUID(),
+            answers = mapOf("foo" to SingleValue("first_foo")),
+            properties = mapOf("bar" to SingleValue("first_bar")),
+            index = 0,
+          ),
+        )
+
+      expectedTimeline = timelineEntityFor(
+        event,
+        mapOf(
+          "index" to 0,
+          "collection" to "TOP_LEVEL_COLLECTION",
+          "collectionItemUuid" to event.data.collectionItemUuid,
+          "collectionUuid" to event.data.collectionUuid,
+        ),
+        commandTimeline,
+      )
 
       initialState = AssessmentState().also { state ->
         state.aggregates.add(
@@ -156,7 +162,7 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
               collections.addAll(
                 listOf(
                   Collection(
-                    uuid = collectionUuid,
+                    uuid = existingCollectionUuid,
                     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     name = "TOP_LEVEL_COLLECTION",
@@ -175,7 +181,7 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
             uuid = aggregateUuid,
             updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-            eventsTo = events.last().createdAt,
+            eventsTo = event.createdAt,
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
@@ -184,17 +190,17 @@ class CollectionItemAddedEventHandlerTest : AbstractEventHandlerTest<CollectionI
               collections.addAll(
                 listOf(
                   Collection(
-                    uuid = collectionUuid,
+                    uuid = existingCollectionUuid,
                     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                     name = "TOP_LEVEL_COLLECTION",
                     items = mutableListOf(
                       CollectionItem(
-                        uuid = collectionItemUuid,
+                        uuid = event.data.collectionItemUuid,
                         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
                         updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-                        answers = mutableMapOf("foo" to SingleValue("foo_value")),
-                        properties = mutableMapOf("bar" to SingleValue("bar_value")),
+                        answers = mutableMapOf("foo" to SingleValue("first_foo")),
+                        properties = mutableMapOf("bar" to SingleValue("first_bar")),
                         collections = mutableListOf(),
                       ),
                     ),

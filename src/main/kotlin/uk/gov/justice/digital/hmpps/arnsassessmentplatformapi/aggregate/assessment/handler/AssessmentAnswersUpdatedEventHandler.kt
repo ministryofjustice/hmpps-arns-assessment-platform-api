@@ -6,8 +6,10 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.AnswerNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
 class AssessmentAnswersUpdatedEventHandler(
@@ -19,7 +21,7 @@ class AssessmentAnswersUpdatedEventHandler(
   override fun handle(
     event: EventEntity<AssessmentAnswersUpdatedEvent>,
     state: AssessmentState,
-  ): AssessmentState {
+  ): EventHandlerResult<AssessmentState> {
     updateAnswers(state, event.data.added, event.data.removed)
     state.getForWrite(clock).data.apply {
       collaborators.add(event.user.uuid)
@@ -31,7 +33,16 @@ class AssessmentAnswersUpdatedEventHandler(
       numberOfEventsApplied += 1
     }
 
-    return state
+    return EventHandlerResult(
+      state = state,
+      timeline = TimelineEntity.resolver(
+        event,
+        mapOf(
+          "added" to event.data.added.keys,
+          "removed" to event.data.removed,
+        ),
+      ),
+    )
   }
 
   private fun updateAnswers(state: AssessmentState, added: Map<String, Value>, removed: List<String>) {

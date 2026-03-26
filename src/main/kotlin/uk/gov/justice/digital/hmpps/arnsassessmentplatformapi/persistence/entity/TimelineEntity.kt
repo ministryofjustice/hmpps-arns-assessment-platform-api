@@ -11,9 +11,11 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import java.time.LocalDateTime
 import java.util.UUID
+
+typealias TimelineResolver = (custom: Timeline?) -> TimelineEntity
 
 @Entity
 @Table(name = "timeline")
@@ -23,10 +25,10 @@ class TimelineEntity(
   @Column(name = "id")
   var id: Long? = null,
 
-  @Column(name = "uuid", nullable = false)
-  var uuid: UUID = UUID.randomUUID(),
+  @Column(name = "uuid", nullable = false, updatable = false)
+  val uuid: UUID = UUID.randomUUID(),
 
-  @Column(name = "created_at", nullable = false)
+  @Column(name = "created_at", nullable = false, updatable = false)
   val createdAt: LocalDateTime,
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -37,29 +39,31 @@ class TimelineEntity(
   @JoinColumn(name = "assessment_uuid", referencedColumnName = "uuid", updatable = false, nullable = false)
   val assessment: AssessmentEntity,
 
-  @Column(name = "event_type", nullable = false)
-  var eventType: String,
+  @Column(name = "event_type", nullable = true, updatable = false)
+  val eventType: String? = null,
 
   @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "data", columnDefinition = "jsonb", nullable = false)
+  @Column(name = "data", columnDefinition = "jsonb", nullable = false, updatable = false)
   val data: Map<String, Any> = emptyMap(),
 
-  @Column(name = "custom_type")
-  var customType: String? = null,
+  @Column(name = "custom_type", updatable = false)
+  val customType: String? = null,
 
   @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "custom_data", columnDefinition = "jsonb")
+  @Column(name = "custom_data", columnDefinition = "jsonb", updatable = false)
   val customData: Map<String, Any>? = null,
 ) {
   companion object {
-    fun from(command: Command, event: EventEntity<*>, data: Map<String, Any>) = TimelineEntity(
-      createdAt = event.createdAt,
-      user = event.user,
-      assessment = event.assessment,
-      eventType = event.data::class.simpleName ?: "Unknown",
-      data = data,
-      customType = command.timeline?.type,
-      customData = command.timeline?.data,
-    )
+    fun resolver(event: EventEntity<*>, data: Map<String, Any>): TimelineResolver = { custom: Timeline? ->
+      TimelineEntity(
+        createdAt = event.createdAt,
+        user = event.user,
+        assessment = event.assessment,
+        eventType = event.data::class.simpleName,
+        data = data,
+        customType = custom?.type,
+        customData = custom?.data,
+      )
+    }
   }
 }

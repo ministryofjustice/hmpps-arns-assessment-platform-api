@@ -13,7 +13,7 @@ data class Timeline(
   JsonSubTypes.Type(value = AddCollectionItemCommand::class, name = "AddCollectionItemCommand"),
   JsonSubTypes.Type(value = CreateAssessmentCommand::class, name = "CreateAssessmentCommand"),
   JsonSubTypes.Type(value = CreateCollectionCommand::class, name = "CreateCollectionCommand"),
-  JsonSubTypes.Type(value = GroupCommand::class, name = "GroupCommand"),
+  JsonSubTypes.Type(value = CreateTimelineItemCommand::class, name = "CreateTimelineItemCommand"),
   JsonSubTypes.Type(value = RemoveCollectionItemCommand::class, name = "RemoveCollectionItemCommand"),
   JsonSubTypes.Type(value = ReorderCollectionItemCommand::class, name = "ReorderCollectionItemCommand"),
   JsonSubTypes.Type(value = RollbackCommand::class, name = "RollbackCommand"),

@@ -59,7 +59,7 @@ class AssessmentController(
       ),
     ],
   )
-  @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW', 'ROLE_AAP__COORDINATOR_RW')")
+  @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW', 'ROLE_AAP__COORDINATOR_RW', 'ROLE_SENTENCE_PLAN_WRITE')")
   fun executeCommands(
     @RequestBody
     request: CommandsRequest,
@@ -115,7 +115,7 @@ class AssessmentController(
       ),
     ],
   )
-  @PreAuthorize("hasAnyRole('ROLE_AAP__COORDINATOR_RW')")
+  @PreAuthorize("hasAnyRole('ROLE_AAP__COORDINATOR_RW', 'ROLE_SENTENCE_PLAN_WRITE')")
   fun deleteAssessment(
     @PathVariable("assessmentUuid") assessmentUuid: UUID,
   ) {

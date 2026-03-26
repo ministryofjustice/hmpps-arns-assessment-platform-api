@@ -1,5 +1,5 @@
 services:
-  api:
+  aap-api:
     image: ghcr.io/ministryofjustice/hmpps-arns-assessment-platform-api:local
     build:
       target: development
@@ -11,22 +11,24 @@ services:
       - ./src:/app/src
       - ./build.gradle.kts:/app/build.gradle.kts
       - ./settings.gradle.kts:/app/settings.gradle.kts
+      - ./glowroot-data:/opt/glowroot/data
     ports:
-      - "8080:8080"
-      - "5005:5005"
+      - "8081:8080"
+      - "5006:5005"
+      - "4000:4000"
 
-  typescript-client-builder:
-    build: typescript-client
-    depends_on:
-      - api
-    networks:
-      - hmpps
-    environment:
-      - SPEC_URL=http://api:8080/v3/api-docs
-      - HOST_DIR=typescript-client
-    volumes:
-      - ./typescript-client/.cache:/app/.cache
-      - ./typescript-client/src:/app/src
+#  typescript-client-builder:
+#    build: typescript-client
+#    depends_on:
+#      - api
+#    networks:
+#      - hmpps
+#    environment:
+#      - SPEC_URL=http://api:8080/v3/api-docs
+#      - HOST_DIR=typescript-client
+#    volumes:
+#      - ./typescript-client/.cache:/app/.cache
+#      - ./typescript-client/src:/app/src
 
 volumes:
   .gradle:

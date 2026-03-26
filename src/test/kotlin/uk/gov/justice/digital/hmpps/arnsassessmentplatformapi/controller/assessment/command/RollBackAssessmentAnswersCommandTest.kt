@@ -130,7 +130,7 @@ class RollBackAssessmentAnswersCommandTest(
     assertThat(response?.commands[0]?.request).isEqualTo(request.commands[0])
     assertIs<CommandSuccessCommandResult>(response?.commands[0]?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(5)
     assertThat(eventsForAssessment.last().data).isInstanceOf(AssessmentRolledBackEvent::class.java)
@@ -164,7 +164,7 @@ class RollBackAssessmentAnswersCommandTest(
       .exchange()
       .expectStatus().isOk
 
-    val eventsAfterSecondRollback = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsAfterSecondRollback = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsAfterSecondRollback.size).isEqualTo(6)
     assertThat(eventsAfterSecondRollback.last().data).isInstanceOf(AssessmentRolledBackEvent::class.java)

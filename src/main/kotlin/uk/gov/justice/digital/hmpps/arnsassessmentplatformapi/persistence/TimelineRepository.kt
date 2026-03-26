@@ -15,6 +15,8 @@ interface TimelineRepository :
   JpaSpecificationExecutor<TimelineEntity> {
   fun findByUuid(uuid: UUID): TimelineEntity?
 
+  fun findByAssessmentUuid(assessmentUuid: UUID): List<TimelineEntity>
+
   @Query(
     value = """
             SELECT

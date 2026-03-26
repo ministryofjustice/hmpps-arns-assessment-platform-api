@@ -10,7 +10,7 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBusFactory
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
@@ -31,9 +31,10 @@ class AssessmentControllerTest(
   private val assessmentRepository: AssessmentRepository,
   @Autowired
   private val aggregateRepository: AggregateRepository,
-) : IntegrationTestBase() {
   @Autowired
-  private lateinit var commandBus: CommandBus
+  private val commandBusFactory: CommandBusFactory,
+) : IntegrationTestBase() {
+  val commandBus = commandBusFactory.create()
 
   @Nested
   inner class Command {
@@ -157,8 +158,8 @@ class AssessmentControllerTest(
       RequestContextHolder.setRequestAttributes(ServletRequestAttributes(httpRequest))
 
       try {
-        commandBus.dispatch(assessment1)
-        commandBus.dispatch(assessment2)
+        commandBus.dispatchAndPersist(listOf(assessment1))
+        commandBus.dispatchAndPersist(listOf(assessment2))
       } finally {
         RequestContextHolder.resetRequestAttributes()
       }
@@ -262,7 +263,7 @@ class AssessmentControllerTest(
         RequestContextHolder.setRequestAttributes(ServletRequestAttributes(httpRequest))
 
         try {
-          commandBus.dispatch(assessment)
+          commandBus.dispatchAndPersist(listOf(assessment))
         } finally {
           RequestContextHolder.resetRequestAttributes()
         }

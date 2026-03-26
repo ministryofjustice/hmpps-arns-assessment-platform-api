@@ -1,5 +1,5 @@
 services:
-  api:
+  aap-api:
     build:
       context: .
     networks:
@@ -13,11 +13,14 @@ services:
       - HMPPS_AUTH_URL=http://hmpps-auth:9090/auth
       - SPRING_PROFILES_ACTIVE=dev,postgres
       - DATABASE_ENDPOINT=postgres:5432
+      - CACHE_REDIS_HOST=redis
+      - CACHE_REDIS_PORT=6379
       - HMPPS_SQS_PROVIDER=localstack
       - HMPPS_SQS_LOCALSTACK_URL=http://localstack:4566
       - HMPPS_SQS_QUEUES_AUDIT_QUEUE_NAME=audit-queue
     depends_on:
       - postgres
+      - redis
       - hmpps-auth
       - localstack
 
@@ -32,8 +35,18 @@ services:
     tmpfs:
       - /var/lib/postgresql
 
+  redis:
+    image: redis:8.6
+    networks:
+      - hmpps
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+
   hmpps-auth:
-    image: ghcr.io/ministryofjustice/hmpps-auth:2026-03-02.422.c36796f
+    image: ghcr.io/ministryofjustice/hmpps-auth:2026-01-19.282.b6537e8
     networks:
       - hmpps
     healthcheck:

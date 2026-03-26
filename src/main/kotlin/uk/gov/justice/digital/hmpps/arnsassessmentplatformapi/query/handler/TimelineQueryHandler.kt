@@ -27,7 +27,7 @@ class TimelineQueryHandler(
     PageRequest.of(
       query.pageNumber,
       query.pageSize,
-      Sort.by(Sort.Direction.DESC, "createdAt"),
+      Sort.by(Sort.Direction.DESC, "id"),
     ),
   ).run(TimelineQueryResult::from)
 }

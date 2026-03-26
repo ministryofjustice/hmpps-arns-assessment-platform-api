@@ -6,6 +6,7 @@ import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNotNull
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
@@ -120,9 +121,21 @@ class AssessmentRolledBackEventHandlerTest {
 
     val result = getHandler().handle(event, currentState)
 
-    assertThat(result)
+    assertThat(result.state)
       .usingRecursiveComparison()
       .isEqualTo(expectedState)
+
+    val timelineEntity = result.timeline?.let { it(timeline) }
+
+    assertNotNull(timelineEntity)
+
+    assertThat(timelineEntity.assessment).isEqualTo(assessment)
+    assertThat(timelineEntity.user).isEqualTo(user)
+    assertThat(timelineEntity.createdAt).isEqualTo(event.createdAt)
+    assertThat(timelineEntity.eventType).isEqualTo(event.data::class.simpleName)
+    assertThat(timelineEntity.data).containsExactlyEntriesOf(mapOf("rolledBackTo" to event.data.rolledBackTo))
+    assertThat(timelineEntity.customType).isEqualTo(timeline.type)
+    assertThat(timelineEntity.customData).isEqualTo(timeline.data)
   }
 
   @Test
@@ -192,8 +205,20 @@ class AssessmentRolledBackEventHandlerTest {
 
     val result = getHandler().handle(event, currentState)
 
-    assertThat(result)
+    assertThat(result.state)
       .usingRecursiveComparison()
       .isEqualTo(expectedState)
+
+    val timelineEntity = result.timeline?.let { it(null) }
+
+    assertNotNull(timelineEntity)
+
+    assertThat(timelineEntity.assessment).isEqualTo(assessment)
+    assertThat(timelineEntity.user).isEqualTo(user)
+    assertThat(timelineEntity.createdAt).isEqualTo(event.createdAt)
+    assertThat(timelineEntity.eventType).isEqualTo(event.data::class.simpleName)
+    assertThat(timelineEntity.data).containsExactlyEntriesOf(mapOf("rolledBackTo" to event.data.rolledBackTo))
+    assertThat(timelineEntity.customType).isNull()
+    assertThat(timelineEntity.customData).isNull()
   }
 }

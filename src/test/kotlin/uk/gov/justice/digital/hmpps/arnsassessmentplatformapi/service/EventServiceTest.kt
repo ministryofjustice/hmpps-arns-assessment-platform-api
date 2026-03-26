@@ -49,7 +49,7 @@ class EventServiceTest {
     @Test
     fun `it returns all events for an assessment before a provided timestamp`() {
       val pointInTime = LocalDateTime.parse("2025-01-01T12:00:00")
-      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(assessment.uuid, pointInTime) } returns events
+      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessment.uuid, pointInTime) } returns events
 
       val result = service.findAllForPointInTime(assessment.uuid, pointInTime)
       assertThat(result).isEqualTo(events)
@@ -58,7 +58,7 @@ class EventServiceTest {
     @Test
     fun `it returns empty when no events found`() {
       val pointInTime = LocalDateTime.parse("2025-01-01T12:00:00")
-      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(assessment.uuid, pointInTime) } returns emptyList()
+      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessment.uuid, pointInTime) } returns emptyList()
 
       val result = service.findAllForPointInTime(assessment.uuid, pointInTime)
       assertThat(result).isEmpty()
@@ -66,7 +66,7 @@ class EventServiceTest {
   }
 
   @Nested
-  inner class SaveAll {
+  inner class Save {
     @Test
     fun `it saves events`() {
       every { eventRepository.save(any<EventEntity<Event>>()) } answers { firstArg() }

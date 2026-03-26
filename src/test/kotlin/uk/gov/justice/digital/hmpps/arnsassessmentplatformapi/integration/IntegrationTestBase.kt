@@ -21,6 +21,8 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.wiremock.HmppsAuthApiExtension
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.wiremock.HmppsAuthApiExtension.Companion.hmppsAuth
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.UserDetailsRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.cache.UserCache
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
@@ -49,14 +51,14 @@ abstract class IntegrationTestBase {
   @BeforeAll
   fun setupWebTestClient() {
     every { clock.now() } answers { LocalDateTime.now() }
-    testUserDetailsEntity = userDetailsService.findOrCreate(testUserDetails)
+    testUserDetailsEntity = UserDetailsService(userDetailsRepository, UserCache()).findOrCreate(testUserDetails)
     webTestClient = WebTestClient.bindToServer()
       .baseUrl("http://localhost:$port")
       .build()
   }
 
   @Autowired
-  private lateinit var userDetailsService: UserDetailsService
+  private lateinit var userDetailsRepository: UserDetailsRepository
 
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthorisationHelper

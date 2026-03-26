@@ -7,7 +7,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 
 @Component
@@ -21,7 +23,7 @@ class AssessmentRolledBackEventHandler(
   override fun handle(
     event: EventEntity<AssessmentRolledBackEvent>,
     state: AssessmentState,
-  ): AssessmentState {
+  ): EventHandlerResult<AssessmentState> {
     val aggregate = state.getForWrite(clock)
 
     val previousState = stateService.stateForType(AssessmentAggregate::class).fetchOrCreateStateForExactPointInTime(
@@ -41,6 +43,14 @@ class AssessmentRolledBackEventHandler(
       numberOfEventsApplied += 1
     }
 
-    return state
+    return EventHandlerResult(
+      state = state,
+      timeline = TimelineEntity.resolver(
+        event,
+        mapOf(
+          "rolledBackTo" to event.data.rolledBackTo,
+        ),
+      ),
+    )
   }
 }

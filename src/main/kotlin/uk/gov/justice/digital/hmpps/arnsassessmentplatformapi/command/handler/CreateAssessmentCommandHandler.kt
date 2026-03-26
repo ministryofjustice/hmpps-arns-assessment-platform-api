@@ -1,9 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUserEvent
@@ -11,9 +9,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
-@Component
 class CreateAssessmentCommandHandler(
   private val services: CommandHandlerServiceBundle,
 ) : CommandHandler<CreateAssessmentCommand> {
@@ -22,14 +18,14 @@ class CreateAssessmentCommandHandler(
     val assessment = AssessmentEntity(
       uuid = command.assessmentUuid.value,
       type = command.assessmentType,
-      createdAt = services.clock.now(),
+      createdAt = services.clock.requestDateTime(),
     ).apply {
       command.identifiers?.forEach {
         identifiers.add(
           AssessmentIdentifierEntity(
             assessment = this,
             externalIdentifier = IdentifierPair(it.key, it.value),
-            createdAt = services.clock.now(),
+            createdAt = services.clock.requestDateTime(),
           ),
         )
       }
@@ -43,7 +39,7 @@ class CreateAssessmentCommandHandler(
       EventEntity(
         user = user,
         assessment = assessment,
-        createdAt = assessment.createdAt,
+        createdAt = services.clock.requestDateTime(),
         data = AssessmentCreatedEvent(
           formVersion = formVersion,
           properties = properties ?: emptyMap(),
@@ -61,31 +57,8 @@ class CreateAssessmentCommandHandler(
       ),
     )
 
-    val events = listOf(createEvent, assignEvent)
-
-    events.map { event ->
-      services.eventBus.handle(event)
-        .also { updatedState -> services.state.persist(updatedState) }
-        .run { get(AssessmentAggregate::class) as AssessmentState }
-    }
-
-    services.event.saveAll(events)
-    services.timeline.saveAll(
-      listOf(
-        TimelineEntity.from(
-          command,
-          createEvent,
-          mapOf(),
-        ),
-        TimelineEntity.from(
-          command,
-          assignEvent,
-          mapOf(
-            "assignee" to user,
-          ),
-        ),
-      ),
-    )
+    services.eventBus.handle(createEvent).createTimeline(command.timeline)
+    services.eventBus.handle(assignEvent).createTimeline(command.timeline)
 
     return CreateAssessmentCommandResult(assessment.uuid)
   }

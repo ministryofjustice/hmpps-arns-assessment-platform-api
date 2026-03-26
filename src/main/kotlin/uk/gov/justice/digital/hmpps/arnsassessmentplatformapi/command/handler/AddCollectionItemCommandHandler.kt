@@ -1,16 +1,11 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 
-import org.springframework.stereotype.Component
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.AddCollectionItemCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAddedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
-@Component
 class AddCollectionItemCommandHandler(
   private val services: CommandHandlerServiceBundle,
 ) : CommandHandler<AddCollectionItemCommand> {
@@ -27,29 +22,11 @@ class AddCollectionItemCommandHandler(
           properties,
           index,
         ),
-        createdAt = services.clock.now(),
+        createdAt = services.clock.requestDateTime(),
       )
     }
 
-    val collection = services.eventBus.handle(event)
-      .also { updatedState -> services.state.persist(updatedState) }
-      .run { get(AssessmentAggregate::class) as AssessmentState }
-      .getForRead().data.getCollection(command.collectionUuid.value)
-      ?: throw CollectionNotFoundException(command.collectionUuid.value)
-
-    services.event.save(event)
-    services.timeline.save(
-      TimelineEntity.from(
-        command,
-        event,
-        mapOf(
-          "index" to (command.index ?: (collection.items.size - 1)),
-          "collection" to collection.name,
-          "collectionItemUuid" to event.data.collectionItemUuid,
-          "collectionUuid" to event.data.collectionUuid,
-        ),
-      ),
-    )
+    services.eventBus.handle(event).createTimeline(command.timeline)
 
     return AddCollectionItemCommandResult(command.collectionItemUuid)
   }

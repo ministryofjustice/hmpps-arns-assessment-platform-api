@@ -13,28 +13,21 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.TimelinesResolver
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.reflect.KClass
@@ -42,13 +35,11 @@ import kotlin.reflect.full.primaryConstructor
 
 sealed interface Scenario<C : RequestableCommand> {
   val name: String
-  var setupMocks: () -> Unit
 
   class Executes<C : RequestableCommand>(
     override val name: String,
   ) : Scenario<C> {
     lateinit var command: C
-    override var setupMocks: () -> Unit = {}
     lateinit var expectedEvent: Event
     lateinit var expectedResult: CommandResult
   }
@@ -57,7 +48,6 @@ sealed interface Scenario<C : RequestableCommand> {
     override val name: String,
   ) : Scenario<C> {
     lateinit var command: C
-    override var setupMocks: () -> Unit = {}
     lateinit var expectedException: KClass<out T>
   }
 }
@@ -72,9 +62,6 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
 
   // Stub service bundle and other mocks
   val services: CommandHandlerServiceBundle = mockk()
-  val assessmentAggregate: AssessmentAggregate = mockk()
-  val collection: Collection = mockk()
-  val collectionItem: CollectionItem = mockk()
 
   // Basic mock data
   val assessment = AssessmentEntity(
@@ -84,15 +71,6 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val timeline = Timeline(type = "test", data = mapOf("foo" to listOf("bar")))
-  val assessmentState: AssessmentState = AssessmentState(
-    AggregateEntity(
-      assessment = assessment,
-      data = assessmentAggregate,
-      updatedAt = now,
-      eventsFrom = now,
-      eventsTo = now,
-    ),
-  )
 
   @BeforeAll
   fun init() {
@@ -102,6 +80,7 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
   fun setUp() {
     clearAllMocks()
     every { clock.now() } returns now
+    every { clock.requestDateTime() } returns now
   }
 
   private fun getHandler() = handler.primaryConstructor!!.call(services)
@@ -118,29 +97,13 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
     scenario: Scenario<C>,
   ) {
     val handledEvent = slot<EventEntity<out Event>>()
-    val persistedEvent = slot<EventEntity<out Event>>()
-    val savedTimeline = slot<TimelineEntity>()
-    val state: State = mockk()
-    val stateForType: StateService.StateForType<AssessmentAggregate> = mockk()
+    val timelinesResolver: TimelinesResolver = mockk()
 
     every { services.assessment.findBy(assessment.uuid) } returns assessment
-    every { services.eventBus.handle(capture(handledEvent)) } returns state
-    every { services.state.persist(state) } just Runs
-    every { services.state.stateForType(AssessmentAggregate::class) } returns stateForType
-    every { stateForType.fetchOrCreateLatestState(assessment) } returns assessmentState
-    every { services.event.save(capture(persistedEvent)) } answers { firstArg() }
+    every { services.eventBus.handle(capture(handledEvent)) } returns timelinesResolver
     every { services.userDetails.findOrCreate(commandUser) } returns user
-    every { state[AssessmentAggregate::class] } returns assessmentState
-    every { collection.name } returns "TEST_COLLECTION_NAME"
-    every { collection.findItem(any()) } returns collectionItem
-    every { collection.items } returns mutableListOf(collectionItem)
-    every { assessmentAggregate.getCollection(any()) } returns collection
-    every { assessmentAggregate.getCollectionWithItem(any()) } returns collection
-    every { assessmentAggregate.getCollectionItem(any()) } returns collectionItem
-    every { services.timeline.save(capture(savedTimeline)) } answers { firstArg() }
+    every { timelinesResolver.createTimeline(timeline) } just Runs
     every { services.clock } returns clock
-
-    scenario.setupMocks()
 
     when (scenario) {
       is Scenario.Executes<C> -> {
@@ -154,8 +117,6 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
         assertThat(handledEvent.captured.user.displayName).isEqualTo(scenario.command.user.name)
         assertThat(handledEvent.captured.user.authSource).isEqualTo(scenario.command.user.authSource)
         assertThat(handledEvent.captured.data).isEqualTo(scenario.expectedEvent)
-
-        assertThat(handledEvent.captured).isEqualTo(persistedEvent.captured)
 
         assertThat(result).isEqualTo(scenario.expectedResult)
       }

@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.Version
+import org.hibernate.annotations.DynamicUpdate
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
@@ -18,6 +19,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
+@DynamicUpdate
 @Table(name = "aggregate")
 class AggregateEntity<T : Aggregate<T>>(
   @Id

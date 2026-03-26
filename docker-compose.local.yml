@@ -3,6 +3,10 @@ services:
     ports:
       - "5432:5432"
 
+  redis:
+    ports:
+      - "6379:6379"
+
   localstack:
     ports:
       - "4566:4566"
@@ -11,6 +15,6 @@ services:
     ports:
       - "9090:9090"
 
-  api:
+  aap-api:
     ports:
-      - "8080:8080"
+      - "8081:8080"
