@@ -44,11 +44,16 @@ test: ## Runs all the test suites.
       ${SERVICE_NAME} \
       gradle test --parallel
 
-test-unit: ## Runs the unit test suite.
-	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle unitTests --parallel
+TESTS=
+test-targeted: ## Targets specific tests e.g. TESTS="*BatchInsertsTest"
+	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle test --tests "${TESTS}" --parallel
 
-test-integration: ## Runs the integration test suite.
-	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle integrationTests --parallel
+test-glowroot: ## Starts up the test Glowroot agent
+	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} java \
+    -javaagent:/glowroot/glowroot.jar \
+    -Dglowroot.agent.id=test \
+    -cp /glowroot/build \
+    GlowrootDummy
 
 lint: ## Runs the Kotlin linter.
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle ktlintCheck --parallel

@@ -95,7 +95,7 @@ class AuditServiceTest {
     )
 
     when (auditable) {
-      is RequestableCommand -> service.audit(auditable)
+      is RequestableCommand -> service.audit(listOf(auditable))
       is RequestableQuery -> service.audit(auditable)
       else -> fail("Unexpected auditable type $auditable")
     }
@@ -146,7 +146,7 @@ class AuditServiceTest {
     every { mockQueueService.findByQueueId("audit") } returns null
 
     assertThrows<RuntimeException> {
-      AuditService(mockQueueService, mockObjectMapper, serviceName).audit(mockk<RequestableCommand>())
+      AuditService(mockQueueService, mockObjectMapper, serviceName).audit(listOf(mockk<RequestableCommand>()))
     }
   }
 

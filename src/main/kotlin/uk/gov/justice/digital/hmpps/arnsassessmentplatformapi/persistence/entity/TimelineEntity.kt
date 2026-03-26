@@ -26,7 +26,7 @@ class TimelineEntity(
   @SequenceGenerator(
     name = "timeline_sequence_gen",
     sequenceName = "timeline_sequence",
-    allocationSize = 100
+    allocationSize = 100,
   )
   val id: Long? = null,
 

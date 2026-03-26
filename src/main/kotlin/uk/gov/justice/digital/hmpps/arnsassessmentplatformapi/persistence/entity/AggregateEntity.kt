@@ -28,7 +28,7 @@ class AggregateEntity<T : Aggregate<T>>(
   @SequenceGenerator(
     name = "aggregate_sequence_gen",
     sequenceName = "aggregate_sequence",
-    allocationSize = 100
+    allocationSize = 100,
   )
   override val id: Long? = null,
 

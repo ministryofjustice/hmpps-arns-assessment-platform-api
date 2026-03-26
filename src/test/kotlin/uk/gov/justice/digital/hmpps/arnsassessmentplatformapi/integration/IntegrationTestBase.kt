@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration
 
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
@@ -35,6 +36,14 @@ import java.time.LocalDateTime
 @ActiveProfiles("postgres", "test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class IntegrationTestBase {
+
+  @AfterAll
+  fun hangForDebugging() {
+    if (System.getProperty("keepAliveAfterTests") == "true") {
+      println("Tests finished. Hanging for Glowroot...")
+      Thread.sleep(Long.MAX_VALUE)
+    }
+  }
 
   @LocalServerPort
   private var port: Int = 0

@@ -24,7 +24,7 @@ class EventEntity<E : Event>(
   @SequenceGenerator(
     name = "event_sequence_gen",
     sequenceName = "event_sequence",
-    allocationSize = 100
+    allocationSize = 100,
   )
   val id: Long? = null,
 

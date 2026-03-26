@@ -63,14 +63,14 @@ class CommandDispatcherTest : IntegrationTestBase() {
     val commands = listOf(requestableCommand, nonRequestableCommand)
 
     every { commandBus.dispatchAndPersist(commands) } returns response
-    every { auditService.audit(requestableCommand) } just Runs
+    every { auditService.audit(listOf(requestableCommand)) } just Runs
 
     val result = commandDispatcher.dispatch(commands)
 
     assertEquals(response, result)
 
     verify(exactly = 1) { commandBus.dispatchAndPersist(commands) }
-    verify(exactly = 1) { auditService.audit(requestableCommand) }
+    verify(exactly = 1) { auditService.audit(listOf(requestableCommand)) }
   }
 
   @Test
@@ -97,14 +97,14 @@ class CommandDispatcherTest : IntegrationTestBase() {
       ObjectOptimisticLockingFailureException("Test", "id") andThenThrows
       ObjectOptimisticLockingFailureException("Test", "id") andThen
       response
-    every { auditService.audit(command) } just Runs
+    every { auditService.audit(listOf(command)) } just Runs
 
     val result = commandDispatcher.dispatch(commands)
 
     assertEquals(response, result)
 
     verify(exactly = 3) { commandBus.dispatchAndPersist(commands) }
-    verify(exactly = 1) { auditService.audit(command) }
+    verify(exactly = 1) { auditService.audit(listOf(command)) }
   }
 
   @Test
@@ -114,13 +114,13 @@ class CommandDispatcherTest : IntegrationTestBase() {
 
     every { commandBus.dispatchAndPersist(commands) } throws
       ObjectOptimisticLockingFailureException("Test", "id")
-    every { auditService.audit(command) } just Runs
+    every { auditService.audit(listOf(command)) } just Runs
 
     assertThrows<ObjectOptimisticLockingFailureException> {
       commandDispatcher.dispatch(commands)
     }
 
     verify(exactly = 3) { commandBus.dispatchAndPersist(commands) }
-    verify(exactly = 0) { auditService.audit(command) }
+    verify(exactly = 0) { auditService.audit(listOf(command)) }
   }
 }

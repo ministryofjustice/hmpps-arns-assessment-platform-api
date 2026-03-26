@@ -39,15 +39,16 @@ class AuditService(
   private fun json(details: Any) = objectMapper.writeValueAsString(details)
 
   private fun sendEvent(events: List<AuditableEvent>) {
+    val batchSize = 10
     val batches = events.mapIndexed { index, event ->
       SendMessageBatchRequestEntry.builder()
         .id("msg-$index")
         .messageBody(json(event))
         .build()
-    }.chunked(10)
+    }.chunked(batchSize)
 
     batches.forEachIndexed { index, entries ->
-      log.info("Sending batch of ${events.size} audit events (${index + 1}/${batches.size})")
+      log.info("Sending batch ${index + 1}/${batches.size} - events ${index*batchSize} to ${index*batchSize+entries.size} audit events ")
 
       sqsClient.sendMessageBatch {
         it.queueUrl(queueUrl)
@@ -61,16 +62,16 @@ class AuditService(
         }
       }
     }
-
-
   }
 
-  fun audit(commands: List<RequestableCommand>) = commands.map { command -> AuditableEvent(
-    who = command.user.id,
-    what = command::class.simpleName ?: "Unknown",
-    service = serviceName,
-    details = json(mapOf("assessmentUuid" to command.assessmentUuid.value)),
-  ) }.also { events -> sendEvent(events) }
+  fun audit(commands: List<RequestableCommand>) = commands.map { command ->
+    AuditableEvent(
+      who = command.user.id,
+      what = command::class.simpleName ?: "Unknown",
+      service = serviceName,
+      details = json(mapOf("assessmentUuid" to command.assessmentUuid.value)),
+    )
+  }.let { events -> sendEvent(events) }
 
   fun audit(query: Query) = when (query) {
     is RequestableQuery -> AuditableEvent(
@@ -86,7 +87,7 @@ class AuditService(
           ).filter { it.value != null }
         },
       ),
-    ).also {sendEvent(listOf(it))}
+    ).let { sendEvent(listOf(it)) }
 
     is SubjectAccessRequestQuery -> AuditableEvent(
       who = "SAR",
@@ -101,7 +102,7 @@ class AuditService(
           "timestamp" to query.timestamp?.intoAuditableTimestamp(),
         ),
       ),
-    ).also {sendEvent(listOf(it))}
+    ).let { sendEvent(listOf(it)) }
     else -> {
       log.warn("${query::class.simpleName} has not been implemented in the audit service")
     }

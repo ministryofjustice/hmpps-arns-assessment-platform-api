@@ -51,6 +51,13 @@ tasks {
     jvmArgs = listOf(
       "-javaagent:/glowroot/glowroot.jar",
       "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
+      "-Dglowroot.agent.id=app",
+    )
+  }
+  withType<Test> {
+    jvmArgs(
+      "-javaagent:/glowroot/glowroot.jar",
+      "-Dglowroot.agent.id=test"
     )
   }
 }
