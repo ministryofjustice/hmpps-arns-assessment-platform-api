@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus
 
-import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
@@ -29,7 +28,6 @@ open class EventBus(
 
   fun getState() = state
 
-  @Transactional
   open fun persistState() {
     stateService.persist(state).also { state.clear() }
     eventService.saveAll(events).also { events.clear() }
