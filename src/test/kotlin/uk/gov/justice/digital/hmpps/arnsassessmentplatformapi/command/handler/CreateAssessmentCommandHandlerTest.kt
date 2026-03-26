@@ -24,7 +24,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
@@ -100,7 +100,7 @@ class CreateAssessmentCommandHandlerTest {
     val assessment = slot<AssessmentEntity>()
     every { assessmentService.save(capture(assessment)) } answers { firstArg() }
 
-    val handledEvents = mutableListOf<EventEntity<out Event>>()
+    val handledEvents = mutableListOf<EventProto<out Event>>()
 
     val assessmentCreatedTimelinesResolver: TimelinesResolver = mockk()
     val assignedToUserTimelinesResolver: TimelinesResolver = mockk()
@@ -118,7 +118,7 @@ class CreateAssessmentCommandHandlerTest {
 
     verify(exactly = 1) { assessmentService.save(any<AssessmentEntity>()) }
     verify(exactly = 1) { userDetailsService.findOrCreate(commandUser) }
-    verify(exactly = 2) { eventBus.handle(any<EventEntity<out Event>>()) }
+    verify(exactly = 2) { eventBus.handle(any<EventProto<out Event>>()) }
     verify(exactly = 1) { assessmentCreatedTimelinesResolver.createTimeline(command.timeline) }
     verify(exactly = 1) { assignedToUserTimelinesResolver.createTimeline(command.timeline) }
 
@@ -132,7 +132,7 @@ class CreateAssessmentCommandHandlerTest {
     listOf(
       handledEvents.single { it.data is AssessmentCreatedEvent },
       handledEvents.single { it.data is AssignedToUserEvent },
-    ).forEachIndexed { index, handledEvent: EventEntity<out Event> ->
+    ).forEachIndexed { index, handledEvent: EventProto<out Event> ->
       assertThat(handledEvent.assessment.uuid).isEqualTo(assessment.captured.uuid)
       assertThat(handledEvent.user.userId).isEqualTo(command.user.id)
       assertThat(handledEvent.user.displayName).isEqualTo(command.user.name)

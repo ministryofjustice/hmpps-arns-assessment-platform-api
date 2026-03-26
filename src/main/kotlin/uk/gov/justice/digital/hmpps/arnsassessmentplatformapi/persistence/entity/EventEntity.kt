@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.SequenceGenerator
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
@@ -19,9 +20,13 @@ import java.util.UUID
 @Table(name = "event")
 class EventEntity<E : Event>(
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id")
-  var id: Long? = null,
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_sequence_gen")
+  @SequenceGenerator(
+    name = "event_sequence_gen",
+    sequenceName = "event_sequence",
+    allocationSize = 100
+  )
+  val id: Long? = null,
 
   @Column(name = "uuid", nullable = false, updatable = false)
   val uuid: UUID = UUID.randomUUID(),
@@ -40,4 +45,15 @@ class EventEntity<E : Event>(
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "data", columnDefinition = "jsonb", updatable = false, nullable = false)
   val data: E,
-)
+) {
+  companion object {
+    fun <E: Event>from(prototype: EventProto<E>): EventEntity<E> {
+      return EventEntity(
+        createdAt = prototype.createdAt,
+        user = prototype.user,
+        assessment = prototype.assessment,
+        data = prototype.data,
+      )
+    }
+  }
+}

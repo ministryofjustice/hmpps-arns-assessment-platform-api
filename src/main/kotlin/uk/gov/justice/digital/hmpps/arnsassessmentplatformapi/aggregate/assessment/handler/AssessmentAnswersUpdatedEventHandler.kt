@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
@@ -19,7 +19,7 @@ class AssessmentAnswersUpdatedEventHandler(
   override val stateType = AssessmentState::class
 
   override fun handle(
-    event: EventEntity<AssessmentAnswersUpdatedEvent>,
+    event: EventProto<AssessmentAnswersUpdatedEvent>,
     state: AssessmentState,
   ): EventHandlerResult<AssessmentState> {
     updateAnswers(state, event.data.added, event.data.removed)

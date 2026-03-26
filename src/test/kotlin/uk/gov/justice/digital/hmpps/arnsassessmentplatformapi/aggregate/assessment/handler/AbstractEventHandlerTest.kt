@@ -19,7 +19,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import java.time.LocalDateTime
@@ -33,7 +33,7 @@ sealed interface Scenario<E : Event> {
   class Executes<E : Event>(
     override val name: String,
   ) : Scenario<E> {
-    lateinit var event: EventEntity<E>
+    lateinit var event: EventProto<E>
     var commandTimeline: Timeline? = null
     lateinit var initialState: AssessmentState
     lateinit var expectedState: AssessmentState
@@ -43,7 +43,7 @@ sealed interface Scenario<E : Event> {
   class Throws<E : Event, T : Throwable>(
     override val name: String,
   ) : Scenario<E> {
-    lateinit var event: EventEntity<E>
+    lateinit var event: EventProto<E>
     lateinit var initialState: AssessmentState
     lateinit var expectedException: KClass<out T>
   }
@@ -71,14 +71,14 @@ abstract class AbstractEventHandlerTest<E : Event> {
 
   protected fun getHandler(): EventHandler<E, AssessmentState> = handler.primaryConstructor!!.call(mockClock)
 
-  protected fun eventEntityFor(eventData: E) = EventEntity(
+  protected fun eventEntityFor(eventData: E) = EventProto(
     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
     user = user,
     assessment = assessment,
     data = eventData,
   )
 
-  protected fun timelineEntityFor(eventEntity: EventEntity<E>, data: Map<String, Any>, commandTimeline: Timeline?) = TimelineEntity(
+  protected fun timelineEntityFor(eventEntity: EventProto<E>, data: Map<String, Any>, commandTimeline: Timeline?) = TimelineEntity(
     createdAt = eventEntity.createdAt,
     user = eventEntity.user,
     assessment = eventEntity.assessment,

@@ -25,7 +25,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.Assess
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertIs
@@ -75,7 +75,7 @@ class AddCollectionItemCommandTest(
 
     eventRepository.saveAll(
       listOf(
-        EventEntity(
+        EventProto(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
@@ -84,7 +84,7 @@ class AddCollectionItemCommandTest(
             properties = emptyMap(),
           ),
         ),
-        EventEntity(
+        EventProto(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T13:00:00"),
@@ -188,7 +188,7 @@ class AddCollectionItemCommandTest(
 
     eventRepository.saveAll(
       listOf(
-        EventEntity(
+        EventProto(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
@@ -197,7 +197,7 @@ class AddCollectionItemCommandTest(
             properties = emptyMap(),
           ),
         ),
-        EventEntity(
+        EventProto(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
@@ -207,7 +207,7 @@ class AddCollectionItemCommandTest(
             parentCollectionItemUuid = null,
           ),
         ),
-        EventEntity(
+        EventProto(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
@@ -219,7 +219,7 @@ class AddCollectionItemCommandTest(
             index = null,
           ),
         ),
-        EventEntity(
+        EventProto(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:20:00"),

@@ -22,7 +22,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.Assess
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
@@ -60,7 +60,7 @@ class RollBackAssessmentAnswersCommandTest(
 
     eventRepository.saveAll(
       listOf(
-        EventEntity(
+        EventProto(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -69,7 +69,7 @@ class RollBackAssessmentAnswersCommandTest(
             properties = emptyMap(),
           ),
         ),
-        EventEntity(
+        EventProto(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
@@ -80,7 +80,7 @@ class RollBackAssessmentAnswersCommandTest(
             removed = emptyList(),
           ),
         ),
-        EventEntity(
+        EventProto(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-01T13:45:00"),
@@ -91,7 +91,7 @@ class RollBackAssessmentAnswersCommandTest(
             removed = emptyList(),
           ),
         ),
-        EventEntity(
+        EventProto(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
           createdAt = LocalDateTime.parse("2025-01-02T09:30:00"),

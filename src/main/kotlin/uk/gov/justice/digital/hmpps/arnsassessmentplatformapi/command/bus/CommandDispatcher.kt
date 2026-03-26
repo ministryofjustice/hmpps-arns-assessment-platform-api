@@ -19,5 +19,8 @@ class CommandDispatcher(
     backoff = Backoff(50),
   )
   fun dispatch(commands: List<Command>) = commandBusFactory.create().dispatchAndPersist(commands)
-    .also { commands.forEach { command -> if (command is RequestableCommand) auditService.audit(command) } }
+    .also {
+      val requestable = commands.filterIsInstance<RequestableCommand>()
+      auditService.audit(requestable)
+    }
 }

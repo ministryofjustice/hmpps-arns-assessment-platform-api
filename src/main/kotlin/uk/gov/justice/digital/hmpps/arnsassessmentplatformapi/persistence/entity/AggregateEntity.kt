@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.SequenceGenerator
 import jakarta.persistence.Table
 import jakarta.persistence.Version
 import org.hibernate.annotations.DynamicUpdate
@@ -23,8 +24,12 @@ import java.util.UUID
 @Table(name = "aggregate")
 class AggregateEntity<T : Aggregate<T>>(
   @Id
-  @Column(name = "id")
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "aggregate_sequence_gen")
+  @SequenceGenerator(
+    name = "aggregate_sequence_gen",
+    sequenceName = "aggregate_sequence",
+    allocationSize = 100
+  )
   override val id: Long? = null,
 
   @Column(name = "uuid")

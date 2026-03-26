@@ -23,7 +23,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.UserDe
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentIdentifier
@@ -54,7 +54,7 @@ class AssessmentVersionQueryTest(
     userDetailsRepository.save(testUserDetailsEntity)
 
     val events = listOf(
-      EventEntity(
+      EventProto(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -63,13 +63,13 @@ class AssessmentVersionQueryTest(
           properties = emptyMap(),
         ),
       ),
-      EventEntity(
+      EventProto(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent(version = "1"),
       ),
-      EventEntity(
+      EventProto(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
@@ -135,7 +135,7 @@ class AssessmentVersionQueryTest(
     ).run(assessmentRepository::save)
 
     listOf(
-      EventEntity(
+      EventProto(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = assessment.createdAt,
@@ -144,13 +144,13 @@ class AssessmentVersionQueryTest(
           properties = mapOf(),
         ),
       ),
-      EventEntity(
+      EventProto(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent(version = "1"),
       ),
-      EventEntity(
+      EventProto(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
@@ -159,7 +159,7 @@ class AssessmentVersionQueryTest(
           removed = emptyList(),
         ),
       ),
-      EventEntity(
+      EventProto(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
@@ -234,7 +234,7 @@ class AssessmentVersionQueryTest(
     val assessment = AssessmentEntity(type = "TEST", createdAt = clock.now()).run(assessmentRepository::save)
 
     listOf(
-      EventEntity(
+      EventProto(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
@@ -243,13 +243,13 @@ class AssessmentVersionQueryTest(
           properties = mapOf(),
         ),
       ),
-      EventEntity(
+      EventProto(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent(version = "1"),
       ),
-      EventEntity(
+      EventProto(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
@@ -258,7 +258,7 @@ class AssessmentVersionQueryTest(
           removed = emptyList(),
         ),
       ),
-      EventEntity(
+      EventProto(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
@@ -338,7 +338,7 @@ class AssessmentVersionQueryTest(
       createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
     ).run(assessmentRepository::save)
 
-    val event = EventEntity(
+    val event = EventProto(
       user = testUserDetailsEntity,
       assessment = assessment,
       createdAt = assessment.createdAt,

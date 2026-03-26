@@ -4,7 +4,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateColl
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateCollectionCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionCreatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 
 class CreateCollectionCommandHandler(
   private val services: CommandHandlerServiceBundle,
@@ -12,7 +12,7 @@ class CreateCollectionCommandHandler(
   override val type = CreateCollectionCommand::class
   override fun handle(command: CreateCollectionCommand): CreateCollectionCommandResult {
     val event = with(command) {
-      EventEntity(
+      EventProto(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid.value),
         data = CollectionCreatedEvent(collectionUuid, name, parentCollectionItemUuid?.value),

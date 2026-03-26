@@ -4,7 +4,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 
 class UpdateAssessmentAnswersCommandHandler(
   private val services: CommandHandlerServiceBundle,
@@ -12,7 +12,7 @@ class UpdateAssessmentAnswersCommandHandler(
   override val type = UpdateAssessmentAnswersCommand::class
   override fun handle(command: UpdateAssessmentAnswersCommand): CommandSuccessCommandResult {
     val event = with(command) {
-      EventEntity(
+      EventProto(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid.value),
         data = AssessmentAnswersUpdatedEvent(

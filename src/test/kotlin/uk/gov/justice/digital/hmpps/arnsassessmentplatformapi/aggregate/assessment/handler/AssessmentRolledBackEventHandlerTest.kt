@@ -17,7 +17,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import java.time.LocalDateTime
@@ -41,7 +41,7 @@ class AssessmentRolledBackEventHandlerTest {
 
   private fun getHandler(): EventHandler<AssessmentRolledBackEvent, AssessmentState> = AssessmentRolledBackEventHandler(mockClock, stateService)
 
-  private fun eventEntityFor(eventData: AssessmentRolledBackEvent) = EventEntity(
+  private fun eventEntityFor(eventData: AssessmentRolledBackEvent) = EventProto(
     createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
     user = user,
     assessment = assessment,

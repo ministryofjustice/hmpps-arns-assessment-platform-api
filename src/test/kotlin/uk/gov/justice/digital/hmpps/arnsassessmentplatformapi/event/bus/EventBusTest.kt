@@ -16,7 +16,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineResolver
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
@@ -40,7 +40,7 @@ class EventBusTest {
 
   @Test
   fun `calls the handlers for a given event`() {
-    val event = EventEntity(
+    val event = EventProto(
       user = mockk(),
       assessment = assessment,
       createdAt = LocalDateTime.now().minusDays(1),
@@ -63,7 +63,7 @@ class EventBusTest {
     every { handler1Result.state } returns handler1State
     every { handler1Result.timeline } returns handler1Timeline
     every { handler1Timeline(commandTimeline) } returns handler1TimelineEntity
-    every { handler1.handle(any<EventEntity<AssessmentCreatedEvent>>(), initialState) } returns handler1Result
+    every { handler1.handle(any<EventProto<AssessmentCreatedEvent>>(), initialState) } returns handler1Result
     every { handler1.stateType } returns AssessmentState::class
 
     val handler2Result = mockk<EventHandlerResult<AggregateState<out Aggregate<*>>>>()
@@ -74,7 +74,7 @@ class EventBusTest {
     every { handler2Result.state } returns handler2State
     every { handler2Result.timeline } returns handler2Timeline
     every { handler2Timeline(commandTimeline) } returns handler2TimelineEntity
-    every { handler2.handle(any<EventEntity<AssessmentCreatedEvent>>(), handler1State) } returns handler2Result
+    every { handler2.handle(any<EventProto<AssessmentCreatedEvent>>(), handler1State) } returns handler2Result
     every { handler2.stateType } returns AssessmentState::class
 
     every { stateProvider.fetchLatestStateBefore(assessment, event.createdAt) } returns initialState

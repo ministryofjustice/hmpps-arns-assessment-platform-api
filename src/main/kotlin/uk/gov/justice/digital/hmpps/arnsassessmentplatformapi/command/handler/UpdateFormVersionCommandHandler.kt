@@ -4,7 +4,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateForm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 
 class UpdateFormVersionCommandHandler(
   private val services: CommandHandlerServiceBundle,
@@ -12,7 +12,7 @@ class UpdateFormVersionCommandHandler(
   override val type = UpdateFormVersionCommand::class
   override fun handle(command: UpdateFormVersionCommand): CommandSuccessCommandResult {
     val event = with(command) {
-      EventEntity(
+      EventProto(
         user = services.userDetails.findOrCreate(user),
         assessment = services.assessment.findBy(assessmentUuid.value),
         data = FormVersionUpdatedEvent(version),

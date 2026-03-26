@@ -37,7 +37,7 @@ open class CommandBus(
     },
   )
 
-  @Transactional
+//  @Transactional
   open fun dispatchAndPersist(commands: List<Command>) = dispatch(commands).also { eventBus.persistState() }
 }
 

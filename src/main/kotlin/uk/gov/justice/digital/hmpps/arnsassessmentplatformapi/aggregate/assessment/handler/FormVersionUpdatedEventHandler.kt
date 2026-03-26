@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
@@ -17,7 +17,7 @@ class FormVersionUpdatedEventHandler(
   override val stateType = AssessmentState::class
 
   override fun handle(
-    event: EventEntity<FormVersionUpdatedEvent>,
+    event: EventProto<FormVersionUpdatedEvent>,
     state: AssessmentState,
   ): EventHandlerResult<AssessmentState> {
     val aggregate = state.getForWrite(clock)

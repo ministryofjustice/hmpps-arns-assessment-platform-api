@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAddedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventProto
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
@@ -19,7 +19,7 @@ class CollectionItemAddedEventHandler(
   override val stateType = AssessmentState::class
 
   override fun handle(
-    event: EventEntity<CollectionItemAddedEvent>,
+    event: EventProto<CollectionItemAddedEvent>,
     state: AssessmentState,
   ): EventHandlerResult<AssessmentState> {
     val collectionItem = with(event.data) {

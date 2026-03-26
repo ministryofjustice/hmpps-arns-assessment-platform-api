@@ -15,8 +15,11 @@ spring:
     properties:
       hibernate:
         jdbc:
-          lob:
-            non_contextual_creation: true
+          batch_size: 100
+        order_inserts: true
+        order_updates: true
+        id:
+          new_generator_mappings: true
     show-sql: false
   h2:
     console:
