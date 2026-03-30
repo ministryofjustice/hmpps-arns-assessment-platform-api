@@ -13,8 +13,8 @@ class AddCollectionItemCommandHandler(
   override fun handle(command: AddCollectionItemCommand): AddCollectionItemCommandResult {
     val event = with(command) {
       EventEntity(
-        user = services.eventBus.persistenceContext.findUserDetails(user),
-        assessment = services.eventBus.persistenceContext.findAssessment(assessmentUuid.value),
+        user = services.persistenceContext.findUserDetails(user),
+        assessment = services.persistenceContext.findAssessment(assessmentUuid.value),
         data = CollectionItemAddedEvent(
           collectionItemUuid,
           collectionUuid.value,

@@ -16,6 +16,9 @@ import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertIs
 
+/*
+ * This test is intended for manual checking/debugging using a profiler
+ */
 class BatchInsertsTest : IntegrationTestBase() {
 
   @Test

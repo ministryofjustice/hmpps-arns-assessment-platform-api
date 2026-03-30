@@ -13,8 +13,8 @@ class RemoveCollectionItemCommandHandler(
   override fun handle(command: RemoveCollectionItemCommand): CommandSuccessCommandResult {
     val event = with(command) {
       EventEntity(
-        user = services.eventBus.persistenceContext.findUserDetails(user),
-        assessment = services.eventBus.persistenceContext.findAssessment(assessmentUuid.value),
+        user = services.persistenceContext.findUserDetails(user),
+        assessment = services.persistenceContext.findAssessment(assessmentUuid.value),
         data = CollectionItemRemovedEvent(
           collectionItemUuid = collectionItemUuid.value,
         ),

@@ -2,8 +2,8 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.UserDetailsRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.UserDetailsRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.UserDetailsNotFoundException
 import java.util.UUID
 

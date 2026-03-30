@@ -31,9 +31,9 @@ class CreateAssessmentCommandHandler(
       }
     }
 
-    services.eventBus.persistenceContext.assessments.add(assessment)
+    services.persistenceContext.assessments.add(assessment)
 
-    val user = services.eventBus.persistenceContext.findUserDetails(command.user)
+    val user = services.persistenceContext.findUserDetails(command.user)
 
     val createEvent = with(command) {
       EventEntity(

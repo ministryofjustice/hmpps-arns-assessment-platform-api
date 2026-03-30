@@ -13,30 +13,26 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Requestabl
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.TestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.CommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerFactory
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundleFactory
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.TestableCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import kotlin.test.assertEquals
 
 class CommandBusTest {
   val handler = mockk<CommandHandler<out RequestableCommand>>()
-  val eventBus: EventBus = mockk()
   val commandHandlerFactory: CommandHandlerFactory = mockk()
-  val serviceBundleFactory: CommandHandlerServiceBundleFactory = mockk()
+  val serviceBundle: CommandHandlerServiceBundle = mockk()
 
   val commandBus = CommandBus(
-    eventBus,
     commandHandlerFactory,
-    serviceBundleFactory,
+    serviceBundle,
   )
 
   @BeforeEach
   fun setup() {
     clearAllMocks()
     every { handler.execute(any()) } answers { TestableCommandResult("result-${firstArg<TestableCommand>().param}") }
-    every { serviceBundleFactory.create(any()) } returns mockk()
     every { commandHandlerFactory.create(any(), any()) } returns handler
-    every { eventBus.persistenceContext.persist() } just Runs
+    every { serviceBundle.persistenceContext.persist() } just Runs
   }
 
   @Nested
@@ -61,10 +57,9 @@ class CommandBusTest {
       assertEquals(TestableCommand(param = "test-3"), response.commands[2].request)
       assertEquals(TestableCommandResult("result-test-3"), response.commands[2].result)
 
-      verify(exactly = 3) { serviceBundleFactory.create(any()) }
       verify(exactly = 3) { commandHandlerFactory.create(any(), any()) }
       verify(exactly = 3) { handler.execute(any()) }
-      verify(exactly = 1) { eventBus.persistenceContext.persist() }
+      verify(exactly = 1) { serviceBundle.persistenceContext.persist() }
     }
 
     @Test
@@ -73,7 +68,6 @@ class CommandBusTest {
 
       assertEquals(0, response.commands.size)
 
-      verify(exactly = 0) { serviceBundleFactory.create(any()) }
       verify(exactly = 0) { commandHandlerFactory.create(any(), any()) }
       verify(exactly = 0) { handler.execute(any()) }
     }

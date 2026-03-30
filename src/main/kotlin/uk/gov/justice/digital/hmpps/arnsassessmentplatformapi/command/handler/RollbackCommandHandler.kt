@@ -13,8 +13,8 @@ class RollbackCommandHandler(
   override fun handle(command: RollbackCommand): CommandSuccessCommandResult {
     val event = with(command) {
       EventEntity(
-        user = services.eventBus.persistenceContext.findUserDetails(user),
-        assessment = services.eventBus.persistenceContext.findAssessment(assessmentUuid.value),
+        user = services.persistenceContext.findUserDetails(user),
+        assessment = services.persistenceContext.findAssessment(assessmentUuid.value),
         data = AssessmentRolledBackEvent(
           rolledBackTo = command.pointInTime,
         ),

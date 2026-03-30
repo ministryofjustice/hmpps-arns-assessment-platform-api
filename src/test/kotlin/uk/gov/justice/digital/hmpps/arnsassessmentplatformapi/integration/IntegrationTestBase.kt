@@ -59,6 +59,7 @@ abstract class IntegrationTestBase {
   fun setupWebTestClient() {
     every { clock.now() } answers { LocalDateTime.now() }
     testUserDetailsEntity = userDetailsService.findOrCreate(testUserDetails)
+      .also { userDetailsService.saveAll(listOf(it)) }
     webTestClient = WebTestClient.bindToServer()
       .baseUrl("http://localhost:$port")
       .build()

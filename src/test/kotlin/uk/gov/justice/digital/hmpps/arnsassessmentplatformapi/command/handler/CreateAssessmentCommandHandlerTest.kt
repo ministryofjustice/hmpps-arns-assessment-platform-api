@@ -5,12 +5,10 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
@@ -19,9 +17,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUserEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.TimelinesResolver
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContext
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -32,13 +30,8 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class CreateAssessmentCommandHandlerTest {
-  val eventBus: EventBus = mockk()
-  val clock: Clock = mockk()
-
-  val services = CommandHandlerServiceBundle(
-    eventBus = eventBus,
-    clock = clock,
-  )
+  val services: CommandHandlerServiceBundle = mockk()
+  val persistenceContext: PersistenceContext = mockk()
 
   val now: LocalDateTime = LocalDateTime.now()
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
@@ -79,8 +72,9 @@ class CreateAssessmentCommandHandlerTest {
   @BeforeEach
   fun setUp() {
     clearAllMocks()
-    every { clock.now() } returns now
-    every { clock.requestDateTime() } returns now
+    every { services.clock.now() } returns now
+    every { services.clock.requestDateTime() } returns now
+    every { services.persistenceContext } returns persistenceContext
   }
 
   @Test
@@ -90,8 +84,8 @@ class CreateAssessmentCommandHandlerTest {
 
   @Test
   fun `it handles the command`() {
-    val assessment = slot<AssessmentEntity>()
-    every { eventBus.persistenceContext.assessments.add(capture(assessment)) } answers { firstArg() }
+    val assessments = mutableListOf<AssessmentEntity>()
+    every { persistenceContext.assessments } returns assessments
 
     val handledEvents = mutableListOf<EventEntity<out Event>>()
 
@@ -101,24 +95,25 @@ class CreateAssessmentCommandHandlerTest {
     every { assessmentCreatedTimelinesResolver.createTimeline(command.timeline) } just Runs
     every { assignedToUserTimelinesResolver.createTimeline(command.timeline) } just Runs
 
-    every { eventBus.handle(capture(handledEvents)) } returns assessmentCreatedTimelinesResolver andThen assignedToUserTimelinesResolver
+    every { services.eventBus.handle(capture(handledEvents)) } returns assessmentCreatedTimelinesResolver andThen assignedToUserTimelinesResolver
 
-    every { eventBus.persistenceContext.findUserDetails(commandUser) } returns user
+    every { persistenceContext.findUserDetails(commandUser) } returns user
 
     val result = handler.handle(command)
 
     val expectedIdentifier = ExternalIdentifier("CRN123", IdentifierType.CRN, "TEST")
 
-    verify(exactly = 1) { eventBus.persistenceContext.assessments.add(any<AssessmentEntity>()) }
-    verify(exactly = 1) { eventBus.persistenceContext.findUserDetails(commandUser) }
-    verify(exactly = 2) { eventBus.handle(any<EventEntity<out Event>>()) }
+    verify(exactly = 1) { persistenceContext.findUserDetails(commandUser) }
+    verify(exactly = 2) { services.eventBus.handle(any<EventEntity<out Event>>()) }
     verify(exactly = 1) { assessmentCreatedTimelinesResolver.createTimeline(command.timeline) }
     verify(exactly = 1) { assignedToUserTimelinesResolver.createTimeline(command.timeline) }
 
-    assertThat(assessment.captured.uuid).isEqualTo(command.assessmentUuid.value)
-    assertThat(assessment.captured.type).isEqualTo(command.assessmentType)
-    assertThat(assessment.captured.identifiers).hasSize(1)
-    assessment.captured.identifiers.forEach {
+    assertThat(assessments).hasSize(1)
+    val assessment = assessments.first()
+    assertThat(assessment.uuid).isEqualTo(command.assessmentUuid.value)
+    assertThat(assessment.type).isEqualTo(command.assessmentType)
+    assertThat(assessment.identifiers).hasSize(1)
+    assessment.identifiers.forEach {
       assertThat(it.toIdentifier()).isEqualTo(expectedIdentifier)
     }
 
@@ -126,12 +121,12 @@ class CreateAssessmentCommandHandlerTest {
       handledEvents.single { it.data is AssessmentCreatedEvent },
       handledEvents.single { it.data is AssignedToUserEvent },
     ).forEachIndexed { index, handledEvent: EventEntity<out Event> ->
-      assertThat(handledEvent.assessment.uuid).isEqualTo(assessment.captured.uuid)
+      assertThat(handledEvent.assessment.uuid).isEqualTo(assessment.uuid)
       assertThat(handledEvent.user.userId).isEqualTo(command.user.id)
       assertThat(handledEvent.user.displayName).isEqualTo(command.user.name)
       assertThat(handledEvent.user.authSource).isEqualTo(command.user.authSource)
       assertThat(handledEvent.data).isEqualTo(expectedEvents[index])
-      assertThat(handledEvent.createdAt).isEqualTo(assessment.captured.createdAt)
+      assertThat(handledEvent.createdAt).isEqualTo(assessment.createdAt)
     }
 
     assertThat(result).isEqualTo(expectedResult)

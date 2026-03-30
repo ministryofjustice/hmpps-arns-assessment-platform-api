@@ -13,8 +13,8 @@ class UpdateFormVersionCommandHandler(
   override fun handle(command: UpdateFormVersionCommand): CommandSuccessCommandResult {
     val event = with(command) {
       EventEntity(
-        user = services.eventBus.persistenceContext.findUserDetails(user),
-        assessment = services.eventBus.persistenceContext.findAssessment(assessmentUuid.value),
+        user = services.persistenceContext.findUserDetails(user),
+        assessment = services.persistenceContext.findAssessment(assessmentUuid.value),
         data = FormVersionUpdatedEvent(version),
         createdAt = services.clock.requestDateTime(),
       )

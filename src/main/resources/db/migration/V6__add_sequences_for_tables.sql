@@ -1,3 +1,5 @@
+------ EVENT ------
+
 ALTER TABLE event
     ALTER COLUMN id DROP IDENTITY IF EXISTS;
 
@@ -16,6 +18,8 @@ SELECT setval(
                COALESCE((SELECT MAX(id) FROM event), 0) + 1,
                false
        );
+
+------ TIMELINE ------
 
 ALTER TABLE timeline
     ALTER COLUMN id DROP IDENTITY IF EXISTS;
@@ -36,6 +40,8 @@ SELECT setval(
                false
        );
 
+------ AGGREGATE ------
+
 ALTER TABLE aggregate
     ALTER COLUMN id DROP IDENTITY IF EXISTS;
 
@@ -55,6 +61,8 @@ SELECT setval(
                false
        );
 
+------ USER_DETAILS ------
+
 ALTER TABLE user_details
     ALTER COLUMN id DROP IDENTITY IF EXISTS;
 
@@ -71,5 +79,47 @@ ALTER TABLE user_details
 SELECT setval(
                'user_details_sequence',
                COALESCE((SELECT MAX(id) FROM user_details), 0) + 1,
+               false
+       );
+
+------ ASSESSMENT_IDENTIFIER ------
+
+ALTER TABLE assessment_identifier
+    ALTER COLUMN id DROP IDENTITY IF EXISTS;
+
+CREATE SEQUENCE assessment_identifier_sequence
+    START WITH 1
+    INCREMENT BY 100;
+
+ALTER SEQUENCE assessment_identifier_sequence
+    OWNED BY assessment_identifier.id;
+
+ALTER TABLE assessment_identifier
+    ALTER COLUMN id SET DEFAULT nextval('assessment_identifier_sequence');
+
+SELECT setval(
+               'assessment_identifier_sequence',
+               COALESCE((SELECT MAX(id) FROM assessment_identifier), 0) + 1,
+               false
+       );
+
+------ ASSESSMENT ------
+
+ALTER TABLE assessment
+    ALTER COLUMN id DROP IDENTITY IF EXISTS;
+
+CREATE SEQUENCE assessment_sequence
+    START WITH 1
+    INCREMENT BY 100;
+
+ALTER SEQUENCE assessment_sequence
+    OWNED BY assessment.id;
+
+ALTER TABLE assessment
+    ALTER COLUMN id SET DEFAULT nextval('assessment_sequence');
+
+SELECT setval(
+               'assessment_sequence',
+               COALESCE((SELECT MAX(id) FROM assessment), 0) + 1,
                false
        );

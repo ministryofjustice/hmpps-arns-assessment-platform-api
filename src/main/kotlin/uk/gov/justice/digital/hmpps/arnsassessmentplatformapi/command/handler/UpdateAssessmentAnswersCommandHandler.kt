@@ -13,8 +13,8 @@ class UpdateAssessmentAnswersCommandHandler(
   override fun handle(command: UpdateAssessmentAnswersCommand): CommandSuccessCommandResult {
     val event = with(command) {
       EventEntity(
-        user = services.eventBus.persistenceContext.findUserDetails(user),
-        assessment = services.eventBus.persistenceContext.findAssessment(assessmentUuid.value),
+        user = services.persistenceContext.findUserDetails(user),
+        assessment = services.persistenceContext.findAssessment(assessmentUuid.value),
         data = AssessmentAnswersUpdatedEvent(
           added = added,
           removed = removed,

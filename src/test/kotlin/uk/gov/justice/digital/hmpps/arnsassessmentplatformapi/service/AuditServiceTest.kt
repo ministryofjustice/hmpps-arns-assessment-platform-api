@@ -15,8 +15,8 @@ import org.junit.jupiter.params.provider.MethodSource
 import software.amazon.awssdk.services.sqs.SqsAsyncClient
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest
-import software.amazon.awssdk.services.sqs.model.SendMessageResponse
+import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest
+import software.amazon.awssdk.services.sqs.model.SendMessageBatchResponse
 import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
@@ -83,15 +83,19 @@ class AuditServiceTest {
       mockObjectMapper.writeValueAsString(capture(capturedEventDetails))
     } returns "serialized event details"
 
-    val capturedConsumer = slot<Consumer<SendMessageRequest.Builder>>()
+    val capturedConsumer = slot<Consumer<SendMessageBatchRequest.Builder>>()
     every {
-      mockSqsClient.sendMessage(capture(capturedConsumer))
-    } returns CompletableFuture.completedFuture(SendMessageResponse.builder().build())
+      mockSqsClient.sendMessageBatch(capture(capturedConsumer))
+    } returns CompletableFuture.completedFuture(
+      SendMessageBatchResponse.builder().build(),
+    )
 
     every {
       mockSqsClient.getQueueUrl(any<GetQueueUrlRequest>())
     } returns CompletableFuture.completedFuture(
-      GetQueueUrlResponse.builder().queueUrl(queueUrl).build(),
+      GetQueueUrlResponse.builder()
+        .queueUrl(queueUrl)
+        .build(),
     )
 
     when (auditable) {
@@ -100,19 +104,21 @@ class AuditServiceTest {
       else -> fail("Unexpected auditable type $auditable")
     }
 
-    val builder = SendMessageRequest.builder()
+    val builder = SendMessageBatchRequest.builder()
     capturedConsumer.captured.accept(builder)
     val request = builder.build()
 
     verify(exactly = 1) {
-      mockSqsClient.sendMessage(capture(capturedConsumer))
+      mockSqsClient.sendMessageBatch(any<Consumer<SendMessageBatchRequest.Builder>>())
     }
-    verify(exactly = 1) {
-      mockObjectMapper.writeValueAsString(capture(capturedEventDetails))
-    }
-    verify(exactly = 1) {
-      mockObjectMapper.writeValueAsString(capture(capturedEvent))
-    }
+
+    val entry = request.entries().first()
+
+    assertEquals(queueUrl, request.queueUrl())
+    assertTrue(entry.messageBody().contains("serialized event"))
+
+    assertEquals("serialized event details", capturedEvent.captured.details)
+    assertEquals(serviceName, capturedEvent.captured.service)
 
     val user = when (auditable) {
       is RequestableCommand -> auditable.user
@@ -120,16 +126,18 @@ class AuditServiceTest {
       else -> fail("Unexpected auditable type $auditable")
     }
 
-    assertEquals(queueUrl, request.queueUrl())
-    assertTrue(request.messageBody().contains("serialized event"))
-    assertEquals("serialized event details", capturedEvent.captured.details)
-    assertEquals(serviceName, capturedEvent.captured.service)
     assertEquals(user.id, capturedEvent.captured.who)
     assertEquals(auditable::class.simpleName, capturedEvent.captured.what)
 
     when (auditable) {
-      is RequestableCommand -> assertEquals(mapOf("assessmentUuid" to assessmentUuid), capturedEventDetails.captured)
-      is AssessmentQuery -> assertEquals(mapOf("assessmentIdentifier" to auditable.assessmentIdentifier), capturedEventDetails.captured)
+      is RequestableCommand -> assertEquals(
+        mapOf("assessmentUuid" to assessmentUuid),
+        capturedEventDetails.captured,
+      )
+      is AssessmentQuery -> assertEquals(
+        mapOf("assessmentIdentifier" to auditable.assessmentIdentifier),
+        capturedEventDetails.captured,
+      )
       is TimelineQuery -> assertEquals(
         mapOf(
           "assessmentIdentifier" to auditable.assessmentIdentifier,

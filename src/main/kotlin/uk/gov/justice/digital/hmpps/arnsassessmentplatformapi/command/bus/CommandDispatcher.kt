@@ -20,7 +20,6 @@ class CommandDispatcher(
   )
   fun dispatch(commands: List<Command>) = commandBusFactory.create().dispatchAndPersist(commands)
     .also {
-      val requestable = commands.filterIsInstance<RequestableCommand>()
-      auditService.audit(requestable)
+      commands.filterIsInstance<RequestableCommand>().ifEmpty { null }?.let { auditService.audit(it) }
     }
 }

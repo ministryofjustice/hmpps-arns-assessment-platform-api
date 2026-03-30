@@ -2,31 +2,28 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus
 
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContext
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContextFactory
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
 
 @Component
 class EventBusFactory(
-  val registry: EventHandlerRegistry,
-  val stateService: StateService,
-  val eventService: EventService,
-  val timelineService: TimelineService,
-  val userDetailsService: UserDetailsService,
-  val assessmentService: AssessmentService,
+  private val registry: EventHandlerRegistry,
+  private val stateService: StateService,
+  private val eventService: EventService,
+  private val persistenceContextFactory: PersistenceContextFactory,
 ) {
   fun create() = EventBus(
     registry,
     stateService,
     eventService,
-    PersistenceContext(
-      stateService,
-      eventService,
-      timelineService,
-      userDetailsService,
-      assessmentService,
-    ),
+    persistenceContextFactory.create(),
+  )
+
+  fun create(persistenceContext: PersistenceContext) = EventBus(
+    registry,
+    stateService,
+    eventService,
+    persistenceContext,
   )
 }

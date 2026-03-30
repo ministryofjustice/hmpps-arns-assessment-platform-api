@@ -15,11 +15,13 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
 open class EventBus(
-  val registry: EventHandlerRegistry,
-  val stateService: StateService,
-  val eventService: EventService,
-  val persistenceContext: PersistenceContext,
+  private val registry: EventHandlerRegistry,
+  private val stateService: StateService,
+  private val eventService: EventService,
+  private val persistenceContext: PersistenceContext,
 ) {
+  fun getState() = this.persistenceContext.state
+
   private fun resolve(resolvers: List<TimelineResolver>): TimelinesResolver = object : TimelinesResolver {
     override fun createTimeline(custom: Timeline?) {
       resolvers.forEach { resolver -> resolver(custom).run(persistenceContext.timeline::add) }
