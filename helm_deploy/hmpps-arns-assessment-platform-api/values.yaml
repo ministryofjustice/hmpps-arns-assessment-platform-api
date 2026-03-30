@@ -21,6 +21,7 @@ generic-service:
     SERVER_PORT: "8080"
     SPRING_PROFILES_ACTIVE: "postgres"
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: applicationinsights.json
+    CACHE_REDIS_SSL_ENABLED: "true"
 
   # Pre-existing kubernetes secrets to load as environment variables in the deployment.
   # namespace_secrets:
