@@ -55,5 +55,6 @@ jobs:
               owner: context.repo.owner,
               repo: 'hmpps-arns-integrations-test-playwright',
               workflow_id: '${{ env[inputs.environment] }}',
-              ref: 'main'
+              ref: 'main',
+              inputs: { "source":"aap" }
             })
