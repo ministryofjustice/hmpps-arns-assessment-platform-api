@@ -74,6 +74,7 @@ class UpdateAssessmentAnswersCommandTest(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -86,6 +87,7 @@ class UpdateAssessmentAnswersCommandTest(
             ),
             removed = emptyList(),
           ),
+          position = 1,
         ),
       ),
     )

@@ -102,6 +102,7 @@ class RemoveCollectionItemCommandTest(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -112,6 +113,7 @@ class RemoveCollectionItemCommandTest(
             name = "COLLECTION_NAME",
             parentCollectionItemUuid = null,
           ),
+          position = 1,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -124,6 +126,7 @@ class RemoveCollectionItemCommandTest(
             properties = mutableMapOf(),
             index = null,
           ),
+          position = 2,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -136,6 +139,7 @@ class RemoveCollectionItemCommandTest(
             properties = mutableMapOf(),
             index = null,
           ),
+          position = 3,
         ),
       ),
     )

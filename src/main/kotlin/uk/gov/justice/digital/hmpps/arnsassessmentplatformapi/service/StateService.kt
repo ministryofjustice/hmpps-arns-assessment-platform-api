@@ -80,7 +80,7 @@ class StateService(
       pointInTime: LocalDateTime,
     ): AggregateState<A> = eventService
       .findAllForPointInTime(assessment.uuid, pointInTime)
-      .sortedBy { it.id }
+      .sortedBy { it.position }
       .ifEmpty { null }
       ?.let { events ->
         val eventBus = eventBusFactory.create()

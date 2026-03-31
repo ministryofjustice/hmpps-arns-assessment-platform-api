@@ -68,6 +68,7 @@ class RollBackAssessmentAnswersCommandTest(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -79,6 +80,7 @@ class RollBackAssessmentAnswersCommandTest(
             ),
             removed = emptyList(),
           ),
+          position = 1,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -90,6 +92,7 @@ class RollBackAssessmentAnswersCommandTest(
             ),
             removed = emptyList(),
           ),
+          position = 2,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -101,6 +104,7 @@ class RollBackAssessmentAnswersCommandTest(
             ),
             removed = emptyList(),
           ),
+          position = 3,
         ),
       ),
     )

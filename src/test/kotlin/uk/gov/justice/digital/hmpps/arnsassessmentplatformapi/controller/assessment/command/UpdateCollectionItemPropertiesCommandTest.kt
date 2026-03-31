@@ -107,6 +107,7 @@ class UpdateCollectionItemPropertiesCommandTest(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -117,6 +118,7 @@ class UpdateCollectionItemPropertiesCommandTest(
             name = "COLLECTION_NAME",
             parentCollectionItemUuid = null,
           ),
+          position = 1,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -129,6 +131,7 @@ class UpdateCollectionItemPropertiesCommandTest(
             properties = mutableMapOf("prop" to SingleValue("unchanged_1")),
             index = null,
           ),
+          position = 2,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -144,6 +147,7 @@ class UpdateCollectionItemPropertiesCommandTest(
             ),
             index = null,
           ),
+          position = 3,
         ),
       ),
     )

@@ -13,7 +13,14 @@ class EventService(
 ) {
   fun findAllForPointInTime(assessmentUuid: UUID, pointInTime: LocalDateTime) = eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessmentUuid, pointInTime)
 
-  fun saveAll(events: List<EventEntity<*>>): List<EventEntity<*>> = eventRepository.saveAll(events)
+  fun saveAll(entities: List<EventEntity<*>>): List<EventEntity<*>> {
+    entities.groupBy { it.assessment.uuid }
+      .forEach { (assessmentUuid, events) ->
+        val maxPosition = eventRepository.findTopByAssessmentUuidOrderByPositionDesc(assessmentUuid)?.position ?: -1
+        events.forEachIndexed { index, entity -> entity.position = maxPosition + 1 + index }
+      }
+    return eventRepository.saveAll(entities)
+  }
 
   fun <E : Event> save(event: EventEntity<E>): EventEntity<E> = eventRepository.save(event)
 }

@@ -31,6 +31,9 @@ class EventEntity<E : Event>(
   @Column(name = "uuid", nullable = false, updatable = false)
   val uuid: UUID = UUID.randomUUID(),
 
+  @Column(name = "position", nullable = false, updatable = false)
+  var position: Int? = null,
+
   @Column(name = "created_at", nullable = false, updatable = false)
   val createdAt: LocalDateTime,
 

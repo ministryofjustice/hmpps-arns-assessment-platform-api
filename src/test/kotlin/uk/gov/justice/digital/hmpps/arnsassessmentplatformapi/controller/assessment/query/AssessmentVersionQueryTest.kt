@@ -62,12 +62,14 @@ class AssessmentVersionQueryTest(
           formVersion = "1",
           properties = emptyMap(),
         ),
+        position = 0,
       ),
       EventEntity(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent(version = "1"),
+        position = 1,
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -77,6 +79,7 @@ class AssessmentVersionQueryTest(
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
         ),
+        position = 2,
       ),
     ).run(eventRepository::saveAll)
 
@@ -143,12 +146,14 @@ class AssessmentVersionQueryTest(
           formVersion = "1",
           properties = mapOf(),
         ),
+        position = 0,
       ),
       EventEntity(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent(version = "1"),
+        position = 1,
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -158,6 +163,7 @@ class AssessmentVersionQueryTest(
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
         ),
+        position = 2,
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -167,6 +173,7 @@ class AssessmentVersionQueryTest(
           added = mapOf("foo" to SingleValue("updated_foo_value")),
           removed = emptyList(),
         ),
+        position = 3,
       ),
     ).run(eventRepository::saveAll)
 
@@ -242,12 +249,14 @@ class AssessmentVersionQueryTest(
           formVersion = "1",
           properties = mapOf(),
         ),
+        position = 0,
       ),
       EventEntity(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent(version = "1"),
+        position = 1,
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -257,6 +266,7 @@ class AssessmentVersionQueryTest(
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
         ),
+        position = 2,
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -266,6 +276,7 @@ class AssessmentVersionQueryTest(
           added = mapOf("foo" to SingleValue("updated_foo_value")),
           removed = emptyList(),
         ),
+        position = 3,
       ),
     ).run(eventRepository::saveAll)
 
@@ -346,6 +357,7 @@ class AssessmentVersionQueryTest(
         formVersion = "1",
         properties = emptyMap(),
       ),
+      position = 0,
     ).run(eventRepository::save)
 
     val aggregateData = AssessmentAggregate().apply {
@@ -388,27 +400,22 @@ class AssessmentVersionQueryTest(
     assertThat(response?.developerMessage).isEqualTo("Timestamp cannot be before the assessment created date")
   }
 
-  fun assessmentAndIdentifierProvider() = AssessmentEntity(type = "TEST", createdAt = clock.now()).apply {
-    identifiers.add(
-      AssessmentIdentifierEntity(
-        externalIdentifier = IdentifierPair(IdentifierType.CRN, UUID.randomUUID().toString()),
-        assessment = this,
-        createdAt = clock.now(),
-      ),
-    )
-  }.let { assessment ->
-    listOf(
-      Arguments.of(assessment, UuidIdentifier(assessment.uuid)),
-      Arguments.of(
-        assessment,
-        with(assessment.identifiers.first()) {
-          ExternalIdentifier(
-            identifier = externalIdentifier.id,
-            identifierType = externalIdentifier.type,
-            assessmentType = assessment.type,
-          )
-        },
-      ),
+  fun assessmentAndIdentifierProvider(): List<Arguments> {
+    val assessment = {
+      AssessmentEntity(type = "TEST", createdAt = clock.now()).apply {
+        identifiers.add(
+          AssessmentIdentifierEntity(
+            externalIdentifier = IdentifierPair(IdentifierType.CRN, UUID.randomUUID().toString()),
+            assessment = this,
+            createdAt = clock.now(),
+          ),
+        )
+      }
+    }
+
+    return listOf(
+      assessment().let { Arguments.of(it, UuidIdentifier(it.uuid)) },
+      assessment().let { Arguments.of(it, ExternalIdentifier(it.identifiers.first().externalIdentifier.id, IdentifierType.CRN, it.type)) },
     )
   }
 }
