@@ -21,7 +21,7 @@ class AssessmentEntity(
   @SequenceGenerator(
     name = "assessment_sequence_gen",
     sequenceName = "assessment_sequence",
-    allocationSize = 100,
+    allocationSize = 10,
   )
   val id: Long? = null,
 
