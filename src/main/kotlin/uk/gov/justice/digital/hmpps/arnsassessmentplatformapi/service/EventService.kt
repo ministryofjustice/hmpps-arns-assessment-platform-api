@@ -6,8 +6,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
 import java.time.LocalDateTime
 import java.util.UUID
-import kotlin.collections.component1
-import kotlin.collections.component2
 
 @Service
 class EventService(
