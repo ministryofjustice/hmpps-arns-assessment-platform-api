@@ -16,6 +16,7 @@ SELECT setval(
 
 ------ AGGREGATE ------
 
+ALTER SEQUENCE aggregate_sequence INCREMENT BY 10;
 SELECT setval(
                'aggregate_sequence',
                (SELECT MAX(id) FROM aggregate),
@@ -32,6 +33,7 @@ SELECT setval(
 
 ------ ASSESSMENT_IDENTIFIER ------
 
+ALTER SEQUENCE assessment_identifier_sequence INCREMENT BY 10;
 SELECT setval(
                'assessment_identifier_sequence',
                (SELECT MAX(id) FROM assessment_identifier),
@@ -40,6 +42,7 @@ SELECT setval(
 
 ------ ASSESSMENT ------
 
+ALTER SEQUENCE assessment_sequence INCREMENT BY 10;
 SELECT setval(
                'assessment_sequence',
                (SELECT MAX(id) FROM assessment),
