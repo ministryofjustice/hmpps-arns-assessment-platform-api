@@ -42,7 +42,7 @@ class AssessmentIdentifierEntity(
   @SequenceGenerator(
     name = "assessment_identifier_sequence_gen",
     sequenceName = "assessment_identifier_sequence",
-    allocationSize = 100,
+    allocationSize = 10,
   )
   val id: Long? = null,
 
