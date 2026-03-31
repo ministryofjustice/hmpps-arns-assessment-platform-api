@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.SequenceGenerator
 import jakarta.persistence.Table
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import java.time.LocalDateTime
@@ -37,8 +38,12 @@ data class IdentifierPair(
 @Table(name = "assessment_identifier")
 class AssessmentIdentifierEntity(
   @Id
-  @Column(name = "id")
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "assessment_identifier_sequence_gen")
+  @SequenceGenerator(
+    name = "assessment_identifier_sequence_gen",
+    sequenceName = "assessment_identifier_sequence",
+    allocationSize = 100,
+  )
   val id: Long? = null,
 
   @Column(name = "uuid")

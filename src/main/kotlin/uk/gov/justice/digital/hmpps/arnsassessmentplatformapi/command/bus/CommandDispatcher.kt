@@ -19,5 +19,7 @@ class CommandDispatcher(
     backoff = Backoff(50),
   )
   fun dispatch(commands: List<Command>) = commandBusFactory.create().dispatchAndPersist(commands)
-    .also { commands.forEach { command -> if (command is RequestableCommand) auditService.audit(command) } }
+    .also {
+      commands.filterIsInstance<RequestableCommand>().ifEmpty { null }?.let { auditService.audit(it) }
+    }
 }

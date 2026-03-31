@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.SequenceGenerator
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
@@ -21,9 +22,13 @@ typealias TimelineResolver = (custom: Timeline?) -> TimelineEntity
 @Table(name = "timeline")
 class TimelineEntity(
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id")
-  var id: Long? = null,
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "timeline_sequence_gen")
+  @SequenceGenerator(
+    name = "timeline_sequence_gen",
+    sequenceName = "timeline_sequence",
+    allocationSize = 100,
+  )
+  val id: Long? = null,
 
   @Column(name = "uuid", nullable = false, updatable = false)
   val uuid: UUID = UUID.randomUUID(),

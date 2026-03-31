@@ -1,19 +1,20 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus
 
-import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.StateCollection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContext
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -21,14 +22,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineResolver
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
 
 class EventBusTest {
   val stateService = mockk<StateService>()
   val eventService = mockk<EventService>()
-  val timelineService = mockk<TimelineService>()
   val stateProvider = mockk<StateService.StateForType<AssessmentAggregate>>()
   val initialState: AggregateState<AssessmentAggregate> = mockk()
   val assessment = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.now())
@@ -84,14 +83,28 @@ class EventBusTest {
     val registry: EventHandlerRegistry = mockk()
     every { registry.getHandlersFor(any<KClass<AssessmentCreatedEvent>>()) } returns listOf(handler1, handler2)
 
+    val persistenceContext: PersistenceContext = mockk()
+    val state: StateCollection = mutableMapOf()
+    val handledEvents = mutableListOf<EventEntity<*>>()
+    val timeline = mutableListOf<TimelineEntity>()
+
+    every { persistenceContext.state } returns state
+    every { persistenceContext.events } returns handledEvents
+    every { persistenceContext.timeline } returns timeline
+
     val eventBus = EventBus(
       stateService = stateService,
       eventService = eventService,
       registry = registry,
-      timelineService = timelineService,
+      persistenceContext = persistenceContext,
     )
 
     eventBus.handle(event).createTimeline(commandTimeline)
+
+    assertThat(handledEvents).hasSize(1)
+    assertThat(handledEvents.first()).isSameAs(event)
+
+    assertThat(timeline).containsExactly(handler1TimelineEntity, handler2TimelineEntity)
 
     verify(exactly = 1) { registry.getHandlersFor(AssessmentCreatedEvent::class) }
     verify(exactly = 1) { handler1.handle(event, initialState) }
@@ -101,16 +114,5 @@ class EventBusTest {
 
     verify(exactly = 0) { stateService.persist(any()) }
     verify(exactly = 0) { eventService.saveAll(any()) }
-    verify(exactly = 0) { timelineService.saveAll(any()) }
-
-    every { stateService.persist(mutableMapOf(assessment.uuid to mutableMapOf(AssessmentAggregate::class to handler2State))) } just Runs
-    every { eventService.saveAll(listOf(event)) } answers { firstArg() }
-    every { timelineService.saveAll(listOf(handler1TimelineEntity, handler2TimelineEntity)) } answers { firstArg() }
-
-    eventBus.persistState()
-
-    verify(exactly = 1) { stateService.persist(any()) }
-    verify(exactly = 1) { eventService.saveAll(any()) }
-    verify(exactly = 1) { timelineService.saveAll(any()) }
   }
 }

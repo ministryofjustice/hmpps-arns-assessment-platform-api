@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
+import jakarta.persistence.SequenceGenerator
 import jakarta.persistence.Table
 import java.time.LocalDateTime
 import java.util.UUID
@@ -16,8 +17,12 @@ import java.util.UUID
 @Table(name = "assessment")
 class AssessmentEntity(
   @Id
-  @Column(name = "id")
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "assessment_sequence_gen")
+  @SequenceGenerator(
+    name = "assessment_sequence_gen",
+    sequenceName = "assessment_sequence",
+    allocationSize = 100,
+  )
   val id: Long? = null,
 
   @Column(name = "uuid")

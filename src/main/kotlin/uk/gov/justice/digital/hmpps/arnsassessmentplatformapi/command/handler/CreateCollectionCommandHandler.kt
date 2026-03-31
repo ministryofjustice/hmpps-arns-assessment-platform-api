@@ -13,8 +13,8 @@ class CreateCollectionCommandHandler(
   override fun handle(command: CreateCollectionCommand): CreateCollectionCommandResult {
     val event = with(command) {
       EventEntity(
-        user = services.userDetails.findOrCreate(user),
-        assessment = services.assessment.findBy(assessmentUuid.value),
+        user = services.persistenceContext.findUserDetails(user),
+        assessment = services.persistenceContext.findAssessment(assessmentUuid.value),
         data = CollectionCreatedEvent(collectionUuid, name, parentCollectionItemUuid?.value),
         createdAt = services.clock.requestDateTime(),
       )

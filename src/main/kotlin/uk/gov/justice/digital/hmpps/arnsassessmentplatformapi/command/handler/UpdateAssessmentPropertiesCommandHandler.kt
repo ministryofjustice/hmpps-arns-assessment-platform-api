@@ -13,8 +13,8 @@ class UpdateAssessmentPropertiesCommandHandler(
   override fun handle(command: UpdateAssessmentPropertiesCommand): CommandSuccessCommandResult {
     val event = with(command) {
       EventEntity(
-        user = services.userDetails.findOrCreate(user),
-        assessment = services.assessment.findBy(assessmentUuid.value),
+        user = services.persistenceContext.findUserDetails(user),
+        assessment = services.persistenceContext.findAssessment(assessmentUuid.value),
         data = AssessmentPropertiesUpdatedEvent(added, removed),
         createdAt = services.clock.requestDateTime(),
       )

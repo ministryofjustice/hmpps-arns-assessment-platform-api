@@ -15,7 +15,8 @@ WORKDIR /
 RUN curl -L https://github.com/glowroot/glowroot/releases/download/v0.14.5/glowroot-0.14.5-dist.zip -o glowroot.zip
 RUN unzip glowroot.zip
 RUN rm glowroot.zip
-ADD docker/glowroot/* /glowroot
+ADD docker/glowroot /glowroot/
+RUN javac /glowroot/GlowrootDummy.java -d /glowroot/build
 WORKDIR /app
 
 FROM runtime AS production

@@ -24,6 +24,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.Com
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.TimelinesResolver
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContext
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -61,6 +62,7 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
   abstract val handler: KClass<out CommandHandler<C>>
 
   // Stub service bundle and other mocks
+  val persistenceContext: PersistenceContext = mockk()
   val services: CommandHandlerServiceBundle = mockk()
 
   // Basic mock data
@@ -81,6 +83,7 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
     clearAllMocks()
     every { clock.now() } returns now
     every { clock.requestDateTime() } returns now
+    every { services.persistenceContext } returns persistenceContext
   }
 
   private fun getHandler() = handler.primaryConstructor!!.call(services)
@@ -99,9 +102,9 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
     val handledEvent = slot<EventEntity<out Event>>()
     val timelinesResolver: TimelinesResolver = mockk()
 
-    every { services.assessment.findBy(assessment.uuid) } returns assessment
+    every { persistenceContext.findAssessment(assessment.uuid) } returns assessment
     every { services.eventBus.handle(capture(handledEvent)) } returns timelinesResolver
-    every { services.userDetails.findOrCreate(commandUser) } returns user
+    every { persistenceContext.findUserDetails(commandUser) } returns user
     every { timelinesResolver.createTimeline(timeline) } just Runs
     every { services.clock } returns clock
 
@@ -110,7 +113,7 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
         val result = getHandler().execute(scenario.command)
 
         verify(exactly = 1) { services.eventBus.handle(any<EventEntity<out Event>>()) }
-        verify(exactly = 1) { services.userDetails.findOrCreate(commandUser) }
+        verify(exactly = 1) { persistenceContext.findUserDetails(commandUser) }
 
         assertThat(handledEvent.captured.assessment.uuid).isEqualTo(assessment.uuid)
         assertThat(handledEvent.captured.user.userId).isEqualTo(scenario.command.user.id)

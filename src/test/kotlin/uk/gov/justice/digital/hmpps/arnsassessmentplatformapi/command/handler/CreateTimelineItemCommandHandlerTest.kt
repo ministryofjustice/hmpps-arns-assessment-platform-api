@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.co
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContext
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
@@ -23,6 +24,7 @@ import java.util.UUID
 
 class CreateTimelineItemCommandHandlerTest {
   val services: CommandHandlerServiceBundle = mockk()
+  val persistenceContext: PersistenceContext = mockk()
   val commandUser = UserDetails("FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
 
@@ -45,6 +47,7 @@ class CreateTimelineItemCommandHandlerTest {
   @BeforeEach
   fun setUp() {
     clearAllMocks()
+    every { services.persistenceContext } returns persistenceContext
   }
 
   @Test
@@ -54,17 +57,17 @@ class CreateTimelineItemCommandHandlerTest {
 
   @Test
   fun `it handles the command`() {
-    every { services.assessment.findBy(command.assessmentUuid.value) } answers { assessment }
-    every { services.userDetails.findOrCreate(commandUser) } returns user
+    every { persistenceContext.findAssessment(command.assessmentUuid.value) } answers { assessment }
+    every { persistenceContext.findUserDetails(commandUser) } returns user
 
     val timeline = slot<TimelineEntity>()
 
-    every { services.timeline.save(capture(timeline)) } answers { firstArg() }
+    every { persistenceContext.timeline.add(capture(timeline)) } returns true
 
     val result = handler.handle(command)
 
-    verify(exactly = 1) { services.assessment.findBy(command.assessmentUuid.value) }
-    verify(exactly = 1) { services.userDetails.findOrCreate(commandUser) }
+    verify(exactly = 1) { persistenceContext.findAssessment(command.assessmentUuid.value) }
+    verify(exactly = 1) { persistenceContext.findUserDetails(commandUser) }
 
     assertThat(timeline.captured.data).isEmpty()
     assertThat(timeline.captured.eventType).isNull()

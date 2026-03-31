@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration
 
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
@@ -21,8 +22,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.wiremock.HmppsAuthApiExtension
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.wiremock.HmppsAuthApiExtension.Companion.hmppsAuth
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.UserDetailsRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.cache.UserCache
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
@@ -35,6 +34,14 @@ import java.time.LocalDateTime
 @ActiveProfiles("postgres", "test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class IntegrationTestBase {
+
+  @AfterAll
+  fun hangForDebugging() {
+    if (System.getProperty("keepAliveAfterTests") == "true") {
+      println("Tests finished. Hanging for Glowroot...")
+      Thread.sleep(Long.MAX_VALUE)
+    }
+  }
 
   @LocalServerPort
   private var port: Int = 0
@@ -51,14 +58,15 @@ abstract class IntegrationTestBase {
   @BeforeAll
   fun setupWebTestClient() {
     every { clock.now() } answers { LocalDateTime.now() }
-    testUserDetailsEntity = UserDetailsService(userDetailsRepository, UserCache()).findOrCreate(testUserDetails)
+    testUserDetailsEntity = userDetailsService.findOrCreate(testUserDetails)
+      .also { userDetailsService.saveAll(listOf(it)) }
     webTestClient = WebTestClient.bindToServer()
       .baseUrl("http://localhost:$port")
       .build()
   }
 
   @Autowired
-  private lateinit var userDetailsRepository: UserDetailsRepository
+  private lateinit var userDetailsService: UserDetailsService
 
   @Autowired
   protected lateinit var jwtAuthHelper: JwtAuthorisationHelper
