@@ -72,6 +72,7 @@ class CreateCollectionCommandTest(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
       ),
     )
@@ -165,6 +166,7 @@ class CreateCollectionCommandTest(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
       ),
     )

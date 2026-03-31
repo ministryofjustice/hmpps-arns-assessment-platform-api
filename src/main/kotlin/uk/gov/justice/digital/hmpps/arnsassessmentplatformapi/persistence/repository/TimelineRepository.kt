@@ -17,6 +17,8 @@ interface TimelineRepository :
 
   fun findByAssessmentUuid(assessmentUuid: UUID): List<TimelineEntity>
 
+  fun findTopByAssessmentUuidOrderByPositionDesc(assessmentUuid: UUID): TimelineEntity?
+
   @Query(
     value = """
             SELECT
@@ -32,7 +34,7 @@ interface TimelineRepository :
                     MAX(t.created_at) OVER (PARTITION BY DATE(t.created_at)) AS max_created_at,
                     ROW_NUMBER() OVER (
                         PARTITION BY DATE(t.created_at)
-                        ORDER BY t.created_at DESC, t.id DESC
+                        ORDER BY t.created_at DESC, t.position DESC
                     ) AS rn
                 FROM timeline t
                 WHERE t.assessment_uuid = :assessmentUuid

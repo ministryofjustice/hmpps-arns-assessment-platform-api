@@ -39,7 +39,7 @@ open class EventBus(
       persistenceContext.state[event.assessment.uuid] = stateForAssessment
       eventService
         .findAllForPointInTime(event.assessment.uuid, event.createdAt)
-        .sortedBy { it.id }
+        .sortedBy { it.position }
         .forEach { execute(it) }
 
       return getAssessmentStateForType(event, aggregateType)
