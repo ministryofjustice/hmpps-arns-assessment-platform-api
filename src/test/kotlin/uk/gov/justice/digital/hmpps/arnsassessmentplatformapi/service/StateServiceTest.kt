@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
@@ -38,6 +39,7 @@ class StateServiceTest {
   @BeforeEach
   fun setUp() {
     every { aggregateRepository.saveAll(any<List<AggregateEntity<*>>>()) } answers { firstArg<List<AggregateEntity<*>>>() }
+    every { aggregateRepository.findTopByAssessmentUuidAndDataTypeOrderByPositionDesc(any(), any()) } returns null
     every { cacheService.evictLatestAfterCommit(any()) } just Runs
   }
 
@@ -82,6 +84,10 @@ class StateServiceTest {
     service.persist(state)
 
     verify(exactly = 1) { aggregateRepository.saveAll(aggregatesToPersist) }
+    verify(exactly = 1) { aggregateRepository.findTopByAssessmentUuidAndDataTypeOrderByPositionDesc(assessment.uuid, AssessmentAggregate::class.simpleName!!) }
     verify(exactly = 1) { cacheService.evictLatestAfterCommit(assessment.uuid) }
+
+    assertThat(aggregatesToPersist[0].position).isEqualTo(0)
+    assertThat(aggregatesToPersist[1].position).isEqualTo(1)
   }
 }

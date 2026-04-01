@@ -52,6 +52,7 @@ class UpdateAssessmentAnswersCommandTest(
       updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
+      position = 0,
       data = AssessmentAggregate().apply {
         formVersion = "1"
         answers.putAll(

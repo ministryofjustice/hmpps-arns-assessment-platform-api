@@ -30,7 +30,10 @@ class StateService(
   fun persist(state: MutableMap<UUID, State>) {
     state.flatMap { (assessmentUuid, assessmentState) ->
       assessmentState.values.flatMap { aggregateState ->
-        val maxPosition = aggregateRepository.findTopByAssessmentUuidAndDataTypeOrderByPositionDesc(assessmentUuid, aggregateState.type.simpleName!!)?.position ?: -1
+        val maxPosition = aggregateRepository.findTopByAssessmentUuidAndDataTypeOrderByPositionDesc(
+          assessmentUuid,
+          aggregateState.type.simpleName ?: throw IllegalStateException("Aggregate type ${aggregateState.type} is nameless"),
+        )?.position ?: -1
         aggregateState.aggregates.mapIndexed { index, aggregate -> aggregate.apply { position = maxPosition + 1 + index } }
       }
     }.run(aggregateRepository::saveAll)

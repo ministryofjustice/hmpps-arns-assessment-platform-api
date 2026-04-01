@@ -53,6 +53,7 @@ class UpdateFormVersionCommandTest(
       data = AssessmentAggregate().apply {
         formVersion = "1"
       },
+      position = 0,
     )
     aggregateRepository.save(aggregateEntity)
 
