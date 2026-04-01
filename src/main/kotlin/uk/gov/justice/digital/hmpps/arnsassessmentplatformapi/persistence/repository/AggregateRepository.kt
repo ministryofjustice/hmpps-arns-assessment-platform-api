@@ -10,13 +10,15 @@ import java.util.UUID
 
 @Repository
 interface AggregateRepository : JpaRepository<AggregateEntity<*>, Long> {
+  fun findTopByAssessmentUuidAndDataTypeOrderByPositionDesc(assessmentUuid: UUID, dataType: String): AggregateEntity<*>?
+
   @Query(
     value = """
         SELECT * FROM aggregate
         WHERE assessment_uuid = :assessmentUuid
           AND data ->> 'type' = :aggregateType
           AND events_to <= :beforeDate
-        ORDER BY id DESC
+        ORDER BY position DESC
         LIMIT 1
     """,
     nativeQuery = true,
@@ -33,7 +35,7 @@ interface AggregateRepository : JpaRepository<AggregateEntity<*>, Long> {
         WHERE assessment_uuid = :assessmentUuid 
           AND data ->> 'type' = :aggregateType 
           AND events_to = :beforeDate 
-        ORDER BY id DESC 
+        ORDER BY position DESC 
         LIMIT 1
     """,
     nativeQuery = true,

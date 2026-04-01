@@ -95,6 +95,7 @@ class AssessmentVersionQueryTest(
       eventsTo = LocalDateTime.parse("2025-01-01T12:05:00"),
       updatedAt = clock.now(),
       data = aggregateData,
+      position = 0,
     )
       .apply { numberOfEventsApplied = events.size.toLong() }
       .run(aggregateRepository::save)
@@ -196,6 +197,7 @@ class AssessmentVersionQueryTest(
         eventsTo = LocalDateTime.parse("2025-01-01T12:30:00"),
         updatedAt = clock.now(),
         data = secondAggregateData,
+        position = 1,
       ).apply { numberOfEventsApplied = 2 },
       AggregateEntity(
         assessment = assessment,
@@ -203,6 +205,7 @@ class AssessmentVersionQueryTest(
         eventsTo = LocalDateTime.parse("2025-01-01T12:05:00"),
         updatedAt = clock.now(),
         data = firstAggregateData,
+        position = 0,
       ).apply { numberOfEventsApplied = 1 },
     ).run(aggregateRepository::saveAll)
 
@@ -371,6 +374,7 @@ class AssessmentVersionQueryTest(
       eventsTo = event.createdAt,
       updatedAt = clock.now(),
       data = aggregateData,
+      position = 0,
     )
       .apply { numberOfEventsApplied = 1 }
       .run(aggregateRepository::save)

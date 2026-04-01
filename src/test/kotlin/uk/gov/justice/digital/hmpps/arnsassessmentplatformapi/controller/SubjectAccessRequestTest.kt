@@ -90,6 +90,7 @@ class SubjectAccessRequestTest(
         eventsTo = LocalDateTime.parse("2026-01-02T12:00:00"),
         assessment = assessment,
         numberOfEventsApplied = 3,
+        position = 0,
         data = AssessmentAggregate().apply {
           answers["foo"] = SingleValue("foo_value")
           formVersion = "v1.0"
