@@ -35,6 +35,9 @@ class AggregateEntity<T : Aggregate<T>>(
   @Column(name = "uuid")
   override val uuid: UUID = UUID.randomUUID(),
 
+  @Column(name = "position", nullable = false, updatable = false)
+  var position: Int? = null,
+
   @Version
   override val version: Long = 0,
 
@@ -57,6 +60,9 @@ class AggregateEntity<T : Aggregate<T>>(
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "data", columnDefinition = "jsonb", nullable = false)
   override var data: T,
+
+  @Column(name = "data_type", insertable = false, updatable = false)
+  val dataType: String? = null,
 ) : AggregateEntityView<T> {
   fun clone(clock: Clock) = AggregateEntity(
     eventsFrom = this.eventsFrom,

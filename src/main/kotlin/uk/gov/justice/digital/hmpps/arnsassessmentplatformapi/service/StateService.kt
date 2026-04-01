@@ -28,8 +28,12 @@ class StateService(
   private val assessmentVersionCacheService: AssessmentVersionCacheService,
 ) {
   fun persist(state: MutableMap<UUID, State>) {
-    state.values.flatMap { it.values.flatMap { aggregateState -> aggregateState.aggregates } }
-      .run(aggregateRepository::saveAll)
+    state.flatMap { (assessmentUuid, assessmentState) ->
+      assessmentState.values.flatMap { aggregateState ->
+        val maxPosition = aggregateRepository.findTopByAssessmentUuidAndDataTypeOrderByPositionDesc(assessmentUuid, aggregateState.type.simpleName!!)?.position ?: -1
+        aggregateState.aggregates.mapIndexed { index, aggregate -> aggregate.apply { position = maxPosition + 1 + index } }
+      }
+    }.run(aggregateRepository::saveAll)
 
     state.keys.forEach(assessmentVersionCacheService::evictLatestAfterCommit)
   }
