@@ -40,13 +40,7 @@ class SentencePlanService(
 
     val now = LocalDateTime.now().toString()
 
-    val forename = (assessment.properties["SUBJECT_FORENAME"] as? SingleValue)?.value
-
-    val noteText = if (!forename.isNullOrBlank()) {
-      "Automatically removed as $forename's previous supervision period has ended."
-    } else {
-      "Automatically removed as the previous supervision period has ended."
-    }
+    val noteText = "Automatically removed as the previous supervision period has ended."
 
     val goalsToRemove = goalsCollection.items
       .filter {

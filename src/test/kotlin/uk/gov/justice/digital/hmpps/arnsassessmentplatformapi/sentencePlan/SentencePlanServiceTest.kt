@@ -215,29 +215,7 @@ class SentencePlanServiceTest {
     }
 
     @Test
-    fun `should include forename in removal note when SUBJECT_FORENAME property exists`() {
-      val activeGoal = goalItem("ACTIVE")
-
-      val assessment = buildAssessment(
-        goals = listOf(activeGoal),
-        properties = mapOf("SUBJECT_FORENAME" to SingleValue("John")),
-      )
-
-      every { queryBus.dispatch(any<AssessmentVersionQuery>()) } returns assessment
-
-      service.newPeriodOfSupervision(assessmentUuid, userDetails)
-
-      val commandsSlot = slot<List<RequestableCommand>>()
-      verify { commandDispatcher.dispatch(capture(commandsSlot)) }
-
-      val addItemCommands = commandsSlot.captured.filterIsInstance<AddCollectionItemCommand>()
-      val noteValue = addItemCommands.first().answers["note"] as SingleValue
-
-      assertThat(noteValue.value).isEqualTo("Automatically removed as John's previous supervision period has ended.")
-    }
-
-    @Test
-    fun `should use generic removal note when SUBJECT_FORENAME property is missing`() {
+    fun `should use generic removal note`() {
       val activeGoal = goalItem("ACTIVE")
 
       val assessment = buildAssessment(goals = listOf(activeGoal))
