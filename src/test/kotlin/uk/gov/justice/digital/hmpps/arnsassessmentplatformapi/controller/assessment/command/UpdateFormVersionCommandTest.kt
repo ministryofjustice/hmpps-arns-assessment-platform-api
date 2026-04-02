@@ -101,7 +101,7 @@ class UpdateFormVersionCommandTest(
     assertThat(eventsForAssessment.size).isEqualTo(2)
     assertThat(eventsForAssessment[1].data).isInstanceOf(FormVersionUpdatedEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),

@@ -116,7 +116,7 @@ class AssessmentRolledBackEventHandlerTest {
       )
     }
 
-    every { stateProvider.fetchOrCreateStateForExactPointInTime(assessment, event.data.rolledBackTo) } returns previousState
+    every { stateProvider.fetchOrCreateState(assessment, event.data.rolledBackTo) } returns previousState
     every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
 
     val result = getHandler().handle(event, currentState)
@@ -200,7 +200,7 @@ class AssessmentRolledBackEventHandlerTest {
       )
     }
 
-    every { stateProvider.fetchOrCreateStateForExactPointInTime(assessment, event.data.rolledBackTo) } returns previousState
+    every { stateProvider.fetchOrCreateState(assessment, event.data.rolledBackTo) } returns previousState
     every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
 
     val result = getHandler().handle(event, currentState)

@@ -139,7 +139,7 @@ class UpdateAssessmentAnswersCommandTest(
     assertThat(eventsForAssessment.size).isEqualTo(3)
     assertThat(eventsForAssessment.last().data).isInstanceOf(AssessmentAnswersUpdatedEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),

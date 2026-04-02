@@ -1,8 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
@@ -12,37 +10,9 @@ import java.util.UUID
 interface AggregateRepository : JpaRepository<AggregateEntity<*>, Long> {
   fun findTopByAssessmentUuidAndDataTypeOrderByPositionDesc(assessmentUuid: UUID, dataType: String): AggregateEntity<*>?
 
-  @Query(
-    value = """
-        SELECT * FROM aggregate
-        WHERE assessment_uuid = :assessmentUuid
-          AND data ->> 'type' = :aggregateType
-          AND events_to <= :beforeDate
-        ORDER BY position DESC
-        LIMIT 1
-    """,
-    nativeQuery = true,
-  )
-  fun findByAssessmentAndTypeBeforeDate(
-    @Param("assessmentUuid") assessmentUuid: UUID,
-    @Param("aggregateType") aggregateType: String,
-    @Param("beforeDate") beforeDate: LocalDateTime,
-  ): AggregateEntity<*>?
-
-  @Query(
-    value = """
-        SELECT * FROM aggregate 
-        WHERE assessment_uuid = :assessmentUuid 
-          AND data ->> 'type' = :aggregateType 
-          AND events_to = :beforeDate 
-        ORDER BY position DESC 
-        LIMIT 1
-    """,
-    nativeQuery = true,
-  )
-  fun findByAssessmentAndTypeOnExactDate(
-    @Param("assessmentUuid") assessmentUuid: UUID,
-    @Param("aggregateType") aggregateType: String,
-    @Param("beforeDate") beforeDate: LocalDateTime,
+  fun findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
+    assessmentUuid: UUID,
+    aggregateType: String,
+    beforeDate: LocalDateTime,
   ): AggregateEntity<*>?
 }
