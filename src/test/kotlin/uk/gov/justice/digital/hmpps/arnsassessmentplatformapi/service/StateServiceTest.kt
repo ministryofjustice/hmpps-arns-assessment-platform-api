@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBusFactory
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContextFactory
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
@@ -23,6 +24,7 @@ class StateServiceTest {
   private val aggregateRepository: AggregateRepository = mockk()
   private val eventService: EventService = mockk()
   private val eventBusFactory: EventBusFactory = mockk()
+  private val persistenceContextFactory: PersistenceContextFactory = mockk()
   private val clock: Clock = mockk()
   private val cacheService: AssessmentVersionCacheService = mockk()
 
@@ -31,6 +33,7 @@ class StateServiceTest {
     eventService = eventService,
     clock = clock,
     eventBusFactory = eventBusFactory,
+    persistenceContextFactory = persistenceContextFactory,
     assessmentVersionCacheService = cacheService,
   )
 

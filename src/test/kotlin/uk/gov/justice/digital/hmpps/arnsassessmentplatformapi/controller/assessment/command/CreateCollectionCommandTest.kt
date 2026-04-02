@@ -109,7 +109,7 @@ class CreateCollectionCommandTest(
     assertThat(eventsForAssessment.size).isEqualTo(2)
     assertThat(eventsForAssessment.last().data).isInstanceOf(CollectionCreatedEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),
@@ -204,7 +204,7 @@ class CreateCollectionCommandTest(
     assertThat(eventsForAssessment.size).isEqualTo(2)
     assertThat(eventsForAssessment.last().data).isInstanceOf(CollectionCreatedEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),

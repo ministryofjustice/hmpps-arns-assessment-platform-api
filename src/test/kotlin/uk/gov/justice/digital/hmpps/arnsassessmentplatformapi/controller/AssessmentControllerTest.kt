@@ -195,7 +195,7 @@ class AssessmentControllerTest(
       assertIs<AssessmentVersionQueryResult>(response?.queries[1]?.result)
 
       listOf(assessment1, assessment2).forEach { assessment ->
-        aggregateRepository.findByAssessmentAndTypeBeforeDate(
+        aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
           assessment.assessmentUuid.value,
           AssessmentAggregate::class.simpleName!!,
           clock.now(),

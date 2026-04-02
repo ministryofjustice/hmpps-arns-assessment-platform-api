@@ -58,17 +58,17 @@ class ReorderCollectionItemCommandTest(
     val secondCollectionItemUuid = UUID.randomUUID()
     val aggregateEntity = AggregateEntity(
       assessment = assessmentEntity,
-      updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+      updatedAt = LocalDateTime.parse("2025-01-01T12:20:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
-      eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
+      eventsTo = LocalDateTime.parse("2025-01-01T12:20:00"),
       position = 0,
       data = AssessmentAggregate().apply {
         formVersion = "1"
         collections.add(
           Collection(
             uuid = collectionUuid,
-            createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-            updatedAt = LocalDateTime.parse("2025-01-01T13:00:00"),
+            createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
+            updatedAt = LocalDateTime.parse("2025-01-01T12:05:00"),
             name = "COLLECTION_NAME",
             items = mutableListOf(
               CollectionItem(
@@ -99,7 +99,7 @@ class ReorderCollectionItemCommandTest(
         EventEntity(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
-          createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
+          createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
@@ -123,7 +123,7 @@ class ReorderCollectionItemCommandTest(
           createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
           data = CollectionItemAddedEvent(
             collectionUuid = collectionUuid,
-            collectionItemUuid = UUID.randomUUID(),
+            collectionItemUuid = firstCollectionItemUuid,
             answers = mutableMapOf("title" to SingleValue("existing_collection_1")),
             properties = mutableMapOf(),
             index = null,
@@ -136,7 +136,7 @@ class ReorderCollectionItemCommandTest(
           createdAt = LocalDateTime.parse("2025-01-01T12:20:00"),
           data = CollectionItemAddedEvent(
             collectionUuid = collectionUuid,
-            collectionItemUuid = UUID.randomUUID(),
+            collectionItemUuid = secondCollectionItemUuid,
             answers = mutableMapOf("title" to SingleValue("existing_collection_2")),
             properties = mutableMapOf(),
             index = null,
@@ -176,7 +176,7 @@ class ReorderCollectionItemCommandTest(
     assertThat(eventsForAssessment.size).isEqualTo(5)
     assertThat(eventsForAssessment.last().data).isInstanceOf(CollectionItemReorderedEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),

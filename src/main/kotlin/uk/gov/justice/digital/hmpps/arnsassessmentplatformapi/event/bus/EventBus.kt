@@ -8,7 +8,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContext
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineResolver
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import kotlin.collections.set
 import kotlin.reflect.KClass
@@ -17,7 +16,6 @@ import kotlin.reflect.full.createInstance
 open class EventBus(
   private val registry: EventHandlerRegistry,
   private val stateService: StateService,
-  private val eventService: EventService,
   private val persistenceContext: PersistenceContext,
 ) {
   fun getState() = this.persistenceContext.state
@@ -29,35 +27,26 @@ open class EventBus(
   }
 
   private fun getAssessmentStateForType(event: EventEntity<*>, aggregateType: KClass<out Aggregate<*>>): Pair<State, AggregateState<out Aggregate<*>>> {
-    val stateProvider = stateService.stateForType(aggregateType)
-    val stateForAssessment: State = persistenceContext.state[event.assessment.uuid] ?: mutableMapOf()
-    val stateForType = stateForAssessment[aggregateType]
-      ?: stateProvider.fetchLatestStateBefore(event.assessment, event.createdAt)
-
-    if (stateForType == null) {
-      stateForAssessment[aggregateType] = stateProvider.blankState(event.assessment)
-      persistenceContext.state[event.assessment.uuid] = stateForAssessment
-      eventService
-        .findAllForPointInTime(event.assessment.uuid, event.createdAt)
-        .sortedBy { it.position }
-        .forEach { execute(it) }
-
-      return getAssessmentStateForType(event, aggregateType)
+    val stateForAssessment = persistenceContext.state.getOrPut(event.assessment.uuid) { mutableMapOf() }
+    val stateForType = stateForAssessment.getOrPut(aggregateType) {
+      stateService.stateForType(aggregateType).fetchOrCreateState(event.assessment, event.createdAt)
     }
-
-    return Pair(stateForAssessment, stateForType)
+    return stateForAssessment to stateForType
   }
 
   private fun <E : Event> execute(event: EventEntity<E>): TimelinesResolver {
     val timelineResolvers = mutableListOf<TimelineResolver>()
+    val assessment = event.assessment
+    val assessmentState = persistenceContext.state.getOrPut(assessment.uuid) { mutableMapOf() }
 
     registry.getHandlersFor(event.data::class).forEach { handler ->
       val aggregateType = handler.stateType.createInstance().type
-      val (stateForAssessment, stateForType) = getAssessmentStateForType(event, aggregateType)
-      val result = handler.handle(event, stateForType)
-      stateForAssessment[aggregateType] = result.state
-      result.timeline?.run(timelineResolvers::add)
-      persistenceContext.state[event.assessment.uuid] = stateForAssessment
+      val aggregateState = assessmentState.getOrPut(aggregateType) {
+        stateService.stateForType(aggregateType).fetchOrCreateState(assessment, event.createdAt)
+      }
+      val result = handler.handle(event, aggregateState)
+      assessmentState[aggregateType] = result.state
+      result.timeline?.let(timelineResolvers::add)
     }
 
     persistenceContext.events.add(event)

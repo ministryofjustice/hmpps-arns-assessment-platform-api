@@ -317,7 +317,7 @@ class AssessmentVersionQueryTest(
     assertThat(result.assessmentType).isEqualTo(assessment.type)
     assertThat(result.formVersion).isEqualTo(expectedAggregate.formVersion)
 
-    val persistedAggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val persistedAggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessment.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),

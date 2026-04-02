@@ -20,14 +20,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineResolver
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
 
 class EventBusTest {
   val stateService = mockk<StateService>()
-  val eventService = mockk<EventService>()
   val stateProvider = mockk<StateService.StateForType<AssessmentAggregate>>()
   val initialState: AggregateState<AssessmentAggregate> = mockk()
   val assessment = AssessmentEntity(type = "TEST", createdAt = LocalDateTime.now())
@@ -76,7 +74,7 @@ class EventBusTest {
     every { handler2.handle(any<EventEntity<AssessmentCreatedEvent>>(), handler1State) } returns handler2Result
     every { handler2.stateType } returns AssessmentState::class
 
-    every { stateProvider.fetchLatestStateBefore(assessment, event.createdAt) } returns initialState
+    every { stateProvider.fetchOrCreateState(assessment, event.createdAt) } returns initialState
 
     every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
 
@@ -94,7 +92,6 @@ class EventBusTest {
 
     val eventBus = EventBus(
       stateService = stateService,
-      eventService = eventService,
       registry = registry,
       persistenceContext = persistenceContext,
     )
@@ -109,10 +106,9 @@ class EventBusTest {
     verify(exactly = 1) { registry.getHandlersFor(AssessmentCreatedEvent::class) }
     verify(exactly = 1) { handler1.handle(event, initialState) }
     verify(exactly = 1) { handler2.handle(event, handler1State) }
-    verify(exactly = 1) { stateProvider.fetchLatestStateBefore(assessment, event.createdAt) }
-    verify(exactly = 2) { stateService.stateForType(AssessmentAggregate::class) }
+    verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, event.createdAt) }
+    verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
 
     verify(exactly = 0) { stateService.persist(any()) }
-    verify(exactly = 0) { eventService.saveAll(any()) }
   }
 }
