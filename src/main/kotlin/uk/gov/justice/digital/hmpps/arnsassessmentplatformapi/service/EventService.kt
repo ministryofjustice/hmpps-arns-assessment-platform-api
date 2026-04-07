@@ -13,6 +13,8 @@ class EventService(
 ) {
   fun findAllForPointInTime(assessmentUuid: UUID, pointInTime: LocalDateTime) = eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessmentUuid, pointInTime)
 
+  fun findAllBetween(assessmentUuid: UUID, from: LocalDateTime, to: LocalDateTime) = eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanAndCreatedAtLessThanEqual(assessmentUuid, from, to)
+
   fun saveAll(entities: List<EventEntity<*>>): List<EventEntity<*>> {
     entities.groupBy { it.assessment.uuid }
       .forEach { (assessmentUuid, events) ->

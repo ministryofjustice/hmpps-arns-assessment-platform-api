@@ -9,6 +9,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBusFactory
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContextFactory
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
@@ -24,6 +25,7 @@ class StateService(
   private val aggregateRepository: AggregateRepository,
   private val eventService: EventService,
   @param:Lazy private val eventBusFactory: EventBusFactory,
+  @param:Lazy private val persistenceContextFactory: PersistenceContextFactory,
   private val clock: Clock,
   private val assessmentVersionCacheService: AssessmentVersionCacheService,
 ) {
@@ -46,12 +48,21 @@ class StateService(
   inner class StateForType<A : Aggregate<A>>(
     private val type: KClass<A>,
   ) {
-    fun createState(aggregateEntity: AggregateEntity<A>): AggregateState<A> = when (type) {
+    fun fetchOrCreateState(
+      assessment: AssessmentEntity,
+      pointInTime: LocalDateTime?,
+    ): AggregateState<A> = when {
+      pointInTime == null -> fetchOrCreateLatestState(assessment)
+      pointInTime < assessment.createdAt -> throw InvalidTimestampException(pointInTime, "Timestamp cannot be before the assessment created date")
+      else -> createPointInTimeStateFromAggregate(assessment, pointInTime)
+    }
+
+    private fun createState(aggregateEntity: AggregateEntity<A>): AggregateState<A> = when (type) {
       AssessmentAggregate::class -> AssessmentState(aggregateEntity as AggregateEntity<AssessmentAggregate>) as AggregateState<A>
       else -> throw AggregateTypeNotFoundException(type.simpleName ?: "Unknown")
     }
 
-    fun blankState(assessment: AssessmentEntity): AggregateState<A> = AggregateEntity(
+    private fun blankState(assessment: AssessmentEntity): AggregateState<A> = AggregateEntity(
       assessment = assessment,
       data = type.createInstance(),
       eventsFrom = assessment.createdAt,
@@ -59,30 +70,40 @@ class StateService(
       updatedAt = clock.now(),
     ).run(::createState)
 
-    fun fetchLatestStateBefore(assessment: AssessmentEntity, pointInTime: LocalDateTime): AggregateState<A>? = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, type.simpleName!!, pointInTime)
+    private fun fetchOrCreateLatestState(assessment: AssessmentEntity): AggregateState<A> = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(assessment.uuid, type.simpleName!!, clock.now())
       ?.let { it as AggregateEntity<A> }
       ?.run(::createState)
+      ?: createPointInTimeStateFromEvents(assessment, clock.now())
 
-    fun fetchOrCreateState(
+    private fun createPointInTimeStateFromAggregate(
       assessment: AssessmentEntity,
-      pointInTime: LocalDateTime?,
-    ): AggregateState<A> = when {
-      pointInTime == null -> fetchOrCreateLatestState(assessment)
-      pointInTime < assessment.createdAt -> throw InvalidTimestampException(pointInTime, "Timestamp cannot be before the assessment created date")
-      else -> fetchOrCreateStateForExactPointInTime(assessment, pointInTime)
+      pointInTime: LocalDateTime,
+    ): AggregateState<A> {
+      val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(assessment.uuid, type.simpleName!!, pointInTime)
+        ?: return createPointInTimeStateFromEvents(assessment, pointInTime)
+
+      val aggregateState = createState(aggregate as AggregateEntity<A>)
+
+      if (aggregate.eventsTo == pointInTime) return aggregateState
+
+      val eventsBetween = eventService
+        .findAllBetween(assessment.uuid, aggregate.eventsTo, pointInTime)
+        .sortedBy { it.position }
+
+      if (eventsBetween.isEmpty()) return aggregateState
+
+      val persistenceContext = persistenceContextFactory.create().apply {
+        state[assessment.uuid] = mutableMapOf(type to aggregateState)
+      }
+
+      val newAggregateState = eventBusFactory.create(persistenceContext)
+        .apply { handle(eventsBetween) }
+        .getState()[assessment.uuid]?.get(type) as? AggregateState<A>
+
+      return newAggregateState ?: aggregateState
     }
 
-    fun fetchOrCreateLatestState(assessment: AssessmentEntity): AggregateState<A> = aggregateRepository.findByAssessmentAndTypeBeforeDate(assessment.uuid, type.simpleName!!, clock.now())
-      ?.let { it as AggregateEntity<A> }
-      ?.run(::createState)
-      ?: createStateForPointInTime(assessment, clock.now())
-
-    fun fetchOrCreateStateForExactPointInTime(assessment: AssessmentEntity, pointInTime: LocalDateTime): AggregateState<A> = aggregateRepository.findByAssessmentAndTypeOnExactDate(assessment.uuid, type.simpleName!!, pointInTime)
-      ?.let { it as AggregateEntity<A> }
-      ?.run(::createState)
-      ?: createStateForPointInTime(assessment, pointInTime)
-
-    fun createStateForPointInTime(
+    private fun createPointInTimeStateFromEvents(
       assessment: AssessmentEntity,
       pointInTime: LocalDateTime,
     ): AggregateState<A> = eventService
@@ -90,7 +111,10 @@ class StateService(
       .sortedBy { it.position }
       .ifEmpty { null }
       ?.let { events ->
-        val eventBus = eventBusFactory.create()
+        val persistenceContext = persistenceContextFactory.create().apply {
+          state[assessment.uuid] = mutableMapOf(type to blankState(assessment))
+        }
+        val eventBus = eventBusFactory.create(persistenceContext)
         eventBus.handle(events)
         eventBus.getState()
       }?.get(assessment.uuid)

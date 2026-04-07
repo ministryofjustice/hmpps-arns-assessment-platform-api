@@ -26,7 +26,7 @@ class AssessmentRolledBackEventHandler(
   ): EventHandlerResult<AssessmentState> {
     val aggregate = state.getForWrite(clock)
 
-    val previousState = stateService.stateForType(AssessmentAggregate::class).fetchOrCreateStateForExactPointInTime(
+    val previousState = stateService.stateForType(AssessmentAggregate::class).fetchOrCreateState(
       event.assessment,
       event.data.rolledBackTo,
     ) as AssessmentState
