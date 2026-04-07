@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.sentencePlan
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.plan.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.sentencePlan.requests.NewPeriodOfSupervisionRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.plan.controller.requests.NewPeriodOfSupervisionRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.plan.service.SentencePlanService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 
 @RestController
