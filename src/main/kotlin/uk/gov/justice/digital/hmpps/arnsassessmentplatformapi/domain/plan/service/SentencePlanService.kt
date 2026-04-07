@@ -1,4 +1,4 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.sentencePlan
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.plan.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
@@ -11,12 +11,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateColl
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.plan.exception.AssessmentNotPlanException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.bus.QueryBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.sentencePlan.exceptions.AssessmentNotPlanException
 import java.time.LocalDateTime
 import java.util.UUID
 

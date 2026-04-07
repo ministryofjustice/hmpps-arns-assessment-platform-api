@@ -1,10 +1,10 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.sentencePlan
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.plan.service
 
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -17,13 +17,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateColl
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.plan.exception.AssessmentNotPlanException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.bus.QueryBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.sentencePlan.exceptions.AssessmentNotPlanException
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -139,22 +139,22 @@ class SentencePlanServiceTest {
       val removeItemCommands = subCommands.filterIsInstance<RemoveCollectionItemCommand>()
       val timelineCommands = subCommands.filterIsInstance<CreateTimelineItemCommand>()
 
-      assertThat(updatePropsCommands).hasSize(2)
-      assertThat(updateAnswersCommands).hasSize(2)
-      assertThat(addItemCommands).hasSize(2)
-      assertThat(removeItemCommands).hasSize(1)
-      assertThat(timelineCommands).hasSize(1)
+      Assertions.assertThat(updatePropsCommands).hasSize(2)
+      Assertions.assertThat(updateAnswersCommands).hasSize(2)
+      Assertions.assertThat(addItemCommands).hasSize(2)
+      Assertions.assertThat(removeItemCommands).hasSize(1)
+      Assertions.assertThat(timelineCommands).hasSize(1)
 
-      assertThat(updatePropsCommands).allMatch {
+      Assertions.assertThat(updatePropsCommands).allMatch {
         it.added["status"] == SingleValue("REMOVED")
       }
-      assertThat(updateAnswersCommands).allMatch {
+      Assertions.assertThat(updateAnswersCommands).allMatch {
         it.removed == listOf("target_date")
       }
-      assertThat(removeItemCommands.first().collectionItemUuid.value).isEqualTo(agreement.uuid)
+      Assertions.assertThat(removeItemCommands.first().collectionItemUuid.value).isEqualTo(agreement.uuid)
 
-      assertThat(timelineCommands.first().timeline.type).isEqualTo("NEW_PERIOD_OF_SUPERVISION")
-      assertThat(timelineCommands.first().timeline.data["Goals removed"]).isEqualTo(2)
+      Assertions.assertThat(timelineCommands.first().timeline.type).isEqualTo("NEW_PERIOD_OF_SUPERVISION")
+      Assertions.assertThat(timelineCommands.first().timeline.data["Goals removed"]).isEqualTo(2)
     }
 
     @Test
@@ -173,9 +173,9 @@ class SentencePlanServiceTest {
 
       val subCommands = commandsSlot.captured
 
-      assertThat(subCommands.filterIsInstance<UpdateCollectionItemPropertiesCommand>()).isEmpty()
-      assertThat(subCommands.filterIsInstance<UpdateCollectionItemAnswersCommand>()).isEmpty()
-      assertThat(subCommands.filterIsInstance<AddCollectionItemCommand>()).isEmpty()
+      Assertions.assertThat(subCommands.filterIsInstance<UpdateCollectionItemPropertiesCommand>()).isEmpty()
+      Assertions.assertThat(subCommands.filterIsInstance<UpdateCollectionItemAnswersCommand>()).isEmpty()
+      Assertions.assertThat(subCommands.filterIsInstance<AddCollectionItemCommand>()).isEmpty()
     }
 
     @Test
@@ -207,11 +207,11 @@ class SentencePlanServiceTest {
       val createCollectionCommands = commands.filterIsInstance<CreateCollectionCommand>()
       val addItemCommands = commands.filterIsInstance<AddCollectionItemCommand>()
 
-      assertThat(createCollectionCommands).hasSize(1)
-      assertThat(createCollectionCommands.first().name).isEqualTo("NOTES")
-      assertThat(createCollectionCommands.first().parentCollectionItemUuid?.value).isEqualTo(goalWithoutNotes.uuid)
-      assertThat(addItemCommands).hasSize(1)
-      assertThat(commands).hasSize(5)
+      Assertions.assertThat(createCollectionCommands).hasSize(1)
+      Assertions.assertThat(createCollectionCommands.first().name).isEqualTo("NOTES")
+      Assertions.assertThat(createCollectionCommands.first().parentCollectionItemUuid?.value).isEqualTo(goalWithoutNotes.uuid)
+      Assertions.assertThat(addItemCommands).hasSize(1)
+      Assertions.assertThat(commands).hasSize(5)
     }
 
     @Test
@@ -230,7 +230,7 @@ class SentencePlanServiceTest {
       val addItemCommands = commandsSlot.captured.filterIsInstance<AddCollectionItemCommand>()
       val noteValue = addItemCommands.first().answers["note"] as SingleValue
 
-      assertThat(noteValue.value).isEqualTo("Automatically removed as the previous supervision period has ended.")
+      Assertions.assertThat(noteValue.value).isEqualTo("Automatically removed as the previous supervision period has ended.")
     }
   }
 }
