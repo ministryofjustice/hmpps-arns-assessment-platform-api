@@ -1,3 +1,8 @@
+{{- /* Overrides the generic-service HPA template to add custom scaling behavior.
+     Scale-up stabilization is reduced from the default 3 minutes to 60 seconds
+     so new pods are added more quickly under high load.
+     Scale-down uses the Kubernetes default (5 minutes).
+     Min/max replicas and CPU target are configured per environment in values files. */ -}}
 {{- if .Values.autoscaling.enabled }}
 {{- $name := index .Values "generic-service" "nameOverride" }}
 apiVersion: autoscaling/v2
