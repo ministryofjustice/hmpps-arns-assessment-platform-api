@@ -76,7 +76,7 @@ clean: ## Stops and removes all project containers. Deletes local build/cache di
 
 db-port-forward-pod: ## Creates a DB port-forwarding pod in your currently active Kubernetes context
 	kubectl delete pod --ignore-not-found=true port-forward-pod
-	INSTANCE_ADDRESS=$$(kubectl get secret rds-postgresql-instance-output -o json | jq -r '.data.rds_instance_address' | base64 --decode) \
+	INSTANCE_ADDRESS=$$(kubectl get secret rds-aurora-instance-output -o json | jq -r '.data.rds_cluster_endpoint' | base64 --decode) \
 	; kubectl run port-forward-pod --image=ministryofjustice/port-forward --port=5432 --env="REMOTE_HOST=$$INSTANCE_ADDRESS" --env="LOCAL_PORT=5432" --env="REMOTE_PORT=5432"
 
 DB_PORT_FORWARD_PORT=5434
@@ -85,9 +85,9 @@ db-port-forward: ## Forwards port 5434 on your local machine to port 5432 on the
 	kubectl port-forward port-forward-pod ${DB_PORT_FORWARD_PORT}:5432
 
 db-connection-string: ## Outputs a DB connection string that will let you connect to the remote DB through the port-forwarding pod. Override the local port with DB_PORT_FORWARD_PORT=XXXX
-	@DATABASE_USERNAME=$$(kubectl get secret rds-postgresql-instance-output -o json | jq -r '.data.database_username' | base64 --decode) \
-	DATABASE_PASSWORD=$$(kubectl get secret rds-postgresql-instance-output -o json | jq -r '.data.database_password' | base64 --decode) \
-	DATABASE_NAME=$$(kubectl get secret rds-postgresql-instance-output -o json | jq -r '.data.database_name' | base64 --decode) \
+	@DATABASE_USERNAME=$$(kubectl get secret rds-aurora-instance-output -o json | jq -r '.data.database_username' | base64 --decode) \
+	DATABASE_PASSWORD=$$(kubectl get secret rds-aurora-instance-output -o json | jq -r '.data.database_password' | base64 --decode) \
+	DATABASE_NAME=$$(kubectl get secret rds-aurora-instance-output -o json | jq -r '.data.database_name' | base64 --decode) \
 	; echo postgres://$$DATABASE_USERNAME:$$DATABASE_PASSWORD@localhost:${DB_PORT_FORWARD_PORT}/$$DATABASE_NAME
 
 db-connect: ## Connects to the remote DB though the port-forwarding pod
