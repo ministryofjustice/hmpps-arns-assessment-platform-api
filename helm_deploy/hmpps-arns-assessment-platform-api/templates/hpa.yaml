@@ -4,7 +4,8 @@
      Scale-down stabilization is reduced from the default 5 minutes to 2 minutes
      and limited to 2 pods per minute to avoid flapping.
      Min/max replicas and CPU target are configured per environment in values files. */ -}}
-{{- if .Values.autoscaling.enabled }}
+{{- $autoscaling := index .Values "generic-service" "autoscaling" }}
+{{- if $autoscaling.enabled }}
 {{- $name := index .Values "generic-service" "nameOverride" }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -19,24 +20,24 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ $name }}
-  minReplicas: {{ .Values.autoscaling.minReplicas }}
-  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  minReplicas: {{ $autoscaling.minReplicas }}
+  maxReplicas: {{ $autoscaling.maxReplicas }}
   metrics:
-  {{- if .Values.autoscaling.targetCPUUtilizationPercentage }}
+  {{- if $autoscaling.targetCPUUtilizationPercentage }}
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+          averageUtilization: {{ $autoscaling.targetCPUUtilizationPercentage }}
   {{- end }}
-  {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
+  {{- if $autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
+          averageUtilization: {{ $autoscaling.targetMemoryUtilizationPercentage }}
   {{- end }}
   behavior:
     scaleUp:

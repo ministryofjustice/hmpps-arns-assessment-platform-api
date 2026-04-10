@@ -57,11 +57,11 @@ generic-service:
     groups:
       - internal
 
-autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 8
-  targetCPUUtilizationPercentage: 90
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 90
 
 generic-prometheus-alerts:
   targetApplication: hmpps-arns-assessment-platform-api
