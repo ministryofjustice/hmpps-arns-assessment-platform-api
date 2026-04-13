@@ -1,9 +1,14 @@
+# `docker-compose.base.yml` defines common configuration shared across all deployment states.
+# Other compose files (local) extend or override these settings as needed.
+
 services:
   aap-api:
     build:
-      context: .
+      context: ../
     networks:
       - hmpps
+    ports:
+      - '8081:8080'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health/ping"]
       interval: 5s
@@ -29,6 +34,8 @@ services:
     restart: always
     networks:
       - hmpps
+    ports:
+      - '5432:5432'
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: dev
@@ -39,6 +46,8 @@ services:
     image: redis:8.6
     networks:
       - hmpps
+    ports:
+      - '6379:6379'
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -49,6 +58,8 @@ services:
     image: ghcr.io/ministryofjustice/hmpps-auth:2026-01-19.282.b6537e8
     networks:
       - hmpps
+    ports:
+      - '9090:9090'
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9090/auth/health" ]
       interval: 5s
@@ -65,6 +76,8 @@ services:
     image: localstack/localstack:4
     networks:
       - hmpps
+    ports:
+      - '4566:4566'
     environment:
       - SERVICES=sqs
       - LOCALSTACK_HOST=localstack:4566
@@ -73,9 +86,9 @@ services:
       - AWS_DEFAULT_REGION=eu-west-2
       - USE_SSL=false
     volumes:
-      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
-      - "./docker/scripts/localstack/init:/etc/localstack/init/ready.d"
-      - "./docker/scripts/localstack/wait:/scripts/wait"
+      - '${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack'
+      - './scripts/localstack/init:/etc/localstack/init/ready.d'
+      - './scripts/localstack/wait:/scripts/wait'
     healthcheck:
       test: [ "CMD", "bash", "/scripts/wait/healthcheck.sh" ]
       interval: 5s
