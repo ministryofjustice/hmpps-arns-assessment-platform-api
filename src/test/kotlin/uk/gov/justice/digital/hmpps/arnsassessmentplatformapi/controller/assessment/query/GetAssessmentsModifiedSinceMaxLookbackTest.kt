@@ -40,5 +40,4 @@ class GetAssessmentsModifiedSinceMaxLookbackTest : IntegrationTestBase() {
     assertThat(response?.status).isEqualTo(400)
     assertThat(response?.developerMessage).contains("older than 1 day(s)")
   }
-
 }
