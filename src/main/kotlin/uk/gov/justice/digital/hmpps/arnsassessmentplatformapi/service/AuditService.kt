@@ -9,6 +9,7 @@ import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.GetAssessmentsModifiedSinceQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.SubjectAccessRequestQuery
@@ -85,6 +86,10 @@ class AuditService(
             "assessmentIdentifier" to query.assessmentIdentifier,
             "subject" to query.subject?.id,
           ).filter { it.value != null }
+          is GetAssessmentsModifiedSinceQuery -> mapOf(
+            "assessmentType" to query.assessmentType,
+            "since" to query.since,
+          )
         },
       ),
     ).let { sendEvent(listOf(it)) }
