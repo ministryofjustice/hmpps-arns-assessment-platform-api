@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
@@ -43,6 +44,29 @@ class StateService(
     state.keys.forEach(assessmentVersionCacheService::evictLatestAfterCommit)
   }
 
+  fun rebuildFromEvents(
+    assessment: AssessmentEntity,
+    pointInTime: LocalDateTime?,
+  ): State? = eventService
+    .findAllForPointInTime(assessment.uuid, pointInTime ?: clock.now())
+    .sortedBy { it.position }
+    .ifEmpty { null }
+    ?.let { events ->
+      val persistenceContext = persistenceContextFactory.create().apply {
+        state[assessment.uuid] = mutableMapOf(
+          AssessmentAggregate::class to stateForType(AssessmentAggregate::class).blankState(assessment),
+        )
+      }
+      val eventBus = eventBusFactory.create(persistenceContext)
+      eventBus.handle(events)
+      eventBus.getState()
+    }?.get(assessment.uuid)
+
+  @Transactional
+  fun delete(assessmentUuid: UUID) {
+    aggregateRepository.deleteByAssessmentUuid(assessmentUuid)
+  }
+
   fun stateForType(type: KClass<out Aggregate<*>>) = StateForType(type)
 
   inner class StateForType<A : Aggregate<A>>(
@@ -62,7 +86,7 @@ class StateService(
       else -> throw AggregateTypeNotFoundException(type.simpleName ?: "Unknown")
     }
 
-    private fun blankState(assessment: AssessmentEntity): AggregateState<A> = AggregateEntity(
+    fun blankState(assessment: AssessmentEntity): AggregateState<A> = AggregateEntity(
       assessment = assessment,
       data = type.createInstance(),
       eventsFrom = assessment.createdAt,
@@ -106,18 +130,7 @@ class StateService(
     private fun createPointInTimeStateFromEvents(
       assessment: AssessmentEntity,
       pointInTime: LocalDateTime,
-    ): AggregateState<A> = eventService
-      .findAllForPointInTime(assessment.uuid, pointInTime)
-      .sortedBy { it.position }
-      .ifEmpty { null }
-      ?.let { events ->
-        val persistenceContext = persistenceContextFactory.create().apply {
-          state[assessment.uuid] = mutableMapOf(type to blankState(assessment))
-        }
-        val eventBus = eventBusFactory.create(persistenceContext)
-        eventBus.handle(events)
-        eventBus.getState()
-      }?.get(assessment.uuid)
+    ): AggregateState<A> = rebuildFromEvents(assessment, pointInTime)
       ?.get(type)
       .let { it ?: blankState(assessment) }
       .let { it as AggregateState<A> }

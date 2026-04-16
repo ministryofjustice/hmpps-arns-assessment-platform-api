@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.projection.DailyVersionProjection
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Repository
@@ -47,4 +48,6 @@ interface TimelineRepository :
   fun findDailyVersionsByAssessment(
     @Param("assessmentUuid") assessmentUuid: UUID,
   ): List<DailyVersionProjection>
+
+  fun findByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid: UUID, from: LocalDateTime): List<TimelineEntity>
 }
