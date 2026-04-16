@@ -35,18 +35,18 @@ class SentencePlanService(
 
     if (assessment.assessmentType != "SENTENCE_PLAN") throw AssessmentNotPlanException(assessmentUuid)
 
-    val goalsCollection = assessment.collections.firstOrNull { it.name == "GOALS" }
-      ?: throw IllegalStateException("Sentence plan must have goals collection")
+    val goalsToRemove = assessment.collections.firstOrNull { it.name == "GOALS" }
+      ?.let { goalsCollection ->
+        goalsCollection.items
+          .filter {
+            val status = it.properties["status"] as SingleValue
+            status.value == "ACTIVE" || status.value == "FUTURE"
+          }
+      }.orEmpty()
 
     val now = LocalDateTime.now().toString()
 
     val noteText = "Automatically removed as the previous supervision period has ended."
-
-    val goalsToRemove = goalsCollection.items
-      .filter {
-        val status = it.properties["status"] as SingleValue
-        status.value == "ACTIVE" || status.value == "FUTURE"
-      }
 
     val goalCommands = goalsToRemove.flatMap { goal ->
       val notesCollection = goal.collections.firstOrNull { it.name == "NOTES" }
@@ -102,13 +102,15 @@ class SentencePlanService(
 
     val agreementCommands = assessment.collections
       .firstOrNull { it.name == "PLAN_AGREEMENTS" }
-      ?.items?.map {
-        RemoveCollectionItemCommand(
-          collectionItemUuid = it.uuid.toReference(),
-          user = userDetails,
-          assessmentUuid = assessmentUuid.toReference(),
-        )
-      } ?: emptyList()
+      ?.let { planAgreements ->
+        planAgreements.items.map {
+          RemoveCollectionItemCommand(
+            collectionItemUuid = it.uuid.toReference(),
+            user = userDetails,
+            assessmentUuid = assessmentUuid.toReference(),
+          )
+        }
+      }.orEmpty()
 
     val timelineCommands = listOf(
       CreateTimelineItemCommand(
