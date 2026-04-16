@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
@@ -61,6 +62,7 @@ class StateService(
       eventBus.getState()
     }?.get(assessment.uuid)
 
+  @Transactional
   fun delete(assessmentUuid: UUID) {
     aggregateRepository.deleteByAssessmentUuid(assessmentUuid)
   }
