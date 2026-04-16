@@ -32,6 +32,6 @@ class TimelineService(
   fun softDelete(assessmentUuid: UUID, from: LocalDateTime) {
     timelineRepository.findByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid, from).map {
       it.apply { deleted = true }
-    }
+    }.run(timelineRepository::saveAll)
   }
 }

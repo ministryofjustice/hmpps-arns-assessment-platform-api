@@ -7,15 +7,23 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.StateCollection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBusFactory
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContext
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContextFactory
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
 import java.time.LocalDateTime
 import java.util.UUID
@@ -92,5 +100,103 @@ class StateServiceTest {
 
     assertThat(aggregatesToPersist[0].position).isEqualTo(0)
     assertThat(aggregatesToPersist[1].position).isEqualTo(1)
+  }
+
+  @Nested
+  inner class Delete {
+    @Test
+    fun `should delete aggregates by assessment UUID`() {
+      val assessmentUuid = UUID.randomUUID()
+
+      every { aggregateRepository.deleteByAssessmentUuid(assessmentUuid) } just Runs
+
+      service.delete(assessmentUuid)
+
+      verify(exactly = 1) { aggregateRepository.deleteByAssessmentUuid(assessmentUuid) }
+    }
+  }
+
+  @Nested
+  inner class RebuildFromEvents {
+    val assessment = AssessmentEntity(createdAt = now.minusDays(1), type = "TEST")
+    val user = UserDetailsEntity(userId = "FOO_USER", displayName = "Foo User", authSource = AuthSource.HMPPS_AUTH)
+
+    @Test
+    fun `should replay events through the event bus and return rebuilt state`() {
+      val events = listOf(
+        EventEntity(
+          user = user,
+          assessment = assessment,
+          createdAt = now.minusHours(2),
+          data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap()),
+          position = 0,
+        ),
+      )
+
+      val rebuiltState: StateCollection = mutableMapOf(
+        assessment.uuid to mutableMapOf(AssessmentAggregate::class to AssessmentState()) as State,
+      )
+
+      val mockPersistenceContext: PersistenceContext = mockk()
+      val mockEventBus: EventBus = mockk()
+
+      every { clock.now() } returns now
+      every { eventService.findAllForPointInTime(assessment.uuid, now) } returns events
+      every { persistenceContextFactory.create() } returns mockPersistenceContext
+      every { mockPersistenceContext.state } returns rebuiltState
+      every { eventBusFactory.create(mockPersistenceContext) } returns mockEventBus
+      every { mockEventBus.handle(any<List<EventEntity<*>>>()) } just Runs
+      every { mockEventBus.getState() } returns rebuiltState
+
+      val result = service.rebuildFromEvents(assessment, null)
+
+      assertThat(result).isNotNull
+      verify(exactly = 1) { eventService.findAllForPointInTime(assessment.uuid, now) }
+      verify(exactly = 1) { mockEventBus.handle(any<List<EventEntity<*>>>()) }
+    }
+
+    @Test
+    fun `should use the provided point in time instead of now`() {
+      val pointInTime = now.minusHours(6)
+      val events = listOf(
+        EventEntity(
+          user = user,
+          assessment = assessment,
+          createdAt = now.minusHours(8),
+          data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap()),
+          position = 0,
+        ),
+      )
+
+      val rebuiltState: StateCollection = mutableMapOf(
+        assessment.uuid to mutableMapOf(AssessmentAggregate::class to AssessmentState()) as State,
+      )
+
+      val mockPersistenceContext: PersistenceContext = mockk()
+      val mockEventBus: EventBus = mockk()
+
+      every { clock.now() } returns now
+      every { eventService.findAllForPointInTime(assessment.uuid, pointInTime) } returns events
+      every { persistenceContextFactory.create() } returns mockPersistenceContext
+      every { mockPersistenceContext.state } returns rebuiltState
+      every { eventBusFactory.create(mockPersistenceContext) } returns mockEventBus
+      every { mockEventBus.handle(any<List<EventEntity<*>>>()) } just Runs
+      every { mockEventBus.getState() } returns rebuiltState
+
+      service.rebuildFromEvents(assessment, pointInTime)
+
+      verify(exactly = 1) { eventService.findAllForPointInTime(assessment.uuid, pointInTime) }
+    }
+
+    @Test
+    fun `should return null when no events exist`() {
+      every { clock.now() } returns now
+      every { eventService.findAllForPointInTime(assessment.uuid, now) } returns emptyList()
+
+      val result = service.rebuildFromEvents(assessment, null)
+
+      assertThat(result).isNull()
+      verify(exactly = 0) { persistenceContextFactory.create() }
+    }
   }
 }
