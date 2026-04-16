@@ -49,10 +49,6 @@ generic-service:
       CACHE_REDIS_HOST: 'primary_endpoint_address'
       CACHE_REDIS_AUTH_TOKEN: 'auth_token'
 
-  resources:
-    requests:
-      cpu: 50m
-
   allowlist:
     groups:
       - internal
@@ -61,7 +57,7 @@ autoscaling:
   enabled: true
   minReplicas: 2
   maxReplicas: 8
-  targetCPUUtilizationPercentage: 90
+  targetCPUUtilizationPercentage: 80
 
 generic-prometheus-alerts:
   targetApplication: hmpps-arns-assessment-platform-api
