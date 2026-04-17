@@ -87,7 +87,7 @@ class AssessmentController(
       ),
     ],
   )
-  @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW', 'ROLE_AAP__COORDINATOR_RW', 'ROLE_AAP__VIEW_R')")
+  @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW', 'ROLE_AAP__COORDINATOR_RW', 'ROLE_MPOP__FRONTEND_RO', 'ROLE_AAP__VIEW_R')")
   fun executeQueries(
     @RequestBody
     request: QueriesRequest,
