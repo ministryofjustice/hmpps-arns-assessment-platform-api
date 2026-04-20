@@ -1,7 +1,11 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import java.time.LocalDateTime
 import java.util.UUID
@@ -13,4 +17,17 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
   fun findAllByAssessmentUuidAndCreatedAtGreaterThanAndCreatedAtLessThanEqual(assessmentUuid: UUID, from: LocalDateTime, to: LocalDateTime): List<EventEntity<*>>
   fun findTopByAssessmentUuidOrderByPositionDesc(assessmentUuid: UUID): EventEntity<*>?
   fun findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid: UUID, from: LocalDateTime): List<EventEntity<*>>
+
+  @Query(
+    """
+    SELECT DISTINCT e.assessment FROM EventEntity e
+    WHERE e.assessment.type = :assessmentType
+    AND e.createdAt > :since
+    """,
+  )
+  fun findAssessmentsModifiedSince(
+    assessmentType: String,
+    since: LocalDateTime,
+    pageable: Pageable,
+  ): Page<AssessmentEntity>
 }
