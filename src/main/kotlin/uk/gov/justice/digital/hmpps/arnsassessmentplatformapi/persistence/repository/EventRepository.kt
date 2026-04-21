@@ -23,6 +23,7 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
     SELECT DISTINCT e.assessment FROM EventEntity e
     WHERE e.assessment.type = :assessmentType
     AND e.createdAt > :since
+    AND e.deleted IS FALSE
     """,
   )
   fun findAssessmentsModifiedSince(

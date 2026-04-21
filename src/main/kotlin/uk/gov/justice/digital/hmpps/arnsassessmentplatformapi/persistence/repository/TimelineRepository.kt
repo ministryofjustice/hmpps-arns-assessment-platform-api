@@ -39,6 +39,7 @@ interface TimelineRepository :
                     ) AS rn
                 FROM timeline t
                 WHERE t.assessment_uuid = :assessmentUuid
+                  AND t.deleted IS FALSE
             ) ranked
             WHERE rn = 1
             ORDER BY day
