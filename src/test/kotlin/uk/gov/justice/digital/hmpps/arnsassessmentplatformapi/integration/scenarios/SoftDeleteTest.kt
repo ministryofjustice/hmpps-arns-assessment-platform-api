@@ -125,5 +125,16 @@ class SoftDeleteTest : IntegrationTestBase() {
     timelineAfterSoftDelete.timeline.forEach {
       assertEquals(true, !it.timestamp.isAfter(softDeleteFrom))
     }
+
+    val versionAfterSoftDeleteSecondQuery = assertIs<AssessmentVersionQueryResult>(
+      query(AssessmentVersionQuery(user = testUserDetails, assessmentIdentifier = UuidIdentifier(assessmentUuid)))
+        .expectStatus().isOk
+        .expectBody(QueriesResponse::class.java)
+        .returnResult()
+        .responseBody!!
+        .queries.first().result,
+    )
+
+    assertEquals(versionAfterSoftDelete.aggregateUuid, versionAfterSoftDeleteSecondQuery.aggregateUuid)
   }
 }
