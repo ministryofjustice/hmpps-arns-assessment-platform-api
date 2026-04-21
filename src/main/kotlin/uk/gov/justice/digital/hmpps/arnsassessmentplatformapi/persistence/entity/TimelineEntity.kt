@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.SequenceGenerator
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.annotations.SQLRestriction
 import org.hibernate.type.SqlTypes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import java.time.LocalDateTime
@@ -20,6 +21,7 @@ typealias TimelineResolver = (custom: Timeline?) -> TimelineEntity
 
 @Entity
 @Table(name = "timeline")
+@SQLRestriction("deleted IS FALSE")
 class TimelineEntity(
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "timeline_sequence_gen")
@@ -60,6 +62,9 @@ class TimelineEntity(
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "custom_data", columnDefinition = "jsonb", updatable = false)
   val customData: Map<String, Any>? = null,
+
+  @Column(name = "deleted")
+  var deleted: Boolean = false,
 ) {
   companion object {
     fun resolver(event: EventEntity<*>, data: Map<String, Any>): TimelineResolver = { custom: Timeline? ->

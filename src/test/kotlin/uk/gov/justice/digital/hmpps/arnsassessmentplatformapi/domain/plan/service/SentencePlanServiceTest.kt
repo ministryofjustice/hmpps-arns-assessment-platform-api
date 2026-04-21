@@ -15,7 +15,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveColl
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandDispatcher
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.RetryableCommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.plan.exception.AssessmentNotPlanException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
@@ -28,9 +28,9 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class SentencePlanServiceTest {
-  private val commandDispatcher: CommandDispatcher = mockk(relaxed = true)
+  private val retryableCommandDispatcher: RetryableCommandDispatcher = mockk(relaxed = true)
   private val queryBus: QueryBus = mockk()
-  private val service = SentencePlanService(commandDispatcher, queryBus)
+  private val service = SentencePlanService(retryableCommandDispatcher, queryBus)
 
   private val assessmentUuid = UUID.randomUUID()
   private val userDetails = UserDetails("user-1", "Test User")
@@ -129,7 +129,7 @@ class SentencePlanServiceTest {
       service.newPeriodOfSupervision(assessmentUuid, userDetails)
 
       val commandsSlot = slot<List<RequestableCommand>>()
-      verify { commandDispatcher.dispatch(capture(commandsSlot)) }
+      verify { retryableCommandDispatcher.dispatch(capture(commandsSlot)) }
 
       val subCommands = commandsSlot.captured
 
@@ -169,7 +169,7 @@ class SentencePlanServiceTest {
       service.newPeriodOfSupervision(assessmentUuid, userDetails)
 
       val commandsSlot = slot<List<RequestableCommand>>()
-      verify { commandDispatcher.dispatch(capture(commandsSlot)) }
+      verify { retryableCommandDispatcher.dispatch(capture(commandsSlot)) }
 
       val subCommands = commandsSlot.captured
 
@@ -200,7 +200,7 @@ class SentencePlanServiceTest {
       service.newPeriodOfSupervision(assessmentUuid, userDetails)
 
       val commandsSlot = slot<List<RequestableCommand>>()
-      verify { commandDispatcher.dispatch(capture(commandsSlot)) }
+      verify { retryableCommandDispatcher.dispatch(capture(commandsSlot)) }
 
       val commands = commandsSlot.captured
 
@@ -225,7 +225,7 @@ class SentencePlanServiceTest {
       service.newPeriodOfSupervision(assessmentUuid, userDetails)
 
       val commandsSlot = slot<List<RequestableCommand>>()
-      verify { commandDispatcher.dispatch(capture(commandsSlot)) }
+      verify { retryableCommandDispatcher.dispatch(capture(commandsSlot)) }
 
       val addItemCommands = commandsSlot.captured.filterIsInstance<AddCollectionItemCommand>()
       val noteValue = addItemCommands.first().answers["note"] as SingleValue

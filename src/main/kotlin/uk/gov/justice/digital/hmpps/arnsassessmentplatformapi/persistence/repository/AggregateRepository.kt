@@ -15,4 +15,6 @@ interface AggregateRepository : JpaRepository<AggregateEntity<*>, Long> {
     aggregateType: String,
     beforeDate: LocalDateTime,
   ): AggregateEntity<*>?
+
+  fun deleteByAssessmentUuid(assessmentUuid: UUID)
 }

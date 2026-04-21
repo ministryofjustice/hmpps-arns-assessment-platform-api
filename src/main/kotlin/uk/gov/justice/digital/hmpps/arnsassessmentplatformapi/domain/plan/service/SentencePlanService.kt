@@ -8,7 +8,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveColl
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandDispatcher
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.RetryableCommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.plan.exception.AssessmentNotPlanException
@@ -22,7 +22,7 @@ import java.util.UUID
 
 @Service
 class SentencePlanService(
-  private val commandDispatcher: CommandDispatcher,
+  private val commandDispatcher: RetryableCommandDispatcher,
   private val queryBus: QueryBus,
 ) {
   fun newPeriodOfSupervision(assessmentUuid: UUID, userDetails: UserDetails) {
