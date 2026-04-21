@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.PageI
 class GetAssessmentsModifiedSinceQueryHandler(
   private val services: QueryHandlerServiceBundle,
   private val eventRepository: EventRepository,
-  @Value("\${app.query.max-lookback-days:1}")
+  @param:Value($$"${app.query.max-lookback-days:1}")
   private val maxLookbackDays: Long,
 ) : QueryHandler<GetAssessmentsModifiedSinceQuery> {
   override val type = GetAssessmentsModifiedSinceQuery::class
