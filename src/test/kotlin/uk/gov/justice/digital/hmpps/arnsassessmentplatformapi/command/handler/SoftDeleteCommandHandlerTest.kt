@@ -41,6 +41,8 @@ class SoftDeleteCommandHandlerTest {
   val user = UserDetailsEntity(1, UUID.randomUUID(), "FOO_USER", "Foo User", AuthSource.NOT_SPECIFIED)
   val assessment = AssessmentEntity(type = "TEST", createdAt = now.minusDays(1))
 
+  val rebuiltState: State = mockk()
+
   val handler = SoftDeleteCommandHandler(services)
 
   @BeforeEach
@@ -72,7 +74,8 @@ class SoftDeleteCommandHandlerTest {
         pointInTime = pointInTime,
       )
 
-      every { stateService.rebuildFromEvents(assessment, null) } returns null
+      every { stateService.rebuildFromEvents(assessment, null) } returns rebuiltState
+      every { stateService.persist(any()) } just Runs
 
       handler.handle(command)
 
@@ -88,8 +91,6 @@ class SoftDeleteCommandHandlerTest {
         pointInTime = pointInTime,
       )
 
-      val rebuiltState: State = mockk()
-
       every { stateService.rebuildFromEvents(assessment, null) } returns rebuiltState
       every { stateService.persist(any()) } just Runs
 
@@ -98,21 +99,6 @@ class SoftDeleteCommandHandlerTest {
       verify(exactly = 1) { stateService.delete(assessment.uuid) }
       verify(exactly = 1) { stateService.rebuildFromEvents(assessment, null) }
       verify(exactly = 1) { stateService.persist(mutableMapOf(assessment.uuid to rebuiltState)) }
-    }
-
-    @Test
-    fun `should not persist state when no events survive the soft delete`() {
-      val command = SoftDeleteCommand(
-        user = commandUser,
-        assessmentUuid = assessment.uuid.toReference(),
-        pointInTime = pointInTime,
-      )
-
-      every { stateService.rebuildFromEvents(assessment, null) } returns null
-
-      handler.handle(command)
-
-      verify(exactly = 0) { stateService.persist(any()) }
     }
 
     @Test
@@ -127,7 +113,8 @@ class SoftDeleteCommandHandlerTest {
 
       val timelineList = mutableListOf<TimelineEntity>()
 
-      every { stateService.rebuildFromEvents(assessment, null) } returns null
+      every { stateService.rebuildFromEvents(assessment, null) } returns rebuiltState
+      every { stateService.persist(any()) } just Runs
       every { persistenceContext.findUserDetails(commandUser) } returns user
       every { persistenceContext.timeline } returns timelineList
 
@@ -150,7 +137,8 @@ class SoftDeleteCommandHandlerTest {
         pointInTime = pointInTime,
       )
 
-      every { stateService.rebuildFromEvents(assessment, null) } returns null
+      every { stateService.rebuildFromEvents(assessment, null) } returns rebuiltState
+      every { stateService.persist(any()) } just Runs
 
       handler.handle(command)
 
@@ -165,7 +153,8 @@ class SoftDeleteCommandHandlerTest {
         pointInTime = pointInTime,
       )
 
-      every { stateService.rebuildFromEvents(assessment, null) } returns null
+      every { stateService.rebuildFromEvents(assessment, null) } returns rebuiltState
+      every { stateService.persist(any()) } just Runs
 
       val result = handler.handle(command)
 

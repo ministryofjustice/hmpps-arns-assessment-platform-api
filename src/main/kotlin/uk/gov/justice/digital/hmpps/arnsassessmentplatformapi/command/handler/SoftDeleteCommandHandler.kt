@@ -17,7 +17,7 @@ class SoftDeleteCommandHandler(
       timelineService.softDelete(assessment.uuid, command.pointInTime)
       stateService.delete(assessment.uuid)
 
-      stateService.rebuildFromEvents(assessment, null)?.let {
+      stateService.rebuildFromEvents(assessment, null).let {
         stateService.persist(mutableMapOf(assessment.uuid to it))
       }
 
