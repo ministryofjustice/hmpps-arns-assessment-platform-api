@@ -1,6 +1,6 @@
-FROM gradle:9-jdk21-alpine AS builder
+FROM gradle:9-jdk25-alpine AS builder
 
-FROM eclipse-temurin:25.0.2_10-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 
 FROM builder AS build
 ARG BUILD_NUMBER

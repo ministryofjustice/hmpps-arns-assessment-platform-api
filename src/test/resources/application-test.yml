@@ -13,6 +13,8 @@ management.endpoint:
   info.cache.time-to-live: 0
 
 app:
+  query:
+    max-lookback-days: 0
   services:
     hmpps-auth:
       url: ${hmpps-auth.url:http://localhost:9090/auth}

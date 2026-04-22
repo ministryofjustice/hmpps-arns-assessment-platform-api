@@ -75,4 +75,33 @@ class EventServiceTest {
       verify(exactly = 1) { eventRepository.save(events.first()) }
     }
   }
+
+  @Nested
+  inner class SoftDelete {
+    @Test
+    fun `should mark matching events as deleted and save them`() {
+      val from = now.minusHours(1)
+
+      every { eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessment.uuid, from) } returns events
+      every { eventRepository.saveAll(any<List<EventEntity<*>>>()) } answers { firstArg() }
+
+      service.softDelete(assessment.uuid, from)
+
+      verify(exactly = 1) { eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessment.uuid, from) }
+      verify(exactly = 1) { eventRepository.saveAll(events) }
+      events.forEach { assertThat(it.deleted).isTrue() }
+    }
+
+    @Test
+    fun `should save an empty list when no events match`() {
+      val from = now.minusHours(1)
+
+      every { eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessment.uuid, from) } returns emptyList()
+      every { eventRepository.saveAll(any<List<EventEntity<*>>>()) } answers { firstArg() }
+
+      service.softDelete(assessment.uuid, from)
+
+      verify(exactly = 1) { eventRepository.saveAll(emptyList()) }
+    }
+  }
 }

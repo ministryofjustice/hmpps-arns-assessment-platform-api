@@ -63,6 +63,8 @@ management:
         time-to-live: 2000ms
 
 app:
+  query:
+    max-lookback-days: ${QUERY_MAX_LOOKBACK_DAYS:1}
   services:
     hmpps-auth:
       url: ${hmpps-auth.url:http://localhost:8090/auth}

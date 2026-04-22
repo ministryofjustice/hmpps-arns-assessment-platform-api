@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.SequenceGenerator
 import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.annotations.SQLRestriction
 import org.hibernate.type.SqlTypes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import java.time.LocalDateTime
@@ -18,6 +19,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "event")
+@SQLRestriction("deleted IS FALSE")
 class EventEntity<E : Event>(
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "event_sequence_gen")
@@ -48,4 +50,7 @@ class EventEntity<E : Event>(
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "data", columnDefinition = "jsonb", updatable = false, nullable = false)
   val data: E,
+
+  @Column(name = "deleted")
+  var deleted: Boolean = false,
 )

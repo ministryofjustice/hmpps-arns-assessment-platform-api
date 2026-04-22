@@ -16,7 +16,7 @@ typealias FormVersion = String
 class AssessmentAggregate :
   Aggregate<AssessmentAggregate>,
   AssessmentAggregateView {
-  override lateinit var formVersion: FormVersion
+  override var formVersion: FormVersion = ""
   override var assignedUser: UUID? = null
 
   override val properties: Properties = mutableMapOf()

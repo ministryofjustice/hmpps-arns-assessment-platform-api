@@ -10,5 +10,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
   JsonSubTypes.Type(value = CollectionItemQueryResult::class, name = "CollectionItemQueryResult"),
   JsonSubTypes.Type(value = CollectionQueryResult::class, name = "CollectionQueryResult"),
   JsonSubTypes.Type(value = DailyVersionsQueryResult::class, name = "DailyVersionsQueryResult"),
+  JsonSubTypes.Type(value = GetAssessmentsModifiedSinceQueryResult::class, name = "GetAssessmentsModifiedSinceQueryResult"),
 )
 sealed interface QueryResult

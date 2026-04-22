@@ -2,12 +2,12 @@
 # Per environment values which override defaults in hmpps-arns-assessment-platform-api/values.yaml
 
 autoscaling:
-  minReplicas: 4
-  maxReplicas: 8
+  enabled: false
 
 generic-service:
+  replicaCount: 4
+
   ingress:
-    enabled: false # Disable ingress until we are ready for users to access the service in production
     host: arns-assessment-platform-api.hmpps.service.justice.gov.uk
 
   env:

@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.DailyVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.criteria.TimelineCriteria
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.TimelineRepository
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -26,5 +27,11 @@ class TimelineService(
         timelines.forEachIndexed { index, entity -> entity.position = maxPosition + 1 + index }
       }
     return timelineRepository.saveAll(entities)
+  }
+
+  fun softDelete(assessmentUuid: UUID, from: LocalDateTime) {
+    timelineRepository.findByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid, from).map {
+      it.apply { deleted = true }
+    }.run(timelineRepository::saveAll)
   }
 }

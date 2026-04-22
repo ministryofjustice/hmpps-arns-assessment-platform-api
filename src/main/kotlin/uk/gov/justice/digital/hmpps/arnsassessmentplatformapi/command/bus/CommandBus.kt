@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus
 
 import org.springframework.http.HttpStatus
-import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerFactory
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
@@ -34,7 +33,6 @@ open class CommandBus(
     },
   )
 
-  @Transactional
   open fun dispatchAndPersist(commands: List<Command>) = dispatch(commands).also { commandHandlerServiceBundle.persistenceContext.persist() }
 }
 

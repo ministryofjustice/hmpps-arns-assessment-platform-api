@@ -25,4 +25,10 @@ class EventService(
   }
 
   fun <E : Event> save(event: EventEntity<E>): EventEntity<E> = eventRepository.save(event)
+
+  fun softDelete(assessmentUuid: UUID, from: LocalDateTime) {
+    eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid, from).map {
+      it.apply { deleted = true }
+    }.run(eventRepository::saveAll)
+  }
 }

@@ -1,8 +1,14 @@
 SHELL = '/bin/bash'
-LOCAL_COMPOSE_FILES = -f docker-compose.yml -f docker-compose.local.yml
-DEV_COMPOSE_FILES = -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.dev.yml
+
+## Useful to keep this the same for backend/frontend
 PROJECT_NAME = hmpps-assess-risks-and-needs
+
+## Must match name of container in Docker
 SERVICE_NAME = aap-api
+
+## Compose files to stack on each other
+PROD_COMPOSE_FILES = -f docker/docker-compose.base.yml
+DEV_COMPOSE_FILES = -f docker/docker-compose.base.yml -f docker/docker-compose.local.yml
 
 export COMPOSE_PROJECT_NAME=${PROJECT_NAME}
 
@@ -11,26 +17,22 @@ default: help
 help: ## The help text you're reading.
 	@grep --no-filename -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-up: ## Starts/restarts the API in a production container.
-	docker compose ${LOCAL_COMPOSE_FILES} down ${SERVICE_NAME}
-	docker compose ${LOCAL_COMPOSE_FILES} up ${SERVICE_NAME} --wait --no-recreate
+prod-build: ## Builds a production image of the API.
+	docker compose ${PROD_COMPOSE_FILES} build ${SERVICE_NAME}
 
-down: ## Stops and removes all containers in the project.
-	docker compose ${DEV_COMPOSE_FILES} down
-	docker compose ${LOCAL_COMPOSE_FILES} down
+prod-up: ## Starts/restarts the API in a production container.
+	docker compose ${PROD_COMPOSE_FILES} down ${SERVICE_NAME}
+	docker compose ${PROD_COMPOSE_FILES} up ${SERVICE_NAME} --wait --no-recreate
 
-build-api: ## Builds a production image of the API.
-	docker compose build ${SERVICE_NAME}
+dev-build: ## Builds a development image of the API.
+	docker compose ${DEV_COMPOSE_FILES} build ${SERVICE_NAME}
 
 dev-up: ## Starts/restarts the API in a development container. A remote debugger can be attached on port 5005.
 	docker compose down ${SERVICE_NAME}
 	docker compose ${DEV_COMPOSE_FILES} up --wait --no-recreate ${SERVICE_NAME}
 
-dev-build: ## Builds a development image of the API.
-	docker compose ${DEV_COMPOSE_FILES} build ${SERVICE_NAME}
-
-dev-down: ## Stops and removes the API container.
-	docker compose down ${SERVICE_NAME}
+down: ## Stops and removes all containers in the project.
+	docker compose down
 
 rebuild: ## Re-builds and live-reloads the API.
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle compileKotlin --parallel --build-cache --configuration-cache
@@ -64,8 +66,8 @@ lint-fix: ## Runs the Kotlin linter and auto-fixes.
 lint-baseline: ## Generate a baseline file, ignoring all existing code smells.
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle --parallel
 
-update: ## Downloads the latest versions of containers.
-	docker compose pull
+update: ## Downloads the latest versions of container images.
+	docker compose ${DEV_COMPOSE_FILES} pull --ignore-buildable
 
 build-client: ## Generates typescript client code
 	docker compose ${DEV_COMPOSE_FILES} run --rm typescript-client-builder

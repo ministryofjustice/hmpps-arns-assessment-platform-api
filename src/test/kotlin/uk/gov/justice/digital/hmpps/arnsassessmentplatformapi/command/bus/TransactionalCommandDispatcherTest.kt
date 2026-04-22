@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.orm.ObjectOptimisticLockingFailureException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.TestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
@@ -20,7 +19,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.Integr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AuditService
 import kotlin.test.assertEquals
 
-class CommandDispatcherTest : IntegrationTestBase() {
+class TransactionalCommandDispatcherTest : IntegrationTestBase() {
   val commandBus: CommandBus = mockk()
 
   @MockkBean
@@ -30,7 +29,7 @@ class CommandDispatcherTest : IntegrationTestBase() {
   private lateinit var auditService: AuditService
 
   @Autowired
-  private lateinit var commandDispatcher: CommandDispatcher
+  private lateinit var transactionalCommandDispatcher: TransactionalCommandDispatcher
 
   private val response: CommandsResponse = mockk()
 
@@ -48,7 +47,7 @@ class CommandDispatcherTest : IntegrationTestBase() {
 
     every { commandBus.dispatchAndPersist(commands) } returns response
 
-    val result = commandDispatcher.dispatch(commands)
+    val result = transactionalCommandDispatcher.dispatch(commands)
 
     assertEquals(response, result)
 
@@ -65,7 +64,7 @@ class CommandDispatcherTest : IntegrationTestBase() {
     every { commandBus.dispatchAndPersist(commands) } returns response
     every { auditService.audit(listOf(requestableCommand)) } just Runs
 
-    val result = commandDispatcher.dispatch(commands)
+    val result = transactionalCommandDispatcher.dispatch(commands)
 
     assertEquals(response, result)
 
@@ -80,7 +79,7 @@ class CommandDispatcherTest : IntegrationTestBase() {
 
     every { commandBus.dispatchAndPersist(commands) } returns response
 
-    val result = commandDispatcher.dispatch(commands)
+    val result = transactionalCommandDispatcher.dispatch(commands)
 
     assertEquals(response, result)
 
@@ -89,38 +88,17 @@ class CommandDispatcherTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `retries dispatch on optimistic locking failure`() {
-    val command = mockk<RequestableCommand>()
-    val commands = listOf(command)
+  fun `does not audit on failure`() {
+    val requestableCommand = mockk<RequestableCommand>()
+    val commands = listOf(requestableCommand)
 
-    every { commandBus.dispatchAndPersist(commands) } throws
-      ObjectOptimisticLockingFailureException("Test", "id") andThenThrows
-      ObjectOptimisticLockingFailureException("Test", "id") andThen
-      response
-    every { auditService.audit(listOf(command)) } just Runs
+    every { commandBus.dispatchAndPersist(commands) } throws RuntimeException()
 
-    val result = commandDispatcher.dispatch(commands)
-
-    assertEquals(response, result)
-
-    verify(exactly = 3) { commandBus.dispatchAndPersist(commands) }
-    verify(exactly = 1) { auditService.audit(listOf(command)) }
-  }
-
-  @Test
-  fun `fails after max retry attempts`() {
-    val command = mockk<RequestableCommand>()
-    val commands = listOf(command)
-
-    every { commandBus.dispatchAndPersist(commands) } throws
-      ObjectOptimisticLockingFailureException("Test", "id")
-    every { auditService.audit(listOf(command)) } just Runs
-
-    assertThrows<ObjectOptimisticLockingFailureException> {
-      commandDispatcher.dispatch(commands)
+    assertThrows<RuntimeException> {
+      transactionalCommandDispatcher.dispatch(commands)
     }
 
-    verify(exactly = 3) { commandBus.dispatchAndPersist(commands) }
-    verify(exactly = 0) { auditService.audit(listOf(command)) }
+    verify(exactly = 1) { commandBus.dispatchAndPersist(commands) }
+    verify { auditService wasNot Called }
   }
 }
