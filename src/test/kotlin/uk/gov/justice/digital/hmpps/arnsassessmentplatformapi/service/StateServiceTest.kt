@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import io.mockk.Runs
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -9,6 +10,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertInstanceOf
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.StateCollection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
@@ -49,6 +52,7 @@ class StateServiceTest {
 
   @BeforeEach
   fun setUp() {
+    clearAllMocks()
     every { aggregateRepository.saveAll(any<List<AggregateEntity<*>>>()) } answers { firstArg<List<AggregateEntity<*>>>() }
     every { aggregateRepository.findTopByAssessmentUuidAndDataTypeOrderByPositionDesc(any(), any()) } returns null
     every { cacheService.evictLatestAfterCommit(any()) } just Runs
@@ -88,8 +92,8 @@ class StateServiceTest {
       ),
     )
 
-    val state = mutableMapOf(
-      assessment.uuid to mutableMapOf(AssessmentAggregate::class to AssessmentState(aggregatesToPersist)) as State,
+    val state: StateCollection = mutableMapOf(
+      assessment.uuid to mutableMapOf(AssessmentAggregate::class to AssessmentState(aggregatesToPersist)),
     )
 
     service.persist(state)
@@ -133,8 +137,18 @@ class StateServiceTest {
         ),
       )
 
+      val rebuiltAggregate = AggregateEntity(
+        updatedAt = now,
+        eventsFrom = assessment.createdAt,
+        eventsTo = events.last().createdAt,
+        assessment = assessment,
+        data = AssessmentAggregate().apply {
+          formVersion = "1"
+        },
+      )
+
       val rebuiltState: StateCollection = mutableMapOf(
-        assessment.uuid to mutableMapOf(AssessmentAggregate::class to AssessmentState()) as State,
+        assessment.uuid to mutableMapOf(AssessmentAggregate::class to AssessmentState(rebuiltAggregate)),
       )
 
       val mockPersistenceContext: PersistenceContext = mockk()
@@ -150,7 +164,8 @@ class StateServiceTest {
 
       val result = service.rebuildFromEvents(assessment, null)
 
-      assertThat(result).isNotNull
+      assertStateIsEqualTo(result, rebuiltState[assessment.uuid]!!)
+
       verify(exactly = 1) { eventService.findAllForPointInTime(assessment.uuid, now) }
       verify(exactly = 1) { mockEventBus.handle(any<List<EventEntity<*>>>()) }
     }
@@ -169,7 +184,7 @@ class StateServiceTest {
       )
 
       val rebuiltState: StateCollection = mutableMapOf(
-        assessment.uuid to mutableMapOf(AssessmentAggregate::class to AssessmentState()) as State,
+        assessment.uuid to mutableMapOf(AssessmentAggregate::class to AssessmentState()),
       )
 
       val mockPersistenceContext: PersistenceContext = mockk()
@@ -189,14 +204,51 @@ class StateServiceTest {
     }
 
     @Test
-    fun `should return null when no events exist`() {
+    fun `should return an empty aggregate when no events exist`() {
+      val rebuiltState: StateCollection = mutableMapOf(
+        assessment.uuid to mutableMapOf(AssessmentAggregate::class to AssessmentState()),
+      )
+
+      val mockPersistenceContext: PersistenceContext = mockk()
+      val mockEventBus: EventBus = mockk()
+
       every { clock.now() } returns now
       every { eventService.findAllForPointInTime(assessment.uuid, now) } returns emptyList()
+      every { persistenceContextFactory.create() } returns mockPersistenceContext
+      every { mockPersistenceContext.state } returns rebuiltState
+      every { eventBusFactory.create(mockPersistenceContext) } returns mockEventBus
+      every { mockEventBus.handle(any<List<EventEntity<*>>>()) } just Runs
+      every { mockEventBus.getState() } returns rebuiltState
 
       val result = service.rebuildFromEvents(assessment, null)
 
-      assertThat(result).isNull()
-      verify(exactly = 0) { persistenceContextFactory.create() }
+      assertStateIsEqualTo(result, rebuiltState[assessment.uuid]!!)
+
+      verify(exactly = 1) { eventService.findAllForPointInTime(assessment.uuid, now) }
+    }
+  }
+
+  companion object {
+    fun assertStateIsEqualTo(actualState: State, expectedState: State) {
+      assertThat(actualState).hasSize(expectedState.size)
+      assertThat(actualState).containsOnlyKeys(expectedState.keys)
+      actualState.keys.forEach { key ->
+        val actualAggregateState = assertInstanceOf<AggregateState<*>>(actualState[key])
+        val expectedAggregateState = assertInstanceOf<AggregateState<*>>(expectedState[key])
+
+        assertThat(actualAggregateState.type).isEqualTo(expectedAggregateState.type)
+        assertThat(actualAggregateState.aggregates).hasSize(expectedAggregateState.aggregates.size)
+
+        actualAggregateState.aggregates.forEachIndexed { index, actualAggregate ->
+          val expectedAggregate = expectedAggregateState.aggregates[index]
+
+          assertThat(actualAggregate.assessment).isEqualTo(expectedAggregate.assessment)
+          assertThat(actualAggregate.numberOfEventsApplied).isEqualTo(expectedAggregate.numberOfEventsApplied)
+          assertThat(actualAggregate.eventsFrom).isEqualTo(expectedAggregate.eventsFrom)
+          assertThat(actualAggregate.eventsTo).isEqualTo(expectedAggregate.eventsTo)
+          assertThat(actualAggregate.data).isEqualTo(expectedAggregate.data)
+        }
+      }
     }
   }
 }

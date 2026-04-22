@@ -46,20 +46,20 @@ class StateService(
   fun rebuildFromEvents(
     assessment: AssessmentEntity,
     pointInTime: LocalDateTime?,
-  ): State? = eventService
+  ): State = eventService
     .findAllForPointInTime(assessment.uuid, pointInTime ?: clock.now())
     .sortedBy { it.position }
-    .ifEmpty { null }
-    ?.let { events ->
+    .let { events ->
+      val blankState: State = mutableMapOf(
+        AssessmentAggregate::class to stateForType(AssessmentAggregate::class).blankState(assessment),
+      )
       val persistenceContext = persistenceContextFactory.create().apply {
-        state[assessment.uuid] = mutableMapOf(
-          AssessmentAggregate::class to stateForType(AssessmentAggregate::class).blankState(assessment),
-        )
+        state[assessment.uuid] = blankState
       }
       val eventBus = eventBusFactory.create(persistenceContext)
       eventBus.handle(events)
-      eventBus.getState()
-    }?.get(assessment.uuid)
+      eventBus.getState()[assessment.uuid] ?: blankState
+    }
 
   fun delete(assessmentUuid: UUID) {
     aggregateRepository.deleteByAssessmentUuid(assessmentUuid)
@@ -128,9 +128,6 @@ class StateService(
     private fun createPointInTimeStateFromEvents(
       assessment: AssessmentEntity,
       pointInTime: LocalDateTime,
-    ): AggregateState<A> = rebuildFromEvents(assessment, pointInTime)
-      ?.get(type)
-      .let { it ?: blankState(assessment) }
-      .let { it as AggregateState<A> }
+    ): AggregateState<A> = rebuildFromEvents(assessment, pointInTime)[type] as AggregateState<A>
   }
 }
