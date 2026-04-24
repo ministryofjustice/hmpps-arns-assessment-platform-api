@@ -1,7 +1,8 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result
 
+import java.util.UUID
+
 data class GetAssessmentsModifiedSinceQueryResult(
   val assessments: List<AssessmentVersionQueryResult>,
-  override val pageInfo: PageInfo,
-) : QueryResult,
-  PageableQueryResult
+  val nextCursor: UUID?,
+) : QueryResult
