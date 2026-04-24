@@ -64,10 +64,11 @@ class GetAssessmentsModifiedSinceQueryTest(
     assertThat(result.assessments).hasSize(2)
     assertThat(result.assessments.map { it.assessmentUuid })
       .containsExactlyInAnyOrder(newAssessment1.uuid, newAssessment2.uuid)
+    assertThat(result.nextCursor).isNull()
   }
 
   @Test
-  fun `it paginates results and all pages contain all data`() {
+  fun `cursor paging walks all assessments across pages`() {
     userDetailsRepository.save(testUserDetailsEntity)
     val type = "PAGINATE_${UUID.randomUUID()}"
 
@@ -78,8 +79,7 @@ class GetAssessmentsModifiedSinceQueryTest(
     }
 
     val allAssessmentUuids = mutableSetOf<UUID>()
-    var pageNumber = 0
-    var totalPages: Int
+    var cursor: UUID? = null
 
     do {
       val request = QueriesRequest(
@@ -88,8 +88,8 @@ class GetAssessmentsModifiedSinceQueryTest(
             user = testUserDetails,
             assessmentType = type,
             since = since,
-            pageSize = 2,
-            pageNumber = pageNumber,
+            after = cursor,
+            limit = 2,
           ),
         ),
       )
@@ -105,13 +105,10 @@ class GetAssessmentsModifiedSinceQueryTest(
         .responseBody
 
       val result = assertIs<GetAssessmentsModifiedSinceQueryResult>(response?.queries?.get(0)?.result)
-      totalPages = result.pageInfo.totalPages
-      assertThat(result.pageInfo.pageNumber).isEqualTo(pageNumber)
       allAssessmentUuids.addAll(result.assessments.map { it.assessmentUuid })
-      pageNumber++
-    } while (pageNumber < totalPages)
+      cursor = result.nextCursor
+    } while (cursor != null)
 
-    assertThat(totalPages).isEqualTo(3)
     assertThat(allAssessmentUuids).containsExactlyInAnyOrderElementsOf(created.map { it.uuid })
   }
 
@@ -144,6 +141,7 @@ class GetAssessmentsModifiedSinceQueryTest(
 
     val result = assertIs<GetAssessmentsModifiedSinceQueryResult>(response?.queries?.get(0)?.result)
     assertThat(result.assessments).isEmpty()
+    assertThat(result.nextCursor).isNull()
   }
 
   private fun createAssessmentWithEvent(type: String, eventCreatedAt: LocalDateTime): AssessmentEntity {

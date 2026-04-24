@@ -1,7 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository
 
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Limit
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
@@ -18,17 +17,24 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
   fun findTopByAssessmentUuidOrderByPositionDesc(assessmentUuid: UUID): EventEntity<*>?
   fun findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid: UUID, from: LocalDateTime): List<EventEntity<*>>
 
+  // Cursor pattern used over normal offset pagination because paginating
+  // over large result sets take long enough for the underlying data to
+  // change, and offset pagination can drop rows when that happens.
   @Query(
     """
-    SELECT DISTINCT e.assessment FROM EventEntity e
-    WHERE e.assessment.type = :assessmentType
-    AND e.createdAt > :since
-    AND e.deleted IS FALSE
+    SELECT DISTINCT a FROM EventEntity e
+    JOIN e.assessment a
+    WHERE a.type = :assessmentType
+      AND e.createdAt > :since
+      AND e.deleted IS FALSE
+      AND (:after IS NULL OR a.uuid > :after)
+    ORDER BY a.uuid
     """,
   )
-  fun findAssessmentsModifiedSince(
+  fun findAssessmentsModifiedSinceAfter(
     assessmentType: String,
     since: LocalDateTime,
-    pageable: Pageable,
-  ): Page<AssessmentEntity>
+    after: UUID?,
+    limit: Limit,
+  ): List<AssessmentEntity>
 }

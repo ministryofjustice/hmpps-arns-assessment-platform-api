@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.handler
 
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Limit
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
@@ -12,7 +12,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.reposi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.GetAssessmentsModifiedSinceQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.GetAssessmentsModifiedSinceQueryResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.PageInfo
 
 @Component
 class GetAssessmentsModifiedSinceQueryHandler(
@@ -26,20 +25,20 @@ class GetAssessmentsModifiedSinceQueryHandler(
   override fun handle(query: GetAssessmentsModifiedSinceQuery): GetAssessmentsModifiedSinceQueryResult {
     validateMaxLookback(query)
 
-    val page = eventRepository.findAssessmentsModifiedSince(
-      query.assessmentType,
-      query.since,
-      PageRequest.of(query.pageNumber, query.pageSize),
+    val assessments = eventRepository.findAssessmentsModifiedSinceAfter(
+      assessmentType = query.assessmentType,
+      since = query.since,
+      after = query.after,
+      limit = Limit.of(query.limit),
     )
 
-    val assessments = page.content.map { assessment -> buildResult(assessment) }
+    val results = assessments.map(::buildResult)
+
+    val nextCursor = if (assessments.size == query.limit) assessments.last().uuid else null
 
     return GetAssessmentsModifiedSinceQueryResult(
-      assessments = assessments,
-      pageInfo = PageInfo(
-        pageNumber = page.number,
-        totalPages = page.totalPages,
-      ),
+      assessments = results,
+      nextCursor = nextCursor,
     )
   }
 
