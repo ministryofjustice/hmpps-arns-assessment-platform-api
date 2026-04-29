@@ -37,4 +37,26 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
     after: UUID?,
     limit: Limit,
   ): List<AssessmentEntity>
+
+  @Query(
+    """
+    SELECT e FROM EventEntity e
+    WHERE e.assessment = :assessmentUuid
+    ORDER BY e.position
+    """,
+  )
+  fun findAllIncludingDeleted(
+    assessmentUuid: UUID,
+  ): List<EventEntity<*>>
+
+  @Query(
+    """
+    SELECT e FROM EventEntity e
+    WHERE e.uuid IN :eventUuids
+    ORDER BY e.position
+    """,
+  )
+  fun findByUuidsIncludingDeleted(
+    eventUuids: Set<UUID>,
+  ): List<EventEntity<*>>
 }

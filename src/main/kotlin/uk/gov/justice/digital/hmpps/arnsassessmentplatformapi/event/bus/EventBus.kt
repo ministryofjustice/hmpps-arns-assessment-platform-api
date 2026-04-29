@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregat
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.exception.EventHandlingException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContext
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineResolver
@@ -44,7 +45,18 @@ open class EventBus(
       val aggregateState = assessmentState.getOrPut(aggregateType) {
         stateService.stateForType(aggregateType).fetchOrCreateState(assessment, event.createdAt)
       }
-      val result = handler.handle(event, aggregateState)
+
+      val result = try {
+        handler.handle(event, aggregateState)
+      } catch (ex: Exception) {
+        throw EventHandlingException(
+          eventUuid = event.uuid,
+          eventName = event.data::class.simpleName ?: "Unknown",
+          handlerName = handler::class.simpleName ?: "Unknown",
+          cause = ex,
+        )
+      }
+
       assessmentState[aggregateType] = result.state
       result.timeline?.let(timelineResolvers::add)
     }

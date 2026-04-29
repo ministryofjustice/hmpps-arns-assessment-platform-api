@@ -16,5 +16,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
   JsonSubTypes.Type(value = CollectionItemRemovedEvent::class, name = "CollectionItemRemovedEvent"),
   JsonSubTypes.Type(value = CollectionItemReorderedEvent::class, name = "CollectionItemReorderedEvent"),
   JsonSubTypes.Type(value = FormVersionUpdatedEvent::class, name = "FormVersionUpdatedEvent"),
+  JsonSubTypes.Type(value = RedactedEvent::class, name = "RedactedEvent"),
 )
 sealed interface Event

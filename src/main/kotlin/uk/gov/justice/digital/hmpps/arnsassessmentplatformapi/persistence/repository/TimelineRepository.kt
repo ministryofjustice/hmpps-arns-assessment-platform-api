@@ -51,4 +51,26 @@ interface TimelineRepository :
   ): List<DailyVersionProjection>
 
   fun findByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid: UUID, from: LocalDateTime): List<TimelineEntity>
+
+  @Query(
+    """
+    SELECT t FROM TimelineEntity t
+    WHERE t.assessment = :assessmentUuid
+    ORDER BY t.position
+    """,
+  )
+  fun findAllIncludingDeleted(
+    assessmentUuid: UUID,
+  ): List<TimelineEntity>
+
+  @Query(
+    """
+    SELECT t FROM TimelineEntity t
+    WHERE t.uuid IN :timelineUuids
+    ORDER BY t.position
+    """,
+  )
+  fun findByUuidsIncludingDeleted(
+    timelineUuids: Set<UUID>,
+  ): List<TimelineEntity>
 }
