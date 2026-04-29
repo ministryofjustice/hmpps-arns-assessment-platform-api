@@ -26,7 +26,7 @@ interface TimelineRepository :
         ORDER BY t.position DESC
         LIMIT 1
     """,
-    nativeQuery = true
+    nativeQuery = true,
   )
   fun findTopByAssessmentUuidOrderByPositionDesc(assessmentUuid: UUID): TimelineEntity?
 

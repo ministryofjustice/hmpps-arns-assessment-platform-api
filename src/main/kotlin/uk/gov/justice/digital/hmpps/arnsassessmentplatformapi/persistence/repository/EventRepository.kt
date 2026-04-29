@@ -23,7 +23,7 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
         ORDER BY e.position DESC
         LIMIT 1
     """,
-    nativeQuery = true
+    nativeQuery = true,
   )
   fun findTopByAssessmentUuidOrderByPositionDesc(assessmentUuid: UUID): EventEntity<*>?
   fun findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid: UUID, from: LocalDateTime): List<EventEntity<*>>
