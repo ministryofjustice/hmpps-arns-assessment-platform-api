@@ -14,6 +14,17 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
   fun findAllByAssessmentUuidOrderById(uuid: UUID): List<EventEntity<*>>
   fun findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(uuid: UUID, dateTime: LocalDateTime): List<EventEntity<*>>
   fun findAllByAssessmentUuidAndCreatedAtGreaterThanAndCreatedAtLessThanEqual(assessmentUuid: UUID, from: LocalDateTime, to: LocalDateTime): List<EventEntity<*>>
+
+  @Query(
+    value = """
+        SELECT e.*
+        FROM event e
+        WHERE e.assessment_uuid = :assessmentUuid
+        ORDER BY e.position DESC
+        LIMIT 1
+    """,
+    nativeQuery = true
+  )
   fun findTopByAssessmentUuidOrderByPositionDesc(assessmentUuid: UUID): EventEntity<*>?
   fun findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid: UUID, from: LocalDateTime): List<EventEntity<*>>
 
