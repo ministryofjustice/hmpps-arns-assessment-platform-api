@@ -33,19 +33,44 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
   // change, and offset pagination can drop rows when that happens.
   @Query(
     """
-    SELECT DISTINCT a FROM EventEntity e
-    JOIN e.assessment a
+    SELECT DISTINCT a.*, e.deleted
+    FROM event e
+    JOIN assessment a
+    ON a.uuid = e.assessment_uuid
     WHERE a.type = :assessmentType
-      AND e.createdAt > :since
-      AND e.deleted IS FALSE
+      AND a.created_at > :since
       AND (:after IS NULL OR a.uuid > :after)
     ORDER BY a.uuid
     """,
+    nativeQuery = true,
   )
   fun findAssessmentsModifiedSinceAfter(
     assessmentType: String,
     since: LocalDateTime,
     after: UUID?,
     limit: Limit,
+  ): List<AssessmentEntity>
+
+  @Query(
+    value = """
+      SELECT DISTINCT ON (a.uuid)
+        a.*,
+        e.deleted AS event_deleted,
+        ag.updated_at AS aggregate_updated_at
+      FROM event e
+      JOIN assessment a
+        ON a.uuid = e.assessment_uuid
+      JOIN aggregate ag
+        ON ag.assessment_uuid = a.uuid
+      WHERE a.type = :assessmentType
+        AND ag.updated_at > :since
+        AND e.deleted = true
+      ORDER BY a.uuid, ag.updated_at DESC, e.created_at DESC
+    """,
+    nativeQuery = true,
+  )
+  fun findAssessmentsSoftDeletedSince(
+    assessmentType: String,
+    since: LocalDateTime,
   ): List<AssessmentEntity>
 }

@@ -3,7 +3,6 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.SoftDeleteCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CommandSuccessCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.SoftDeleteEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 class SoftDeleteCommandHandler(
@@ -28,7 +27,6 @@ class SoftDeleteCommandHandler(
             createdAt = services.clock.requestDateTime(),
             user = findUserDetails(command.user),
             assessment = assessment,
-            eventType = SoftDeleteEvent::class.simpleName,
             customType = it.type,
             customData = it.data,
           ),
