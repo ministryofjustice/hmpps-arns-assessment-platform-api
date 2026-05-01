@@ -108,12 +108,12 @@ class EventServiceTest {
   @Nested
   inner class FindAssessmentsSoftDeletedSince {
     @Test
-    fun `it delegates to repository and returns assessments soft deleted since the given timestamp`() {
-      val since = LocalDateTime.parse("2025-01-01T12:00:00")
-      val type = "TEST_TYPE"
+    fun `returns assessments soft deleted since the given timestamp`() {
+      val since = LocalDateTime.now()
+      val type = "SENTENCE_PLAN"
       val assessments = listOf(
-        AssessmentEntity(type = type, createdAt = now.minusDays(2)),
-        AssessmentEntity(type = type, createdAt = now.minusDays(1)),
+        AssessmentEntity(type = type, createdAt = now.plusMinutes(2)),
+        AssessmentEntity(type = type, createdAt = now.plusMinutes(1)),
       )
 
       every { eventRepository.findAssessmentsSoftDeletedSince(type, since) } returns assessments
