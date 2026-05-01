@@ -11,11 +11,16 @@ import java.util.UUID
 class EventService(
   private val eventRepository: EventRepository,
 ) {
-  fun findAllForPointInTime(assessmentUuid: UUID, pointInTime: LocalDateTime) =
-    eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessmentUuid, pointInTime)
+  fun findAllForPointInTime(
+    assessmentUuid: UUID,
+    pointInTime: LocalDateTime,
+  ) = eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessmentUuid, pointInTime)
 
-  fun findAllBetween(assessmentUuid: UUID, from: LocalDateTime, to: LocalDateTime) =
-    eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanAndCreatedAtLessThanEqual(assessmentUuid, from, to)
+  fun findAllBetween(
+    assessmentUuid: UUID,
+    from: LocalDateTime,
+    to: LocalDateTime,
+  ) = eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanAndCreatedAtLessThanEqual(assessmentUuid, from, to)
 
   fun saveAll(entities: List<EventEntity<*>>): List<EventEntity<*>> {
     entities.groupBy { it.assessment.uuid }
@@ -34,6 +39,8 @@ class EventService(
     }.run(eventRepository::saveAll)
   }
 
-  fun findAssessmentsSoftDeletedSince(assessmentType: String, since: LocalDateTime) =
-    eventRepository.findAssessmentsSoftDeletedSince(assessmentType, since)
+  fun findAssessmentsSoftDeletedSince(
+    assessmentType: String,
+    since: LocalDateTime,
+  ) = eventRepository.findAssessmentsSoftDeletedSince(assessmentType, since)
 }

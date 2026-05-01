@@ -7,5 +7,5 @@ class GetAssessmentsSoftDeletedSinceQuery(
   val assessmentType: String,
   val since: LocalDateTime,
   override val user: UserDetails,
-  override val timestamp: LocalDateTime? = null
+  override val timestamp: LocalDateTime? = null,
 ) : RequestableQuery

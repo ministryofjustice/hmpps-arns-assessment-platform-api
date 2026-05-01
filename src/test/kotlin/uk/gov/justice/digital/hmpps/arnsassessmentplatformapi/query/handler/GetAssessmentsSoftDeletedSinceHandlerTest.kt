@@ -15,7 +15,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.GetAssessmen
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.GetAssessmentsSoftDeletedSinceQueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import java.time.LocalDateTime
-import java.util.UUID
 
 class GetAssessmentsSoftDeletedSinceHandlerTest {
   private val clock: Clock = mockk()

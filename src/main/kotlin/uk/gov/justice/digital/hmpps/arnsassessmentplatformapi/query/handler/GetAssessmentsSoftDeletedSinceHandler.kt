@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.exception.InvalidQueryException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.GetAssessmentsSoftDeletedSinceQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.GetAssessmentsSoftDeletedSinceQueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.QueryResult
@@ -39,7 +38,5 @@ class GetAssessmentsSoftDeletedSinceHandler(
     return GetAssessmentsSoftDeletedSinceQueryResult(results)
   }
 
-  private fun buildResult(assessment: AssessmentEntity): UUID {
-    return assessment.uuid
-  }
+  private fun buildResult(assessment: AssessmentEntity): UUID = assessment.uuid
 }

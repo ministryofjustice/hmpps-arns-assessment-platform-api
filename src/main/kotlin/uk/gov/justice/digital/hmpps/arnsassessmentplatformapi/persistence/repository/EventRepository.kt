@@ -37,6 +37,7 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
     after: UUID?,
     limit: Limit,
   ): List<AssessmentEntity>
+
   @Query(
     value = """
       SELECT DISTINCT ON (a.uuid)
