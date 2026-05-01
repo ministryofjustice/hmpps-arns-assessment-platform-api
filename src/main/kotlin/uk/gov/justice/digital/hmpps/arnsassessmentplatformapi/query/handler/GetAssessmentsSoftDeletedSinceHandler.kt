@@ -6,16 +6,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.excepti
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.GetAssessmentsSoftDeletedSinceQuery
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.GetAssessmentsSoftDeletedSinceQueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.QueryResult
-import java.time.LocalDateTime
 import java.util.UUID
 
 @Component
 class GetAssessmentsSoftDeletedSinceHandler(
   private val services: QueryHandlerServiceBundle,
-  private val eventRepository: EventRepository,
   @param:Value($$"${app.query.max-lookback-days:1}")
   private val maxLookbackDays: Long,
 ) : QueryHandler<GetAssessmentsSoftDeletedSinceQuery> {
@@ -32,7 +29,7 @@ class GetAssessmentsSoftDeletedSinceHandler(
   override fun handle(query: GetAssessmentsSoftDeletedSinceQuery): QueryResult {
     validateMaxLookback(query)
 
-    val assessments = eventRepository.findAssessmentsSoftDeletedSince(
+    val assessments = services.event.findAssessmentsSoftDeletedSince(
       assessmentType = query.assessmentType,
       since = query.since,
     )
