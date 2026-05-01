@@ -14,17 +14,6 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
   fun findAllByAssessmentUuidOrderById(uuid: UUID): List<EventEntity<*>>
   fun findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(uuid: UUID, dateTime: LocalDateTime): List<EventEntity<*>>
   fun findAllByAssessmentUuidAndCreatedAtGreaterThanAndCreatedAtLessThanEqual(assessmentUuid: UUID, from: LocalDateTime, to: LocalDateTime): List<EventEntity<*>>
-
-  @Query(
-    value = """
-        SELECT e.*
-        FROM event e
-        WHERE e.assessment_uuid = :assessmentUuid
-        ORDER BY e.position DESC
-        LIMIT 1
-    """,
-    nativeQuery = true,
-  )
   fun findTopByAssessmentUuidOrderByPositionDesc(assessmentUuid: UUID): EventEntity<*>?
   fun findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid: UUID, from: LocalDateTime): List<EventEntity<*>>
 
@@ -33,16 +22,14 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
   // change, and offset pagination can drop rows when that happens.
   @Query(
     """
-    SELECT DISTINCT a.*, e.deleted
-    FROM event e
-    JOIN assessment a
-    ON a.uuid = e.assessment_uuid
+    SELECT DISTINCT a FROM EventEntity e
+    JOIN e.assessment a
     WHERE a.type = :assessmentType
-      AND a.created_at > :since
+      AND e.createdAt > :since
+      AND e.deleted IS FALSE
       AND (:after IS NULL OR a.uuid > :after)
     ORDER BY a.uuid
     """,
-    nativeQuery = true,
   )
   fun findAssessmentsModifiedSinceAfter(
     assessmentType: String,
@@ -50,7 +37,6 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
     after: UUID?,
     limit: Limit,
   ): List<AssessmentEntity>
-
   @Query(
     value = """
       SELECT DISTINCT ON (a.uuid)

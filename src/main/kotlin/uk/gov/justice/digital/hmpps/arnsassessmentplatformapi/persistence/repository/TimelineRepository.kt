@@ -18,16 +18,6 @@ interface TimelineRepository :
 
   fun findByAssessmentUuid(assessmentUuid: UUID): List<TimelineEntity>
 
-  @Query(
-    value = """
-        SELECT t.*
-        FROM timeline t
-        WHERE t.assessment_uuid = :assessmentUuid
-        ORDER BY t.position DESC
-        LIMIT 1
-    """,
-    nativeQuery = true,
-  )
   fun findTopByAssessmentUuidOrderByPositionDesc(assessmentUuid: UUID): TimelineEntity?
 
   @Query(
