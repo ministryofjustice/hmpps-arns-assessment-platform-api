@@ -42,21 +42,7 @@ class GetAssessmentsSoftDeletedSinceHandler(
     return GetAssessmentsSoftDeletedSinceQueryResult(results)
   }
 
-  private fun buildResult(assessment: AssessmentEntity): AssessmentVersionQueryResult {
-    return AssessmentVersionQueryResult(
-      assessmentUuid = assessment.uuid,
-      aggregateUuid = UUID.randomUUID(),
-      assessmentType = assessment.type,
-      formVersion = "",
-      createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now(),
-      answers = emptyMap(),
-      properties = emptyMap(),
-      collections = emptyList(),
-      collaborators = emptySet(),
-      identifiers = emptyMap(),
-      assignedUser = null,
-      flags = emptyList(),
-    )
+  private fun buildResult(assessment: AssessmentEntity): UUID {
+    return assessment.uuid
   }
 }
