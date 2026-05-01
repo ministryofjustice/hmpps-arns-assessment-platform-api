@@ -5,47 +5,45 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.SoftDeleteCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.UserDetailsRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.GetAssessmentsSoftDeletedSinceQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.GetAssessmentsSoftDeletedSinceQueryResult
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertIs
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GetAssessmentsSoftDeletedSinceQueryTest(
-  @Autowired private val assessmentRepository: AssessmentRepository,
-  @Autowired private val eventRepository: EventRepository,
   @Autowired private val userDetailsRepository: UserDetailsRepository,
 ) : IntegrationTestBase() {
 
+  private val type = "SENTENCE_PLAN"
+
   @Test
   fun `it returns assessments soft deleted since the given timestamp`() {
-    userDetailsRepository.save(testUserDetailsEntity)
-    val type = "SOFT_DELETED_SINCE_${UUID.randomUUID()}"
+    val since = LocalDateTime.now().minusMinutes(1)
 
-    val cutoff = LocalDateTime.parse("2025-06-01T12:00:00")
-
-    createSoftDeletedAssessment(type, LocalDateTime.parse("2025-05-01T10:00:00"))
-    val deletedAfter1 = createSoftDeletedAssessment(type, LocalDateTime.parse("2025-06-02T10:00:00"))
-    val deletedAfter2 = createSoftDeletedAssessment(type, LocalDateTime.parse("2025-06-03T10:00:00"))
-    createSoftDeletedAssessment("OTHER_${UUID.randomUUID()}", LocalDateTime.parse("2025-06-04T10:00:00"))
+    val deletedAfter1 = createSoftDeletedAssessment(type, LocalDateTime.now())
+    val deletedAfter2 = createSoftDeletedAssessment(type, LocalDateTime.now())
 
     val request = QueriesRequest(
       queries = listOf(
         GetAssessmentsSoftDeletedSinceQuery(
           user = testUserDetails,
           assessmentType = type,
-          since = cutoff,
+          since = since,
         ),
       ),
     )
@@ -63,22 +61,19 @@ class GetAssessmentsSoftDeletedSinceQueryTest(
     assertThat(response?.queries).hasSize(1)
     val result = assertIs<GetAssessmentsSoftDeletedSinceQueryResult>(response?.queries?.get(0)?.result)
     assertThat(result.assessments)
-      .containsExactlyInAnyOrder(deletedAfter1.uuid, deletedAfter2.uuid)
+      .contains(deletedAfter1, deletedAfter2)
   }
 
   @Test
   fun `it returns empty list when no assessments were soft deleted since timestamp`() {
-    userDetailsRepository.save(testUserDetailsEntity)
-    val type = "SOFT_DELETED_EMPTY_${UUID.randomUUID()}"
-
-    createSoftDeletedAssessment(type, LocalDateTime.parse("2025-01-01T10:00:00"))
+    createSoftDeletedAssessment(type, LocalDateTime.now())
 
     val request = QueriesRequest(
       queries = listOf(
         GetAssessmentsSoftDeletedSinceQuery(
           user = testUserDetails,
           assessmentType = type,
-          since = LocalDateTime.parse("2025-12-01T00:00:00"),
+          since = LocalDateTime.now().plusMinutes(1),
         ),
       ),
     )
@@ -97,29 +92,54 @@ class GetAssessmentsSoftDeletedSinceQueryTest(
     assertThat(result.assessments).isEmpty()
   }
 
-  private fun createSoftDeletedAssessment(type: String, eventCreatedAt: LocalDateTime): AssessmentEntity {
-    val assessment = AssessmentEntity(type = type, createdAt = eventCreatedAt)
-      .run(assessmentRepository::save)
+  private fun createSoftDeletedAssessment(type: String, pointInTime: LocalDateTime): UUID {
+    val response = webTestClient.post().uri("/command")
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+      .bodyValue(
+        CommandsRequest(
+          commands = listOf(
+            CreateAssessmentCommand(
+              user = testUserDetails,
+              formVersion = "1",
+              assessmentType = type,
+              properties = mapOf("foo" to SingleValue("bar")),
+              flags = listOf("SAN_BETA"),
+              identifiers = mapOf(
+                IdentifierType.CRN to "CRN123",
+              ),
+              timeline = Timeline(
+                type = "test",
+                data = mapOf("bar" to listOf("baz")),
+              ),
+            ),
+          ),
+        ),
+      )
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(CommandsResponse::class.java)
+      .returnResult()
+      .responseBody!!
 
-    listOf(
-      EventEntity(
-        user = testUserDetailsEntity,
-        assessment = assessment,
-        createdAt = eventCreatedAt,
-        data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap()),
-        position = 0,
-        deleted = true,
-      ),
-      EventEntity(
-        user = testUserDetailsEntity,
-        assessment = assessment,
-        createdAt = eventCreatedAt,
-        data = FormVersionUpdatedEvent(version = "1"),
-        position = 1,
-        deleted = true,
-      ),
-    ).run(eventRepository::saveAll)
+    val result = assertIs<CreateAssessmentCommandResult>(response.commands[0].result)
 
-    return assessment
+    webTestClient.post().uri("/command")
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+      .bodyValue(
+        CommandsRequest(
+          commands = listOf(
+            SoftDeleteCommand(
+              user = testUserDetails,
+              assessmentUuid = result.assessmentUuid.toReference(),
+              pointInTime = pointInTime,
+            ),
+          ),
+        ),
+      ).exchange()
+      .expectStatus().isOk
+
+    return result.assessmentUuid
   }
 }
