@@ -9,6 +9,7 @@ generic-service:
 
   ingress:
     host: arns-assessment-platform-api.hmpps.service.justice.gov.uk
+    QUERY_MAX_LOOKBACK_DAYS: 0
 
   env:
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
