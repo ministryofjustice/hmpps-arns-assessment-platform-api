@@ -61,3 +61,6 @@ autoscaling:
 
 generic-prometheus-alerts:
   targetApplication: hmpps-arns-assessment-platform-api
+
+global:
+  environment: ""
