@@ -85,7 +85,7 @@ spec:
                   valueFrom:
                     secretKeyRef:
                       name: preprod-rds-aurora-instance
-                      key: rds_cluster_endpoint
+                      key: rds_instance_endpoint
           restartPolicy: Never
           volumes:
             - name: db-refresh-script
