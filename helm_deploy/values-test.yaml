@@ -1,9 +1,6 @@
 ---
 # Per environment values which override defaults in hmpps-arns-assessment-platform-api/values.yaml
 
-autoscaling:
-  maxReplicas: 4
-
 generic-service:
   ingress:
     host: arns-assessment-platform-api-test.hmpps.service.justice.gov.uk
