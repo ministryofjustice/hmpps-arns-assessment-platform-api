@@ -22,6 +22,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.QueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentVersionCacheService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
@@ -38,6 +39,7 @@ abstract class AbstractQueryHandlerTest {
   val stateProvider: StateService.StateForType<AssessmentAggregate> = mockk()
   val userDetailsService: UserDetailsService = mockk()
   val timelineService: TimelineService = mockk()
+  val eventService: EventService = mockk()
   val state: AssessmentState = mockk()
   val clock: Clock = mockk()
 
@@ -46,6 +48,7 @@ abstract class AbstractQueryHandlerTest {
     state = stateService,
     userDetails = userDetailsService,
     timeline = timelineService,
+    event = eventService,
     clock = clock,
   )
   val cacheService: AssessmentVersionCacheService = mockk()

@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Requestabl
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AuditableEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.GetAssessmentsModifiedSinceQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.GetAssessmentsSoftDeletedSinceQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.RequestableQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.SubjectAccessRequestQuery
@@ -87,6 +88,10 @@ class AuditService(
             "subject" to query.subject?.id,
           ).filter { it.value != null }
           is GetAssessmentsModifiedSinceQuery -> mapOf(
+            "assessmentType" to query.assessmentType,
+            "since" to query.since,
+          )
+          is GetAssessmentsSoftDeletedSinceQuery -> mapOf(
             "assessmentType" to query.assessmentType,
             "since" to query.since,
           )

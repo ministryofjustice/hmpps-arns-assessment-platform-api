@@ -104,4 +104,24 @@ class EventServiceTest {
       verify(exactly = 1) { eventRepository.saveAll(emptyList()) }
     }
   }
+
+  @Nested
+  inner class FindAssessmentsSoftDeletedSince {
+    @Test
+    fun `returns assessments soft deleted since the given timestamp`() {
+      val since = LocalDateTime.now()
+      val type = "SENTENCE_PLAN"
+      val assessments = listOf(
+        AssessmentEntity(type = type, createdAt = now.plusMinutes(2)),
+        AssessmentEntity(type = type, createdAt = now.plusMinutes(1)),
+      )
+
+      every { eventRepository.findAssessmentsSoftDeletedSince(type, since) } returns assessments
+
+      val result = service.findAssessmentsSoftDeletedSince(type, since)
+
+      assertThat(result).isEqualTo(assessments)
+      verify(exactly = 1) { eventRepository.findAssessmentsSoftDeletedSince(type, since) }
+    }
+  }
 }
