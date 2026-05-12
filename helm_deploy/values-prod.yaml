@@ -9,7 +9,7 @@ generic-service:
 
   env:
     HMPPS_AUTH_URL: "https://sign-in.hmpps.service.justice.gov.uk/auth"
-    QUERY_MAX_LOOKBACK_DAYS: 0
+    QUERY_MAX_LOOKBACK_DAYS: 7
 
   autoscaling:
     enabled: false
