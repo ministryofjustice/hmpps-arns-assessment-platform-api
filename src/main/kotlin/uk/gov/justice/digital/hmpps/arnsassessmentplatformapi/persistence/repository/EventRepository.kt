@@ -39,6 +39,29 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
   ): List<AssessmentEntity>
 
   @Query(
+    value = """
+      SELECT DISTINCT ON (a.uuid)
+        a.*,
+        e.deleted AS event_deleted,
+        ag.updated_at AS aggregate_updated_at
+      FROM event e
+      JOIN assessment a
+        ON a.uuid = e.assessment_uuid
+      JOIN aggregate ag
+        ON ag.assessment_uuid = a.uuid
+      WHERE a.type = :assessmentType
+        AND ag.updated_at > :since
+        AND e.deleted = true
+      ORDER BY a.uuid, ag.updated_at DESC, e.created_at DESC
+    """,
+    nativeQuery = true,
+  )
+  fun findAssessmentsSoftDeletedSince(
+    assessmentType: String,
+    since: LocalDateTime,
+  ): List<AssessmentEntity>
+
+  @Query(
     """
     SELECT e FROM EventEntity e
     WHERE e.assessment = :assessmentUuid

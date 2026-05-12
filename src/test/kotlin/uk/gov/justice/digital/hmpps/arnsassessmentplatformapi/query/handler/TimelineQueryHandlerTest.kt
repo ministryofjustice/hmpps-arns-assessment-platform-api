@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.PageInfo
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.TimelineQueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
@@ -38,6 +39,7 @@ class TimelineQueryHandlerTest {
   val stateService: StateService = mockk()
   val userDetailsService: UserDetailsService = mockk()
   val timelineService: TimelineService = mockk()
+  val eventService: EventService = mockk()
   val clock: Clock = mockk()
 
   val services = QueryHandlerServiceBundle(
@@ -45,6 +47,7 @@ class TimelineQueryHandlerTest {
     state = stateService,
     userDetails = userDetailsService,
     timeline = timelineService,
+    event = eventService,
     clock = clock,
   )
   val handler = TimelineQueryHandler(services)
