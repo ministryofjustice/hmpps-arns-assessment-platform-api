@@ -22,6 +22,10 @@ class EventService(
     to: LocalDateTime,
   ) = eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanAndCreatedAtLessThanEqual(assessmentUuid, from, to)
 
+  fun findAllIncludingDeleted(assessmentUuid: UUID) = eventRepository.findAllIncludingDeleted(assessmentUuid)
+
+  fun findByUuidsIncludingDeleted(eventUuids: Set<UUID>): List<EventEntity<*>> = eventRepository.findByUuidsIncludingDeleted(eventUuids)
+
   fun saveAll(entities: List<EventEntity<*>>): List<EventEntity<*>> {
     entities.groupBy { it.assessment.uuid }
       .forEach { (assessmentUuid, events) ->
@@ -43,4 +47,6 @@ class EventService(
     assessmentType: String,
     since: LocalDateTime,
   ) = eventRepository.findAssessmentsSoftDeletedSince(assessmentType, since)
+
+  fun hardDelete(events: List<EventEntity<*>>) = eventRepository.deleteAll(events)
 }

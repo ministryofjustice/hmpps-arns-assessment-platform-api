@@ -118,5 +118,12 @@ class AuditService(
     }
   }
 
+  fun audit(who: String, what: String, details: String) = AuditableEvent(
+    who = who,
+    what = what,
+    service = serviceName,
+    details = details,
+  ).let { sendEvent(listOf(it)) }
+
   fun LocalDateTime.intoAuditableTimestamp(): Instant = atZone(ZoneOffset.systemDefault()).toInstant()
 }

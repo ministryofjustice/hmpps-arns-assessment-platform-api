@@ -60,4 +60,28 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
     assessmentType: String,
     since: LocalDateTime,
   ): List<AssessmentEntity>
+
+  @Query(
+    """
+    SELECT e FROM event e
+    WHERE e.assessment_uuid = :assessmentUuid
+    ORDER BY e.position
+    """,
+    nativeQuery = true,
+  )
+  fun findAllIncludingDeleted(
+    assessmentUuid: UUID,
+  ): List<EventEntity<*>>
+
+  @Query(
+    """
+    SELECT e FROM event e
+    WHERE e.uuid IN :eventUuids
+    ORDER BY e.position
+    """,
+    nativeQuery = true,
+  )
+  fun findByUuidsIncludingDeleted(
+    eventUuids: Set<UUID>,
+  ): List<EventEntity<*>>
 }
