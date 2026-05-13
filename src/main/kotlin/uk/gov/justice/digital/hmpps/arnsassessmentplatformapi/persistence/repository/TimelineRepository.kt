@@ -54,10 +54,11 @@ interface TimelineRepository :
 
   @Query(
     """
-    SELECT t FROM TimelineEntity t
-    WHERE t.assessment = :assessmentUuid
+    SELECT t FROM timeline t
+    WHERE t.assessment_uuid = :assessmentUuid
     ORDER BY t.position
     """,
+    nativeQuery = true,
   )
   fun findAllIncludingDeleted(
     assessmentUuid: UUID,
@@ -65,10 +66,11 @@ interface TimelineRepository :
 
   @Query(
     """
-    SELECT t FROM TimelineEntity t
+    SELECT t FROM timeline t
     WHERE t.uuid IN :timelineUuids
     ORDER BY t.position
     """,
+    nativeQuery = true,
   )
   fun findByUuidsIncludingDeleted(
     timelineUuids: Set<UUID>,

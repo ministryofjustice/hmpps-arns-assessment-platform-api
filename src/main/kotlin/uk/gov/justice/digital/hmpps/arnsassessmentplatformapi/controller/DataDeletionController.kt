@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.DataDeletionRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.DataDeletionDataResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.DataDeletionResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AuditService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.DataDeletionService
 import uk.gov.justice.hmpps.kotlin.common.ErrorResponse
 import java.util.UUID
@@ -25,7 +24,6 @@ import java.util.UUID
 @RequestMapping("/data-deletion")
 class DataDeletionController(
   private val dataDeletionService: DataDeletionService,
-  private val auditService: AuditService,
 ) {
   @RequestMapping(path = ["/{assessmentUuid}"], method = [RequestMethod.GET])
   @Operation(description = "Fetch all events and timeline items for an assessment")

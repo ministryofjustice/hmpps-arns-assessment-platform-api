@@ -63,10 +63,11 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
 
   @Query(
     """
-    SELECT e FROM EventEntity e
-    WHERE e.assessment = :assessmentUuid
+    SELECT e FROM event e
+    WHERE e.assessment_uuid = :assessmentUuid
     ORDER BY e.position
     """,
+    nativeQuery = true,
   )
   fun findAllIncludingDeleted(
     assessmentUuid: UUID,
@@ -74,10 +75,11 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
 
   @Query(
     """
-    SELECT e FROM EventEntity e
+    SELECT e FROM event e
     WHERE e.uuid IN :eventUuids
     ORDER BY e.position
     """,
+    nativeQuery = true,
   )
   fun findByUuidsIncludingDeleted(
     eventUuids: Set<UUID>,
