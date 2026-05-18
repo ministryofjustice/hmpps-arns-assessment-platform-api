@@ -12,7 +12,8 @@ generic-service:
     QUERY_MAX_LOOKBACK_DAYS: 7
 
   autoscaling:
-    enabled: false
+    minReplicas: 4
+    maxReplicas: 8
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
