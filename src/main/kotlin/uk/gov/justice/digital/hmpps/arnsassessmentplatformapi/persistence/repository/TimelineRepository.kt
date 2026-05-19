@@ -18,8 +18,6 @@ interface TimelineRepository :
 
   fun findByAssessmentUuid(assessmentUuid: UUID): List<TimelineEntity>
 
-  fun findTopByAssessmentUuidOrderByPositionDesc(assessmentUuid: UUID): TimelineEntity?
-
   @Query(
     value = """
             SELECT
@@ -51,4 +49,16 @@ interface TimelineRepository :
   ): List<DailyVersionProjection>
 
   fun findByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid: UUID, from: LocalDateTime): List<TimelineEntity>
+
+  @Query(
+    value = """
+        SELECT position
+        FROM timeline
+        WHERE assessment_uuid = :assessmentUuid
+        ORDER BY position DESC
+        LIMIT 1
+    """,
+    nativeQuery = true,
+  )
+  fun findMaxPositionForAssessment(assessmentUuid: UUID): Int?
 }
