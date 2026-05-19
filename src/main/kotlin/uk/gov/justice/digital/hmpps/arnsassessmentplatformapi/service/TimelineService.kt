@@ -27,7 +27,7 @@ class TimelineService(
   fun saveAll(entities: List<TimelineEntity>): List<TimelineEntity> {
     entities.groupBy { it.assessment.uuid }
       .forEach { (assessmentUuid, timelines) ->
-        val maxPosition = timelineRepository.findTopByAssessmentUuidOrderByPositionDesc(assessmentUuid)?.position ?: -1
+        val maxPosition = timelineRepository.findMaxPositionForAssessment(assessmentUuid) ?: -1
         timelines.forEachIndexed { index, entity -> entity.position = maxPosition + 1 + index }
       }
     return timelineRepository.saveAll(entities)
