@@ -54,9 +54,9 @@ interface TimelineRepository :
 
   @Query(
     """
-    SELECT t FROM timeline t
-    WHERE t.assessment_uuid = :assessmentUuid
-    ORDER BY t.position
+    SELECT * FROM timeline
+    WHERE assessment_uuid = :assessmentUuid
+    ORDER BY position
     """,
     nativeQuery = true,
   )
@@ -66,9 +66,9 @@ interface TimelineRepository :
 
   @Query(
     """
-    SELECT t FROM timeline t
-    WHERE t.uuid IN :timelineUuids
-    ORDER BY t.position
+    SELECT * FROM timeline
+    WHERE uuid IN :timelineUuids
+    ORDER BY position
     """,
     nativeQuery = true,
   )

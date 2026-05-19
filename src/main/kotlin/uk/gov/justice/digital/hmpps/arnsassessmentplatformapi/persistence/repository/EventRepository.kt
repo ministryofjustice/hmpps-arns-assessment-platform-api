@@ -63,9 +63,9 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
 
   @Query(
     """
-    SELECT e FROM event e
-    WHERE e.assessment_uuid = :assessmentUuid
-    ORDER BY e.position
+    SELECT * FROM event
+    WHERE assessment_uuid = :assessmentUuid
+    ORDER BY position
     """,
     nativeQuery = true,
   )
@@ -75,9 +75,9 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
 
   @Query(
     """
-    SELECT e FROM event e
-    WHERE e.uuid IN :eventUuids
-    ORDER BY e.position
+    SELECT * FROM event
+    WHERE uuid IN :eventUuids
+    ORDER BY position
     """,
     nativeQuery = true,
   )
