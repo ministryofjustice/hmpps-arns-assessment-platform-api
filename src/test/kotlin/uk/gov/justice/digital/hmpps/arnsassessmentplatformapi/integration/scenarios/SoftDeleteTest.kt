@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.scena
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.SoftDeleteCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
@@ -18,6 +19,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class SoftDeleteTest : IntegrationTestBase() {
 
@@ -136,5 +138,31 @@ class SoftDeleteTest : IntegrationTestBase() {
     )
 
     assertEquals(versionAfterSoftDelete.aggregateUuid, versionAfterSoftDeleteSecondQuery.aggregateUuid)
+
+    // Assert that new events and timeline items can be created after soft-deleting
+
+    command(
+      UpdateAssessmentAnswersCommand(
+        user = testUserDetails,
+        assessmentUuid = assessmentUuid.toReference(),
+        added = mapOf("q-after-soft-delete" to SingleValue("a-after-soft-delete")),
+        removed = emptyList(),
+        timeline = Timeline(
+          type = "Updated",
+          data = mapOf("details" to "Timeline item created after a soft delete"),
+        ),
+      ),
+    )
+
+    val versionAfterUpdate = assertIs<AssessmentVersionQueryResult>(
+      query(AssessmentVersionQuery(user = testUserDetails, assessmentIdentifier = UuidIdentifier(assessmentUuid)))
+        .expectStatus().isOk
+        .expectBody(QueriesResponse::class.java)
+        .returnResult()
+        .responseBody!!
+        .queries.first().result,
+    )
+
+    assertTrue(versionAfterUpdate.answers.containsKey("q-after-soft-delete"))
   }
 }
