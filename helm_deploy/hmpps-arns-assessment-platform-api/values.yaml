@@ -3,6 +3,8 @@ generic-service:
   serviceAccountName: hmpps-arns-assessment-platform-service-account
   productId: "HMPPS509" # productId for the product that this belongs too, i.e. DPS001, see README.md for details
 
+  replicaCount: 4
+
   image:
     repository: ghcr.io/ministryofjustice/hmpps-arns-assessment-platform-api
     tag: app_version # override at deployment time
@@ -52,11 +54,7 @@ generic-service:
       - internal
 
   autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 4
-    targetCPUUtilizationPercentage: 80
-    scaleUpStabilizationWindowSeconds: 60
+    enabled: false
 
 generic-prometheus-alerts:
   targetApplication: hmpps-arns-assessment-platform-api
