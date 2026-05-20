@@ -2,6 +2,8 @@
 # Per environment values which override defaults in hmpps-arns-assessment-platform-api/values.yaml
 
 generic-service:
+  replicaCount: 4
+
   ingress:
     host: arns-assessment-platform-api.hmpps.service.justice.gov.uk
     modsecurity_enabled: true
@@ -21,8 +23,7 @@ generic-service:
     QUERY_MAX_LOOKBACK_DAYS: 7
 
   autoscaling:
-    minReplicas: 4
-    maxReplicas: 8
+    enabled: false
 
 # CloudPlatform AlertManager receiver to route prometheus alerts to slack
 # See https://user-guide.cloud-platform.service.justice.gov.uk/documentation/monitoring-an-app/how-to-create-alarms.html#creating-your-own-custom-alerts
