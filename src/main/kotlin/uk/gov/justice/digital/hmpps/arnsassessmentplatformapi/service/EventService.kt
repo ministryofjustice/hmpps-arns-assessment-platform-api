@@ -30,7 +30,7 @@ class EventService(
     entities.groupBy { it.assessment.uuid }
       .forEach { (assessmentUuid, events) ->
         val maxPosition = eventRepository.findMaxPositionForAssessment(assessmentUuid) ?: -1
-        events.forEachIndexed { index, entity -> entity.position = maxPosition + 1 + index }
+        events.forEachIndexed { index, entity -> entity.position = entity.position ?: (maxPosition + 1 + index) }
       }
     return eventRepository.saveAll(entities)
   }

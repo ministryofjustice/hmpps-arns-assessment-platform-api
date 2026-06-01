@@ -1,6 +1,5 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
-import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.interceptor.TransactionAspectSupport
@@ -11,6 +10,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.respons
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.DataDeletionResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.RedactedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.exception.EventHandlingException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.AggregateDTO
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.EventDTO
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.TimelineItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
@@ -34,7 +34,7 @@ class DataDeletionService(
   )
 
   @Transactional
-  fun updateData(assessmentUuid: UUID, request: DataDeletionRequest, jwt: Jwt): DataDeletionResponse {
+  fun updateData(assessmentUuid: UUID, request: DataDeletionRequest): DataDeletionResponse {
     if (request.dryRun) {
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly()
     }
@@ -100,7 +100,7 @@ class DataDeletionService(
 
       if (!request.dryRun) {
         auditService.audit(
-          jwt.subject,
+          "DataDeletionTool",
           "RewroteHistory",
           "Updated ${existingEvents.count()} events and ${existingTimelines.count()} timelines." +
             "Event UUIDs: ${existingEvents.keys} ; Timeline UUIDs: ${existingTimelines.keys}",
@@ -110,7 +110,7 @@ class DataDeletionService(
       return DataDeletionResponse(
         success = true,
         dryRun = request.dryRun,
-        state = rebuiltState,
+        state = rebuiltState.mapValues { it.value.aggregates.map { aggregate -> AggregateDTO.from(aggregate) } },
       )
     } catch (ex: EventHandlingException) {
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly()
