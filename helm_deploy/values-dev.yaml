@@ -4,13 +4,18 @@
 generic-service:
   ingress:
     host: arns-assessment-platform-api-dev.hmpps.service.justice.gov.uk
+    className: modsec-non-prod
     modsecurity_enabled: true
     modsecurity_snippet: |
       SecRuleEngine On
       # Team here grants access to the OpenSearch logs to delve into the cause of the blockage
       SecDefaultAction "phase:2,pass,log,tag:github_team=hmpps-assessments,tag:namespace={{ .Release.Namespace }}"
-      # Disables request body scanning so free-text form fields (goal titles, step descriptions) do not trigger false positives
+      # Rule 920272 (unusual characters) false-alarms on normal post bodies; skip the raw body for this check only.
       SecRuleUpdateTargetById 920272 "!REQUEST_BODY"
+      # User text and login tokens sent to /command and /query trigger false blocks; skip those checks here only.
+      SecRule REQUEST_URI "@rx ^/(command|query)(\?|$)" "id:10010,phase:1,pass,nolog,ctl:ruleRemoveTargetByTag=attack-rce;ARGS,ctl:ruleRemoveTargetByTag=attack-sqli;ARGS,ctl:ruleRemoveTargetByTag=attack-injection-php;ARGS,ctl:ruleRemoveTargetByTag=attack-injection-generic;ARGS,ctl:ruleRemoveTargetByTag=attack-lfi;ARGS"
+      # Default is only GET HEAD POST OPTIONS so need to include PUT etc..
+      SecAction "id:900200,phase:1,nolog,pass,t:none,setvar:tx.allowed_methods=GET HEAD POST OPTIONS PUT DELETE"
       # Change default denial to be a 406 so that we can tell easily that it is modsecurity doing the blocking
       SecRuleUpdateActionById 949110 "t:none,deny,status:406,logdata:%{SERVER_NAME}"
       SecRuleUpdateActionById 959100 "t:none,deny,status:406,logdata:%{SERVER_NAME}"
