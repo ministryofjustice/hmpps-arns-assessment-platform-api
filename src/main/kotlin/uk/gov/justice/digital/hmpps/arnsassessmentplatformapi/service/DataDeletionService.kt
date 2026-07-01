@@ -17,6 +17,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.EventNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.TimelineNotFoundException
+import uk.gov.justice.hmpps.kotlin.auth.HmppsAuthenticationHolder
 import java.util.UUID
 
 @Service
@@ -27,6 +28,7 @@ class DataDeletionService(
   val timelineService: TimelineService,
   val auditService: AuditService,
   val clock: Clock,
+  private val authenticationHolder: HmppsAuthenticationHolder,
 ) {
   fun getData(assessmentUuid: UUID) = DataDeletionDataResponse(
     events = eventService.findAllIncludingDeleted(assessmentUuid).map { EventDTO.from(it) },
@@ -46,21 +48,23 @@ class DataDeletionService(
       .run(timelineService::findByUuidsIncludingDeleted)
       .associateBy { it.uuid }
 
-    val replacementTimelines = request.timeline.map {
-      val existingTimeline = existingTimelines[it.uuid] ?: throw TimelineNotFoundException(it.uuid)
-      TimelineEntity(
-        uuid = it.uuid,
-        position = existingTimeline.position,
-        createdAt = existingTimeline.createdAt,
-        user = existingTimeline.user,
-        assessment = existingTimeline.assessment,
-        eventType = it.timeline.event,
-        data = it.timeline.data,
-        customType = it.timeline.customType,
-        customData = it.timeline.customData,
-        deleted = existingTimeline.deleted,
-      )
-    }
+    val replacementTimelines = request.timeline
+      .filter { it.operation == DataDeletionOperation.UPDATE }
+      .map {
+        val existingTimeline = existingTimelines[it.uuid] ?: throw TimelineNotFoundException(it.uuid)
+        TimelineEntity(
+          uuid = it.uuid,
+          position = existingTimeline.position,
+          createdAt = existingTimeline.createdAt,
+          user = existingTimeline.user,
+          assessment = existingTimeline.assessment,
+          eventType = it.timeline.event,
+          data = it.timeline.data,
+          customType = it.timeline.customType,
+          customData = it.timeline.customData,
+          deleted = existingTimeline.deleted,
+        )
+      }
 
     val existingEvents = request.events
       .map { it.uuid }.toSet()
@@ -80,6 +84,7 @@ class DataDeletionService(
           DataDeletionOperation.DELETE -> RedactedEvent(
             eventType = it.event::class.simpleName ?: "Unknown",
             dateRedacted = clock.now(),
+            redactedBy = authenticationHolder.principal,
           )
         },
         deleted = existingEvent.deleted,
@@ -92,15 +97,16 @@ class DataDeletionService(
     eventService.hardDelete(existingEvents.values.toList())
     eventService.saveAll(replacementEvents)
 
-    stateService.delete(assessment.uuid)
-
     try {
-      val rebuiltState = stateService.rebuildFromEvents(assessment, null)
-      stateService.persist(mutableMapOf(assessment.uuid to rebuiltState))
+      val state = if(replacementEvents.isNotEmpty()) {
+        stateService.delete(assessment.uuid)
+          .let { stateService.rebuildFromEvents(assessment, null) }
+          .also { stateService.persist(mutableMapOf(assessment.uuid to it)) }
+      } else { null }
 
       if (!request.dryRun) {
         auditService.audit(
-          "DataDeletionTool",
+          authenticationHolder.principal,
           "RewroteHistory",
           "Updated ${existingEvents.count()} events and ${existingTimelines.count()} timelines." +
             "Event UUIDs: ${existingEvents.keys} ; Timeline UUIDs: ${existingTimelines.keys}",
@@ -110,7 +116,7 @@ class DataDeletionService(
       return DataDeletionResponse(
         success = true,
         dryRun = request.dryRun,
-        state = rebuiltState.mapValues { it.value.aggregates.map { aggregate -> AggregateDTO.from(aggregate) } },
+        rebuiltState = state?.mapValues { it.value.aggregates.map { aggregate -> AggregateDTO.from(aggregate) } },
       )
     } catch (ex: EventHandlingException) {
       TransactionAspectSupport.currentTransactionStatus().setRollbackOnly()

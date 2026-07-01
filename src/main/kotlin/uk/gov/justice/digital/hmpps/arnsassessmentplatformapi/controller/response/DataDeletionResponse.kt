@@ -9,5 +9,5 @@ data class DataDeletionResponse(
   val success: Boolean,
   val dryRun: Boolean,
   val exception: EventHandlingException? = null,
-  val state: Map<KClass<out Aggregate<*>>, List<AggregateDTO>> = mapOf(),
+  val rebuiltState: Map<KClass<out Aggregate<*>>, List<AggregateDTO>>? = null,
 )

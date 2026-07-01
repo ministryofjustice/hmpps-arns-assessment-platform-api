@@ -5,4 +5,5 @@ import java.time.LocalDateTime
 data class RedactedEvent(
   val eventType: String,
   val dateRedacted: LocalDateTime,
+  val redactedBy: String,
 ) : Event
