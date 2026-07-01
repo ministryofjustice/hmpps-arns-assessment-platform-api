@@ -98,11 +98,13 @@ class DataDeletionService(
     eventService.saveAll(replacementEvents)
 
     try {
-      val state = if(replacementEvents.isNotEmpty()) {
+      val state = if (replacementEvents.isNotEmpty()) {
         stateService.delete(assessment.uuid)
           .let { stateService.rebuildFromEvents(assessment, null) }
           .also { stateService.persist(mutableMapOf(assessment.uuid to it)) }
-      } else { null }
+      } else {
+        null
+      }
 
       if (!request.dryRun) {
         auditService.audit(
