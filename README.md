@@ -73,28 +73,10 @@ docker compose -f docker/docker-compose.base.yml up postgres redis hmpps-auth lo
 
 ### Common Development Commands
 
+View the full list of development commands and their use by running:
+
 ```bash
-# Testing
-make test                         # Run all tests
-make test-targeted TESTS="*Test"  # Run specific tests
-
-# Code Quality
-make lint                         # Run ktlint
-make lint-fix                     # Auto-fix linting issues
-
-# Container Management
-make down                         # Stop all containers
-make clean                        # Clean containers, volumes, and build dirs
-make update                       # Update container images
-
-# Database (requires active kubectl context)
-make db-port-forward-pod          # Create port-forwarding pod
-make db-port-forward              # Forward local port 5434 to remote DB
-make db-connect                   # Connect to remote DB via psql
-
-# TypeScript Client
-make build-client                 # Generate TypeScript client from OpenAPI spec
-```
+make
 
 ## Project Structure
 
