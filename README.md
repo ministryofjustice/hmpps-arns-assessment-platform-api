@@ -130,7 +130,7 @@ The system stores four core entity types in PostgreSQL:
 3. The matched `CommandHandler` validates the command, emits one or more `Event`s, and optionally creates timeline entries
 4. Events are persisted to the `event` table as immutable JSONB records
 5. The `AggregateState` replays events through typed `EventHandler`s to rebuild the `AssessmentAggregate`
-6. The updated aggregate snapshot is persisted to the `aggregate` table with an incremented version
+6. The updated aggregate snapshots are persisted to the `aggregate` table with an incremented version
 7. Audit events are published to SQS
 
 ### Read Path (Queries)
