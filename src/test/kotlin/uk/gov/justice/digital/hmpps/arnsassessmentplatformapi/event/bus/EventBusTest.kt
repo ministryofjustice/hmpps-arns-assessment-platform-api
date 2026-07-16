@@ -7,6 +7,7 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.StateCollection
@@ -14,6 +15,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.exception.EventHandlingException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContext
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
@@ -110,5 +112,69 @@ class EventBusTest {
     verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
 
     verify(exactly = 0) { stateService.persist(any()) }
+  }
+
+  @Test
+  fun `wraps handler exceptions with event handling context`() {
+    val event = EventEntity(
+      user = mockk(),
+      assessment = assessment,
+      createdAt = LocalDateTime.now().minusDays(1),
+      data = AssessmentCreatedEvent(
+        formVersion = "1",
+        properties = emptyMap(),
+      ),
+    )
+    val cause = IllegalStateException("handler failed")
+    val handler = FailingAssessmentCreatedEventHandler(cause)
+    val registry: EventHandlerRegistry = mockk()
+    val persistenceContext: PersistenceContext = mockk()
+    val state: StateCollection = mutableMapOf()
+    val handledEvents = mutableListOf<EventEntity<*>>()
+    val timeline = mutableListOf<TimelineEntity>()
+    val initialState = AssessmentState()
+
+    every { registry.getHandlersFor(any<KClass<AssessmentCreatedEvent>>()) } returns listOf(handler)
+    every { stateProvider.fetchOrCreateState(assessment, event.createdAt) } returns initialState
+    every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
+    every { persistenceContext.state } returns state
+    every { persistenceContext.events } returns handledEvents
+    every { persistenceContext.timeline } returns timeline
+
+    val eventBus = EventBus(
+      stateService = stateService,
+      registry = registry,
+      persistenceContext = persistenceContext,
+    )
+
+    val exception = assertThrows<EventHandlingException> {
+      eventBus.handle(event)
+    }
+
+    assertThat(exception.eventUuid).isEqualTo(event.uuid)
+    assertThat(exception.eventName).isEqualTo("AssessmentCreatedEvent")
+    assertThat(exception.handlerName).isEqualTo("FailingAssessmentCreatedEventHandler")
+    assertThat(exception.cause).isSameAs(cause)
+    assertThat(exception.message).isEqualTo(
+      "FailingAssessmentCreatedEventHandler was unable to handle AssessmentCreatedEvent with UUID: ${event.uuid}",
+    )
+    assertThat(handledEvents).isEmpty()
+    assertThat(timeline).isEmpty()
+
+    verify(exactly = 1) { registry.getHandlersFor(AssessmentCreatedEvent::class) }
+    verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, event.createdAt) }
+    verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
+  }
+
+  private class FailingAssessmentCreatedEventHandler(
+    private val cause: RuntimeException,
+  ) : EventHandler<AssessmentCreatedEvent, AggregateState<out Aggregate<*>>> {
+    override val eventType = AssessmentCreatedEvent::class
+    override val stateType = AssessmentState::class
+
+    override fun handle(
+      event: EventEntity<AssessmentCreatedEvent>,
+      state: AggregateState<out Aggregate<*>>,
+    ): EventHandlerResult<AggregateState<out Aggregate<*>>> = throw cause
   }
 }
