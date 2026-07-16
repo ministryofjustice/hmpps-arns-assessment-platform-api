@@ -21,6 +21,10 @@ VALUES ('hmpps-arns-assessment-platform-ui-e2e', 1200, '{}', 'ROLE_AAP__FRONTEND
 INSERT INTO oauth_client_details (client_id, access_token_validity, additional_information, authorities, authorized_grant_types, autoapprove, client_secret, refresh_token_validity, resource_ids, scope, web_server_redirect_uri)
 VALUES ('hmpps-arns-assessment-platform-sar', 1200, '{}', 'ROLE_SAR_DATA_ACCESS', 'client_credentials', 'read,write', '$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm', 43200, null, 'read,write', null);
 
+-- Add a test client for Data Deletion requests. Client secret is clientsecret
+INSERT INTO oauth_client_details (client_id, access_token_validity, additional_information, authorities, authorized_grant_types, autoapprove, client_secret, refresh_token_validity, resource_ids, scope, web_server_redirect_uri)
+VALUES ('hmpps-arns-data-deletion', 1200, '{}', 'ROLE_AAP_DATA_DELETION', 'client_credentials', 'read,write', '$2a$10$lBwbziQlLfiCnn8Kj1PfMujEcLdsJYlYSNJvBRO638gCYTS9yN0xm', 43200, null, 'read,write', null);
+
 -- Update coordinator API client with required roles for local dev
 UPDATE oauth_client_details
 SET authorities = 'ROLE_STRENGTHS_AND_NEEDS_OASYS,ROLE_AAP__COORDINATOR_RW'

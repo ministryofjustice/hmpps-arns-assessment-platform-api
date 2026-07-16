@@ -45,7 +45,7 @@ class DataDeletionController(
       ),
     ],
   )
-  @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW')")
+  @PreAuthorize("hasAnyRole('ROLE_AAP_DATA_DELETION')")
   fun getData(
     @PathVariable assessmentUuid: UUID,
   ): DataDeletionDataResponse = dataDeletionService.getData(assessmentUuid)
@@ -67,7 +67,7 @@ class DataDeletionController(
       ),
     ],
   )
-  @PreAuthorize("hasAnyRole('ROLE_AAP__FRONTEND_RW')")
+  @PreAuthorize("hasAnyRole('ROLE_AAP_DATA_DELETION')")
   fun updateData(
     @PathVariable assessmentUuid: UUID,
     @RequestBody request: DataDeletionRequest,
