@@ -126,7 +126,7 @@ class DataDeletionService(
         DataDeletionResponse(
           success = false,
           dryRun = request.dryRun,
-          exception = ex
+          exception = ex,
         )
       } else {
         throw ex
