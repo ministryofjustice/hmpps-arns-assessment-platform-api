@@ -46,14 +46,14 @@ open class EventBus(
         stateService.stateForType(aggregateType).fetchOrCreateState(assessment, event.createdAt)
       }
 
-      val result = try {
+      val result = runCatching {
         handler.handle(event, aggregateState)
-      } catch (ex: Exception) {
+      }.getOrElse {
         throw EventHandlingException(
           eventUuid = event.uuid,
           eventName = event.data::class.simpleName ?: "Unknown",
           handlerName = handler::class.simpleName ?: "Unknown",
-          cause = ex,
+          cause = it,
         )
       }
 

@@ -31,8 +31,8 @@ class DataDeletionService(
   private val authenticationHolder: HmppsAuthenticationHolder,
 ) {
   fun getData(assessmentUuid: UUID) = DataDeletionDataResponse(
-    events = eventService.findAllIncludingDeleted(assessmentUuid).map { EventDTO.from(it) },
-    timeline = timelineService.findAllIncludingDeleted(assessmentUuid).map { TimelineItem.from(it) },
+    events = eventService.findAllIncludingDeleted(assessmentUuid).map(EventDTO::from),
+    timeline = timelineService.findAllIncludingDeleted(assessmentUuid).map(TimelineItem::from),
   )
 
   @Transactional
@@ -50,19 +50,19 @@ class DataDeletionService(
 
     val replacementTimelines = request.timeline
       .filter { it.operation == DataDeletionOperation.UPDATE }
-      .map {
-        val existingTimeline = existingTimelines[it.uuid] ?: throw TimelineNotFoundException(it.uuid)
+      .map { replacement ->
+        val existing = existingTimelines[replacement.uuid] ?: throw TimelineNotFoundException(replacement.uuid)
         TimelineEntity(
-          uuid = it.uuid,
-          position = existingTimeline.position,
-          createdAt = existingTimeline.createdAt,
-          user = existingTimeline.user,
-          assessment = existingTimeline.assessment,
-          eventType = it.timeline.event,
-          data = it.timeline.data,
-          customType = it.timeline.customType,
-          customData = it.timeline.customData,
-          deleted = existingTimeline.deleted,
+          uuid = replacement.uuid,
+          position = existing.position,
+          createdAt = existing.createdAt,
+          user = existing.user,
+          assessment = existing.assessment,
+          eventType = replacement.timeline.event,
+          data = replacement.timeline.data,
+          customType = replacement.timeline.customType,
+          customData = replacement.timeline.customData,
+          deleted = existing.deleted,
         )
       }
 
@@ -71,23 +71,23 @@ class DataDeletionService(
       .run(eventService::findByUuidsIncludingDeleted)
       .associateBy { it.uuid }
 
-    val replacementEvents = request.events.map {
-      val existingEvent = existingEvents[it.uuid] ?: throw EventNotFoundException(it.uuid)
+    val replacementEvents = request.events.map { replacement ->
+      val existing = existingEvents[replacement.uuid] ?: throw EventNotFoundException(replacement.uuid)
       EventEntity(
-        uuid = it.uuid,
-        position = existingEvent.position,
-        createdAt = existingEvent.createdAt,
-        user = existingEvent.user,
-        assessment = existingEvent.assessment,
-        data = when (it.operation) {
-          DataDeletionOperation.UPDATE -> it.event
+        uuid = replacement.uuid,
+        position = existing.position,
+        createdAt = existing.createdAt,
+        user = existing.user,
+        assessment = existing.assessment,
+        data = when (replacement.operation) {
+          DataDeletionOperation.UPDATE -> replacement.event
           DataDeletionOperation.DELETE -> RedactedEvent(
-            eventType = it.event::class.simpleName ?: "Unknown",
+            eventType = replacement.event::class.simpleName ?: "Unknown",
             dateRedacted = clock.now(),
             redactedBy = authenticationHolder.principal,
           )
         },
-        deleted = existingEvent.deleted,
+        deleted = existing.deleted,
       )
     }
 
@@ -97,37 +97,40 @@ class DataDeletionService(
     eventService.hardDelete(existingEvents.values.toList())
     eventService.saveAll(replacementEvents)
 
-    try {
-      val state = if (replacementEvents.isNotEmpty()) {
-        stateService.delete(assessment.uuid)
-          .let { stateService.rebuildFromEvents(assessment, null) }
-          .also { stateService.persist(mutableMapOf(assessment.uuid to it)) }
-      } else {
-        null
-      }
+    return runCatching {
+      replacementEvents
+        .takeIf { it.isNotEmpty() }
+        ?.let { stateService.delete(assessment.uuid) }
+        ?.let { stateService.rebuildFromEvents(assessment, null) }
+        ?.also { stateService.persist(mutableMapOf(assessment.uuid to it)) }
+        .also {
+          if (!request.dryRun) {
+            auditService.audit(
+              authenticationHolder.principal,
+              "RewroteHistory",
+              "Updated ${existingEvents.count()} events and ${existingTimelines.count()} timelines." +
+                "Event UUIDs: ${existingEvents.keys} ; Timeline UUIDs: ${existingTimelines.keys}",
+            )
+          }
+        }.let {
+          DataDeletionResponse(
+            success = true,
+            dryRun = request.dryRun,
+            rebuiltState = it?.mapValues { it.value.aggregates.map { aggregate -> AggregateDTO.from(aggregate) } },
+          )
+        }
+    }.recoverCatching { ex ->
+      if (ex is EventHandlingException) {
+        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly()
 
-      if (!request.dryRun) {
-        auditService.audit(
-          authenticationHolder.principal,
-          "RewroteHistory",
-          "Updated ${existingEvents.count()} events and ${existingTimelines.count()} timelines." +
-            "Event UUIDs: ${existingEvents.keys} ; Timeline UUIDs: ${existingTimelines.keys}",
+        DataDeletionResponse(
+          success = false,
+          dryRun = request.dryRun,
+          exception = ex
         )
+      } else {
+        throw ex
       }
-
-      return DataDeletionResponse(
-        success = true,
-        dryRun = request.dryRun,
-        rebuiltState = state?.mapValues { it.value.aggregates.map { aggregate -> AggregateDTO.from(aggregate) } },
-      )
-    } catch (ex: EventHandlingException) {
-      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly()
-
-      return DataDeletionResponse(
-        success = false,
-        dryRun = request.dryRun,
-        exception = ex,
-      )
-    }
+    }.getOrThrow()
   }
 }
