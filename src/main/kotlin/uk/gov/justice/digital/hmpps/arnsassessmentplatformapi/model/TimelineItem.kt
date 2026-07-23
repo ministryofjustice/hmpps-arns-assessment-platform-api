@@ -1,11 +1,13 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model
 
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.exception.UndefinedPosition
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 import java.time.LocalDateTime
 import java.util.UUID
 
 data class TimelineItem(
   val uuid: UUID,
+  val position: Int,
   val timestamp: LocalDateTime,
   val user: User,
   val assessment: UUID,
@@ -17,6 +19,7 @@ data class TimelineItem(
   companion object {
     fun from(entity: TimelineEntity) = TimelineItem(
       uuid = entity.uuid,
+      position = entity.position ?: throw UndefinedPosition("Timeline item with UUID: ${entity.uuid} does not have a valid position"),
       timestamp = entity.createdAt,
       user = User.from(entity.user),
       assessment = entity.assessment.uuid,

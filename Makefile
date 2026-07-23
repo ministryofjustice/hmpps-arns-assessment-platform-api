@@ -50,6 +50,9 @@ TESTS=
 test-targeted: ## Targets specific tests e.g. TESTS="*BatchInsertsTest"
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle test --tests "${TESTS}" --parallel
 
+test-targeted-debug: ## Targets specific tests e.g. TESTS="*BatchInsertsTest" with debug logging
+	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle test --tests "${TESTS}" --parallel --debug
+
 test-glowroot: ## Starts up the test Glowroot agent
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} java \
     -javaagent:/glowroot/glowroot.jar \

@@ -1,11 +1,11 @@
-package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.exception
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.exception
 
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentPlatformException
 
-class NoStateFoundException(developerMessage: String) :
+class UndefinedPosition(message: String) :
   AssessmentPlatformException(
-    message = "No state found.",
-    developerMessage = developerMessage,
+    message = message,
+    developerMessage = message,
     statusCode = HttpStatus.BAD_REQUEST,
   )

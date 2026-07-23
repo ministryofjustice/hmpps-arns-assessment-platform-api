@@ -12,6 +12,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.TimelineRepository
 import java.time.LocalDateTime
+import java.util.UUID
 
 class TimelineServiceTest {
   val timelineRepository: TimelineRepository = mockk()
@@ -41,6 +42,33 @@ class TimelineServiceTest {
   )
 
   @Nested
+  inner class FindAllIncludingDeleted {
+    @Test
+    fun `returns all timeline entries for an assessment including deleted entries`() {
+      every { timelineRepository.findAllIncludingDeleted(assessment.uuid) } returns timelineEntries
+
+      val result = service.findAllIncludingDeleted(assessment.uuid)
+
+      assertThat(result).isEqualTo(timelineEntries)
+      verify(exactly = 1) { timelineRepository.findAllIncludingDeleted(assessment.uuid) }
+    }
+  }
+
+  @Nested
+  inner class FindByUuidsIncludingDeleted {
+    @Test
+    fun `returns all timeline entries matching the requested UUIDs including deleted entries`() {
+      val timelineUuids = setOf(UUID.randomUUID(), UUID.randomUUID())
+      every { timelineRepository.findByUuidsIncludingDeleted(timelineUuids) } returns timelineEntries
+
+      val result = service.findByUuidsIncludingDeleted(timelineUuids)
+
+      assertThat(result).isEqualTo(timelineEntries)
+      verify(exactly = 1) { timelineRepository.findByUuidsIncludingDeleted(timelineUuids) }
+    }
+  }
+
+  @Nested
   inner class SoftDelete {
     @Test
     fun `should mark matching timeline entries as deleted and save them`() {
@@ -66,6 +94,18 @@ class TimelineServiceTest {
       service.softDelete(assessment.uuid, from)
 
       verify(exactly = 1) { timelineRepository.saveAll(emptyList()) }
+    }
+  }
+
+  @Nested
+  inner class HardDelete {
+    @Test
+    fun `deletes the supplied timeline entries`() {
+      every { timelineRepository.deleteAll(timelineEntries) } returns Unit
+
+      service.hardDelete(timelineEntries)
+
+      verify(exactly = 1) { timelineRepository.deleteAll(timelineEntries) }
     }
   }
 }

@@ -71,4 +71,28 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
     nativeQuery = true,
   )
   fun findMaxPositionForAssessment(assessmentUuid: UUID): Int?
+
+  @Query(
+    """
+    SELECT * FROM event
+    WHERE assessment_uuid = :assessmentUuid
+    ORDER BY position
+    """,
+    nativeQuery = true,
+  )
+  fun findAllIncludingDeleted(
+    assessmentUuid: UUID,
+  ): List<EventEntity<*>>
+
+  @Query(
+    """
+    SELECT * FROM event
+    WHERE uuid IN :eventUuids
+    ORDER BY position
+    """,
+    nativeQuery = true,
+  )
+  fun findByUuidsIncludingDeleted(
+    eventUuids: Set<UUID>,
+  ): List<EventEntity<*>>
 }

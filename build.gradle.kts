@@ -55,10 +55,12 @@ tasks {
     )
   }
   withType<Test> {
-    jvmArgs(
-      "-javaagent:/glowroot/glowroot.jar",
-      "-Dglowroot.agent.id=test",
-    )
+    if (File("/glowroot/glowroot.jar").exists()) {
+      jvmArgs(
+        "-javaagent:/glowroot/glowroot.jar",
+        "-Dglowroot.agent.id=test",
+      )
+    }
   }
 }
 

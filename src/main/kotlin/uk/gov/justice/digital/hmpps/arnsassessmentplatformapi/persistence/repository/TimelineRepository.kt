@@ -61,4 +61,28 @@ interface TimelineRepository :
     nativeQuery = true,
   )
   fun findMaxPositionForAssessment(assessmentUuid: UUID): Int?
+
+  @Query(
+    """
+    SELECT * FROM timeline
+    WHERE assessment_uuid = :assessmentUuid
+    ORDER BY position
+    """,
+    nativeQuery = true,
+  )
+  fun findAllIncludingDeleted(
+    assessmentUuid: UUID,
+  ): List<TimelineEntity>
+
+  @Query(
+    """
+    SELECT * FROM timeline
+    WHERE uuid IN :timelineUuids
+    ORDER BY position
+    """,
+    nativeQuery = true,
+  )
+  fun findByUuidsIncludingDeleted(
+    timelineUuids: Set<UUID>,
+  ): List<TimelineEntity>
 }

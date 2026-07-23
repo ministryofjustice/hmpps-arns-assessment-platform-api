@@ -89,6 +89,7 @@ class TimelineQueryHandlerTest {
     fun `returns the timeline for a given timeframe`() {
       val timelinePage: Page<TimelineEntity> = mockk()
       val timelineEntity = TimelineEntity(
+        position = 1,
         createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
         assessment = assessment,
         user = userEntity,
@@ -130,6 +131,7 @@ class TimelineQueryHandlerTest {
           timeline = listOf(
             TimelineItem(
               uuid = timelineEntity.uuid,
+              position = 1,
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
               assessment = assessment.uuid,
@@ -150,6 +152,7 @@ class TimelineQueryHandlerTest {
     fun `returns a timeline containing a specified number of items`() {
       val timelinePage: Page<TimelineEntity> = mockk()
       val timelineEntity = TimelineEntity(
+        position = 1,
         createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
         assessment = assessment,
         user = userEntity,
@@ -188,6 +191,7 @@ class TimelineQueryHandlerTest {
           timeline = listOf(
             TimelineItem(
               uuid = timelineEntity.uuid,
+              position = 1,
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
               assessment = assessment.uuid,
@@ -213,6 +217,7 @@ class TimelineQueryHandlerTest {
     fun `returns the timeline for a given timeframe`() {
       val timelinePage: Page<TimelineEntity> = mockk()
       val timelineEntity = TimelineEntity(
+        position = 1,
         createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
         assessment = assessment,
         user = userEntity,
@@ -255,6 +260,7 @@ class TimelineQueryHandlerTest {
           timeline = listOf(
             TimelineItem(
               uuid = timelineEntity.uuid,
+              position = 1,
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
               assessment = assessment.uuid,
@@ -275,6 +281,7 @@ class TimelineQueryHandlerTest {
     fun `returns a timeline containing a specified number of items`() {
       val timelinePage: Page<TimelineEntity> = mockk()
       val timelineEntity = TimelineEntity(
+        position = 1,
         createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
         assessment = assessment,
         user = userEntity,
@@ -313,6 +320,7 @@ class TimelineQueryHandlerTest {
           timeline = listOf(
             TimelineItem(
               uuid = timelineEntity.uuid,
+              position = 1,
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
               assessment = assessment.uuid,

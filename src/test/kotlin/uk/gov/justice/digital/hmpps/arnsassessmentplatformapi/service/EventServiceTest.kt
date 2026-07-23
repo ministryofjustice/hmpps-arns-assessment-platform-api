@@ -16,6 +16,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
 import java.time.LocalDateTime
+import java.util.UUID
 
 class EventServiceTest {
   val eventRepository: EventRepository = mockk()
@@ -66,6 +67,33 @@ class EventServiceTest {
   }
 
   @Nested
+  inner class FindAllIncludingDeleted {
+    @Test
+    fun `returns all events for an assessment including deleted events`() {
+      every { eventRepository.findAllIncludingDeleted(assessment.uuid) } returns events
+
+      val result = service.findAllIncludingDeleted(assessment.uuid)
+
+      assertThat(result).isEqualTo(events)
+      verify(exactly = 1) { eventRepository.findAllIncludingDeleted(assessment.uuid) }
+    }
+  }
+
+  @Nested
+  inner class FindByUuidsIncludingDeleted {
+    @Test
+    fun `returns all events matching the requested UUIDs including deleted events`() {
+      val eventUuids = setOf(UUID.randomUUID(), UUID.randomUUID())
+      every { eventRepository.findByUuidsIncludingDeleted(eventUuids) } returns events
+
+      val result = service.findByUuidsIncludingDeleted(eventUuids)
+
+      assertThat(result).isEqualTo(events)
+      verify(exactly = 1) { eventRepository.findByUuidsIncludingDeleted(eventUuids) }
+    }
+  }
+
+  @Nested
   inner class Save {
     @Test
     fun `it saves events`() {
@@ -73,6 +101,34 @@ class EventServiceTest {
 
       service.save(events.first())
       verify(exactly = 1) { eventRepository.save(events.first()) }
+    }
+  }
+
+  @Nested
+  inner class SaveAll {
+    @Test
+    fun `assigns positions to events without an existing position`() {
+      every { eventRepository.findMaxPositionForAssessment(assessment.uuid) } returns 10
+      every { eventRepository.saveAll(any<List<EventEntity<*>>>()) } answers { firstArg() }
+
+      val result = service.saveAll(events)
+
+      assertThat(result.map { it.position }).containsExactly(11, 12)
+      verify(exactly = 1) { eventRepository.findMaxPositionForAssessment(assessment.uuid) }
+      verify(exactly = 1) { eventRepository.saveAll(events) }
+    }
+
+    @Test
+    fun `preserves existing event positions when saving`() {
+      events.first().position = 7
+
+      every { eventRepository.findMaxPositionForAssessment(assessment.uuid) } returns 10
+      every { eventRepository.saveAll(any<List<EventEntity<*>>>()) } answers { firstArg() }
+
+      val result = service.saveAll(listOf(events.first()))
+
+      assertThat(result.single().position).isEqualTo(7)
+      verify(exactly = 1) { eventRepository.saveAll(listOf(events.first())) }
     }
   }
 
@@ -122,6 +178,18 @@ class EventServiceTest {
 
       assertThat(result).isEqualTo(assessments)
       verify(exactly = 1) { eventRepository.findAssessmentsSoftDeletedSince(type, since) }
+    }
+  }
+
+  @Nested
+  inner class HardDelete {
+    @Test
+    fun `deletes the supplied events`() {
+      every { eventRepository.deleteAll(events) } returns Unit
+
+      service.hardDelete(events)
+
+      verify(exactly = 1) { eventRepository.deleteAll(events) }
     }
   }
 }

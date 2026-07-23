@@ -18,6 +18,10 @@ class TimelineService(
   fun findDailyVersions(assessmentUuid: UUID) = timelineRepository.findDailyVersionsByAssessment(assessmentUuid)
     .map { DailyVersionDetails.from(it) }
 
+  fun findAllIncludingDeleted(assessmentUuid: UUID) = timelineRepository.findAllIncludingDeleted(assessmentUuid)
+
+  fun findByUuidsIncludingDeleted(timelineUuids: Set<UUID>): List<TimelineEntity> = timelineRepository.findByUuidsIncludingDeleted(timelineUuids)
+
   fun save(entity: TimelineEntity): TimelineEntity = timelineRepository.save(entity)
 
   fun saveAll(entities: List<TimelineEntity>): List<TimelineEntity> {
@@ -34,4 +38,6 @@ class TimelineService(
       it.apply { deleted = true }
     }.run(timelineRepository::saveAll)
   }
+
+  fun hardDelete(timelineEntities: List<TimelineEntity>) = timelineRepository.deleteAll(timelineEntities)
 }
