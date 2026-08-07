@@ -22,6 +22,7 @@ data class Timeline(
   JsonSubTypes.Type(value = UpdateAssessmentPropertiesCommand::class, name = "UpdateAssessmentPropertiesCommand"),
   JsonSubTypes.Type(value = UpdateCollectionItemAnswersCommand::class, name = "UpdateCollectionItemAnswersCommand"),
   JsonSubTypes.Type(value = UpdateCollectionItemPropertiesCommand::class, name = "UpdateCollectionItemPropertiesCommand"),
+  JsonSubTypes.Type(value = UpdateFlagsCommand::class, name = "UpdateFlagsCommand"),
   JsonSubTypes.Type(value = UpdateFormVersionCommand::class, name = "UpdateFormVersionCommand"),
 )
 sealed interface Command {
