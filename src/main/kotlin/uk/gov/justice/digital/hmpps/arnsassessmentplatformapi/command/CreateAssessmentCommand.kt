@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.Reference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.hook.Hook
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
 import java.util.UUID
@@ -17,6 +18,7 @@ data class CreateAssessmentCommand(
   val properties: Map<String, Value>? = null,
   val flags: List<String> = emptyList(),
   override val timeline: Timeline? = null,
+  override val hooks: List<Hook>? = null,
 ) : RequestableCommand {
   @JsonIgnore
   override val assessmentUuid: Reference = UUID.randomUUID().toReference()
