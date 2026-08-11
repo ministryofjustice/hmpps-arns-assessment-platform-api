@@ -24,7 +24,7 @@ class FinancialManagementTest : SectionMappingTest(FinancialManagement(), "v1.0"
   fun q4() {
     test(
       "o5-4",
-      Given().expect(null),
+      Given().expect("0"),
       Given(Field.FINANCE_INCOME, emptyList()).expect("0"),
       Given(Field.FINANCE_INCOME, listOf(Value.CARERS_ALLOWANCE)).expect("0"),
       Given(Field.FINANCE_INCOME, listOf(Value.DISABILITY_BENEFITS)).expect("0"),
@@ -55,7 +55,7 @@ class FinancialManagementTest : SectionMappingTest(FinancialManagement(), "v1.0"
   fun q5() {
     test(
       "o5-5",
-      Given().expect(null),
+      Given().expect("0"),
       Given(Field.FINANCE_INCOME, emptyList()).expect("0"),
       Given(Field.FINANCE_INCOME, listOf(Value.STUDENT_LOAN)).expect("0"),
       Given(Field.FINANCE_INCOME, listOf(Value.FAMILY_OR_FRIENDS)).expect("0"),

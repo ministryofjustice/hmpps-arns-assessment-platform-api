@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.formconfig.FormConfig
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Field
@@ -18,9 +20,10 @@ abstract class SectionMappingTest(
   private val sectionMapping: SectionMapping,
   version: String,
 ) {
-  private val formConfig = FormConfig(
-    version,
-    fields = mapOf(), // TODO: copy the real field config from the UI
+  private val formConfig = objectMapper.readValue<FormConfig>(
+    requireNotNull(javaClass.getResourceAsStream("/domain/san/formconfig/$version.json")) {
+      "Missing form config fixture: src/test/resources/domain/san/formconfig/$version.json"
+    },
   )
 
   fun test(questionCode: String, vararg scenarios: Given) {
@@ -31,6 +34,10 @@ abstract class SectionMappingTest(
       assertContains(result, questionCode, "Scenario ${scenarioNumber + 1} failed")
       assertEquals(scenario.expected, result[questionCode], "Scenario ${scenarioNumber + 1} failed")
     }
+  }
+
+  companion object {
+    private val objectMapper = jacksonObjectMapper()
   }
 }
 
