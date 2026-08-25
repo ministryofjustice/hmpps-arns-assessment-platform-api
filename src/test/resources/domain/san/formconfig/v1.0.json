@@ -1580,6 +1580,381 @@
       "type": "TEXT",
       "section": "drug-use"
     },
+    "how_often_used_last_six_months_amphetamines": {
+      "code": "how_often_used_last_six_months_amphetamines",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_amphetamines_details": {
+      "code": "how_often_used_last_six_months_amphetamines_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_benzodiazepines": {
+      "code": "how_often_used_last_six_months_benzodiazepines",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_benzodiazepines_details": {
+      "code": "how_often_used_last_six_months_benzodiazepines_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_cannabis": {
+      "code": "how_often_used_last_six_months_cannabis",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_cannabis_details": {
+      "code": "how_often_used_last_six_months_cannabis_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_cocaine": {
+      "code": "how_often_used_last_six_months_cocaine",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_cocaine_details": {
+      "code": "how_often_used_last_six_months_cocaine_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_crack": {
+      "code": "how_often_used_last_six_months_crack",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_crack_details": {
+      "code": "how_often_used_last_six_months_crack_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_ecstasy": {
+      "code": "how_often_used_last_six_months_ecstasy",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_ecstasy_details": {
+      "code": "how_often_used_last_six_months_ecstasy_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_hallucinogenics": {
+      "code": "how_often_used_last_six_months_hallucinogenics",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_hallucinogenics_details": {
+      "code": "how_often_used_last_six_months_hallucinogenics_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_heroin": {
+      "code": "how_often_used_last_six_months_heroin",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_heroin_details": {
+      "code": "how_often_used_last_six_months_heroin_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_methadone_not_prescribed": {
+      "code": "how_often_used_last_six_months_methadone_not_prescribed",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_methadone_not_prescribed_details": {
+      "code": "how_often_used_last_six_months_methadone_not_prescribed_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_misused_prescribed_drugs": {
+      "code": "how_often_used_last_six_months_misused_prescribed_drugs",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_misused_prescribed_drugs_details": {
+      "code": "how_often_used_last_six_months_misused_prescribed_drugs_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_other_opiates": {
+      "code": "how_often_used_last_six_months_other_opiates",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_other_opiates_details": {
+      "code": "how_often_used_last_six_months_other_opiates_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_solvents": {
+      "code": "how_often_used_last_six_months_solvents",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_solvents_details": {
+      "code": "how_often_used_last_six_months_solvents_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_steroids": {
+      "code": "how_often_used_last_six_months_steroids",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_steroids_details": {
+      "code": "how_often_used_last_six_months_steroids_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_spice": {
+      "code": "how_often_used_last_six_months_spice",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_spice_details": {
+      "code": "how_often_used_last_six_months_spice_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
+    "how_often_used_last_six_months_other_drug": {
+      "code": "how_often_used_last_six_months_other_drug",
+      "type": "RADIO",
+      "section": "drug-use",
+      "options": [
+        {
+          "value": "DAILY"
+        },
+        {
+          "value": "WEEKLY"
+        },
+        {
+          "value": "MONTHLY"
+        },
+        {
+          "value": "OCCASIONALLY"
+        }
+      ]
+    },
+    "how_often_used_last_six_months_other_drug_details": {
+      "code": "how_often_used_last_six_months_other_drug_details",
+      "type": "TEXT",
+      "section": "drug-use",
+      "options": []
+    },
     "employment_status": {
       "code": "employment_status",
       "type": "RADIO",
