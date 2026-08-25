@@ -14,6 +14,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFlagsCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFormVersionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.CommandHandlerNotImplementedException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.AddCollectionItemCommandHandler
@@ -28,6 +29,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.Up
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.UpdateAssessmentPropertiesCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.UpdateCollectionItemAnswersCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.UpdateCollectionItemPropertiesCommandHandler
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.UpdateFlagsCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.UpdateFormVersionCommandHandler
 
 @Component
@@ -43,6 +45,7 @@ class CommandHandlerFactory {
     is RollbackCommand -> RollbackCommandHandler(serviceBundle)
     is UpdateAssessmentAnswersCommand -> UpdateAssessmentAnswersCommandHandler(serviceBundle)
     is UpdateAssessmentPropertiesCommand -> UpdateAssessmentPropertiesCommandHandler(serviceBundle)
+    is UpdateFlagsCommand -> UpdateFlagsCommandHandler(serviceBundle)
     is UpdateCollectionItemAnswersCommand -> UpdateCollectionItemAnswersCommandHandler(serviceBundle)
     is UpdateCollectionItemPropertiesCommand -> UpdateCollectionItemPropertiesCommandHandler(serviceBundle)
     is UpdateFormVersionCommand -> UpdateFormVersionCommandHandler(serviceBundle)
