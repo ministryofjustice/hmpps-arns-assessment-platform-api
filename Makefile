@@ -9,6 +9,7 @@ SERVICE_NAME = aap-api
 ## Compose files to stack on each other
 PROD_COMPOSE_FILES = -f docker/docker-compose.base.yml
 DEV_COMPOSE_FILES = -f docker/docker-compose.base.yml -f docker/docker-compose.local.yml
+TEST_COMPOSE_FILES = -f docker/docker-compose.test.yml
 
 export COMPOSE_PROJECT_NAME=${PROJECT_NAME}
 
@@ -59,6 +60,9 @@ test-glowroot: ## Starts up the test Glowroot agent
     -Dglowroot.agent.id=test \
     -cp /glowroot/build \
     GlowrootDummy
+
+int-test-dev: ## Runs all integration tests
+	docker compose ${TEST_COMPOSE_FILES} run --rm --env AAP_CLIENT_ID="${AAP_UI_CLIENT_ID}" --env AAP_CLIENT_SECRET="${AAP_UI_CLIENT_SECRET}" int gradle integrationTest
 
 lint: ## Runs the Kotlin linter.
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle ktlintCheck --parallel
