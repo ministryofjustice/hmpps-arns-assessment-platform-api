@@ -8,4 +8,5 @@ data class Field(
   val options: List<Option> = emptyList(),
   val type: FieldType = FieldType.TEXT,
   val section: String = "",
+  val collection: String = "",
 )

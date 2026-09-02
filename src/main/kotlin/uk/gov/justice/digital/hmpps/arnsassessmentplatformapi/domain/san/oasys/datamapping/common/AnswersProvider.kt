@@ -4,6 +4,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.formconfig.FieldType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.formconfig.FormConfig
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.formconfig.Option
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Field
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.exception.InvalidMappingException
@@ -61,27 +62,36 @@ class AnswersProvider(
 
         when (fieldConfig.type) {
           FieldType.CHECKBOX -> MultipleValuesAnswer(
-            (answer as? MultiValue)?.values
-              ?.takeUnless { it == listOf("") }
-              .orEmpty(),
+            values = (answer as? MultiValue)?.values?.let { values -> values.takeUnless { it == listOf("") }.orEmpty() },
           )
           else -> SingleValueAnswer(
             (answer as? SingleValue)?.value,
           )
         }
       }
-      // check if context is a collection
-      ?: assessment.collections
-        .find { it.name == context }
-        ?.let { collection ->
-          CollectionAnswer(
-            collection.items.map { it.answers },
-          )
-        }
-      // context is neither a field nor a collection
+      // context is not a field
       ?: throw InvalidMappingException(
-        "Field/collection $context does not exist in form config version ${config.version}",
+        "Field $context does not exist in form config version ${config.version}",
       )
+  }
+
+  fun answer(collection: Collection): Answer {
+    context = null
+
+    if (config.fields.filter { it.value.collection == collection.name }.isEmpty()) {
+      throw InvalidMappingException(
+        "Collection ${collection.name} does not exist in form config version ${config.version}",
+      )
+    }
+
+    return assessment.collections
+      .find { it.name == collection.name }
+      ?.let { collection ->
+        CollectionAnswer(
+          collection.items.map { it.answers },
+        )
+      }
+      ?: CollectionAnswer(collection = emptyList())
   }
 
   fun get(value: Value): String {

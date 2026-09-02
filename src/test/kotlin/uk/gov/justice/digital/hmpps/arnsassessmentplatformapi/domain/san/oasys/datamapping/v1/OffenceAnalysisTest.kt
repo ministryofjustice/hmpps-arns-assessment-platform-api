@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.v1
 
 import org.junit.jupiter.api.Test
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Field
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common.Given
@@ -103,7 +104,7 @@ class OffenceAnalysisTest : SectionMappingTest(OffenceAnalysis(), "v1.0") {
         listOf(Value.VICTIM_TARGETED, Value.HATRED_OF_IDENTIFIABLE_GROUPS),
       ).expect("DIRECTCONT,HATE"),
       Given.aCollectionOf(
-        Field.OFFENCE_ANALYSIS_VICTIMS_COLLECTION,
+        Collection.OFFENCE_ANALYSIS_VICTIM,
         listOf(
           mapOf(
             Field.OFFENCE_ANALYSIS_VICTIM_RELATIONSHIP.lower to SingleValue("STRANGER"),
@@ -111,7 +112,7 @@ class OffenceAnalysisTest : SectionMappingTest(OffenceAnalysis(), "v1.0") {
         ),
       ).expect("STRANGERS"),
       Given.aCollectionOf(
-        Field.OFFENCE_ANALYSIS_VICTIMS_COLLECTION,
+        Collection.OFFENCE_ANALYSIS_VICTIM,
         listOf(
           mapOf(
             Field.OFFENCE_ANALYSIS_VICTIM_RELATIONSHIP.lower to SingleValue("STRANGER"),
@@ -397,7 +398,7 @@ class OffenceAnalysisTest : SectionMappingTest(OffenceAnalysis(), "v1.0") {
 
       test(
         "victim0",
-        Given.aCollectionOf(Field.OFFENCE_ANALYSIS_VICTIMS_COLLECTION, entries).expect(expectedEntry),
+        Given.aCollectionOf(Collection.OFFENCE_ANALYSIS_VICTIM, entries).expect(expectedEntry),
       )
     }
   }
@@ -425,7 +426,7 @@ class OffenceAnalysisTest : SectionMappingTest(OffenceAnalysis(), "v1.0") {
 
       test(
         "victim0",
-        Given.aCollectionOf(Field.OFFENCE_ANALYSIS_VICTIMS_COLLECTION, entries).expect(expectedEntry),
+        Given.aCollectionOf(Collection.OFFENCE_ANALYSIS_VICTIM, entries).expect(expectedEntry),
       )
     }
   }
@@ -469,7 +470,7 @@ class OffenceAnalysisTest : SectionMappingTest(OffenceAnalysis(), "v1.0") {
 
       test(
         "victim0",
-        Given.aCollectionOf(Field.OFFENCE_ANALYSIS_VICTIMS_COLLECTION, entries).expect(expectedEntry),
+        Given.aCollectionOf(Collection.OFFENCE_ANALYSIS_VICTIM, entries).expect(expectedEntry),
       )
     }
   }
@@ -501,7 +502,7 @@ class OffenceAnalysisTest : SectionMappingTest(OffenceAnalysis(), "v1.0") {
 
       test(
         "victim0",
-        Given.aCollectionOf(Field.OFFENCE_ANALYSIS_VICTIMS_COLLECTION, entries).expect(expectedEntry),
+        Given.aCollectionOf(Collection.OFFENCE_ANALYSIS_VICTIM, entries).expect(expectedEntry),
       )
     }
   }

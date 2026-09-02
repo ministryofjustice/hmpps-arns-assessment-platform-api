@@ -4134,6 +4134,640 @@
       "code": "thinking_behaviours_attitudes_practitioner_analysis_risk_of_reoffending_no_details",
       "type": "TEXT",
       "section": "thinking-behaviours-and-attitudes"
+    },
+    "offence_analysis_description_of_offence": {
+      "code": "offence_analysis_description_of_offence",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_elements": {
+      "code": "offence_analysis_elements",
+      "type": "CHECKBOX",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "ARSON"
+        },
+        {
+          "value": "DOMESTIC_ABUSE"
+        },
+        {
+          "value": "EXCESSIVE_OR_SADISTIC_VIOLENCE"
+        },
+        {
+          "value": "HATRED_OF_IDENTIFIABLE_GROUPS"
+        },
+        {
+          "value": "PHYSICAL_DAMAGE_TO_PROPERTY"
+        },
+        {
+          "value": "SEXUAL_ELEMENT"
+        },
+        {
+          "value": "VICTIM_TARGETED"
+        },
+        {
+          "value": "VIOLENCE_OR_COERCION"
+        },
+        {
+          "value": "WEAPON"
+        },
+        {
+          "value": "NONE"
+        }
+      ]
+    },
+    "offence_analysis_elements_victim_targeted_details": {
+      "code": "offence_analysis_elements_victim_targeted_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_weapon_details": {
+      "code": "offence_weapon_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_reason": {
+      "code": "offence_analysis_reason",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_motivations": {
+      "code": "offence_analysis_motivations",
+      "type": "CHECKBOX",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "ADDICTIONS_OR_PERCEIVED_NEEDS"
+        },
+        {
+          "value": "PRESSURISED_BY_OTHERS"
+        },
+        {
+          "value": "EMOTIONAL_STATE"
+        },
+        {
+          "value": "FINANCIAL_MOTIVATION"
+        },
+        {
+          "value": "HATRED_OF_IDENTIFIABLE_GROUPS"
+        },
+        {
+          "value": "SEEKING_OR_EXERTING_POWER"
+        },
+        {
+          "value": "SEXUAL_MOTIVATION"
+        },
+        {
+          "value": "THRILL_SEEKING"
+        },
+        {
+          "value": "OTHER"
+        }
+      ]
+    },
+    "offence_analysis_motivations_other_details": {
+      "code": "offence_analysis_motivations_other_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_who_was_the_victim": {
+      "code": "offence_analysis_who_was_the_victim",
+      "type": "CHECKBOX",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "ONE_OR_MORE_PERSON"
+        },
+        {
+          "value": "OTHER"
+        }
+      ]
+    },
+    "offence_analysis_who_was_the_victim_other_details": {
+      "code": "offence_analysis_who_was_the_victim_other_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_how_many_involved": {
+      "code": "offence_analysis_how_many_involved",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "NONE"
+        },
+        {
+          "value": "ONE"
+        },
+        {
+          "value": "TWO"
+        },
+        {
+          "value": "THREE"
+        },
+        {
+          "value": "FOUR"
+        },
+        {
+          "value": "FIVE"
+        },
+        {
+          "value": "SIX_TO_10"
+        },
+        {
+          "value": "ELEVEN_TO_15"
+        },
+        {
+          "value": "MORE_THAN_15"
+        }
+      ]
+    },
+    "offence_analysis_leader": {
+      "code": "offence_analysis_leader",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "offence_analysis_leader_yes_details": {
+      "code": "offence_analysis_leader_yes_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_leader_no_details": {
+      "code": "offence_analysis_leader_no_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_impact_on_victims": {
+      "code": "offence_analysis_impact_on_victims",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "offence_analysis_impact_on_victims_yes_details": {
+      "code": "offence_analysis_impact_on_victims_yes_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_impact_on_victims_no_details": {
+      "code": "offence_analysis_impact_on_victims_no_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_accept_responsibility": {
+      "code": "offence_analysis_accept_responsibility",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "offence_analysis_accept_responsibility_yes_details": {
+      "code": "offence_analysis_accept_responsibility_yes_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_accept_responsibility_no_details": {
+      "code": "offence_analysis_accept_responsibility_no_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_escalation": {
+      "code": "offence_analysis_escalation",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        },
+        {
+          "value": "NOT_APPLICABLE"
+        }
+      ]
+    },
+    "offence_analysis_escalation_yes_details": {
+      "code": "offence_analysis_escalation_yes_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_escalation_no_details": {
+      "code": "offence_analysis_escalation_no_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_perpetrator_of_domestic_abuse": {
+      "code": "offence_analysis_perpetrator_of_domestic_abuse",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "offence_analysis_perpetrator_of_domestic_abuse_type": {
+      "code": "offence_analysis_perpetrator_of_domestic_abuse_type",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "FAMILY_MEMBER"
+        },
+        {
+          "value": "INTIMATE_PARTNER"
+        },
+        {
+          "value": "FAMILY_MEMBER_AND_INTIMATE_PARTNER"
+        }
+      ]
+    },
+    "offence_analysis_perpetrator_of_domestic_abuse_type_family_member_details": {
+      "code": "offence_analysis_perpetrator_of_domestic_abuse_type_family_member_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_perpetrator_of_domestic_abuse_type_intimate_partner_details": {
+      "code": "offence_analysis_perpetrator_of_domestic_abuse_type_intimate_partner_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_perpetrator_of_domestic_abuse_type_family_member_and_intimate_partner_details": {
+      "code": "offence_analysis_perpetrator_of_domestic_abuse_type_family_member_and_intimate_partner_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_victim_of_domestic_abuse": {
+      "code": "offence_analysis_victim_of_domestic_abuse",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "offence_analysis_victim_of_domestic_abuse_type": {
+      "code": "offence_analysis_victim_of_domestic_abuse_type",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "FAMILY_MEMBER"
+        },
+        {
+          "value": "INTIMATE_PARTNER"
+        },
+        {
+          "value": "FAMILY_MEMBER_AND_INTIMATE_PARTNER"
+        }
+      ]
+    },
+    "offence_analysis_victim_of_domestic_abuse_type_family_member_details": {
+      "code": "offence_analysis_victim_of_domestic_abuse_type_family_member_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_victim_of_domestic_abuse_type_intimate_partner_details": {
+      "code": "offence_analysis_victim_of_domestic_abuse_type_intimate_partner_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_victim_of_domestic_abuse_type_family_member_and_intimate_partner_details": {
+      "code": "offence_analysis_victim_of_domestic_abuse_type_family_member_and_intimate_partner_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_patterns_of_offending": {
+      "code": "offence_analysis_patterns_of_offending",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_risk": {
+      "code": "offence_analysis_risk",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "offence_analysis_risk_yes_details": {
+      "code": "offence_analysis_risk_yes_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_risk_no_details": {
+      "code": "offence_analysis_risk_no_details",
+      "type": "TEXT",
+      "section": "offence-analysis"
+    },
+    "offence_analysis_victim_relationship": {
+      "code": "offence_analysis_victim_relationship",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "collection": "OFFENCE_ANALYSIS_VICTIM",
+      "options": [
+        {
+          "value": "STRANGER"
+        },
+        {
+          "value": "CRIMINAL_JUSTICE_STAFF"
+        },
+        {
+          "value": "POP_PARENT_OR_STEP_PARENT"
+        },
+        {
+          "value": "POP_PARTNER"
+        },
+        {
+          "value": "POP_EX_PARTNER"
+        },
+        {
+          "value": "POP_CHILD_OR_STEP_CHILD"
+        },
+        {
+          "value": "OTHER_FAMILY_MEMBER"
+        },
+        {
+          "value": "OTHER"
+        }
+      ]
+    },
+    "offence_analysis_victim_relationship_other_details": {
+      "code": "offence_analysis_victim_relationship_other_details",
+      "type": "TEXT",
+      "section": "offence-analysis",
+      "collection": "OFFENCE_ANALYSIS_VICTIM"
+    },
+    "offence_analysis_victim_age": {
+      "code": "offence_analysis_victim_age",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "collection": "OFFENCE_ANALYSIS_VICTIM",
+      "options": [
+        {
+          "value": "AGE_0_TO_4_YEARS"
+        },
+        {
+          "value": "AGE_5_TO_11_YEARS"
+        },
+        {
+          "value": "AGE_12_TO_15_YEARS"
+        },
+        {
+          "value": "AGE_16_TO_17_YEARS"
+        },
+        {
+          "value": "AGE_18_TO_20_YEARS"
+        },
+        {
+          "value": "AGE_21_TO_25_YEARS"
+        },
+        {
+          "value": "AGE_26_TO_49_YEARS"
+        },
+        {
+          "value": "AGE_50_TO_64_YEARS"
+        },
+        {
+          "value": "AGE_65_AND_OVER"
+        },
+        {
+          "value": "UNKNOWN"
+        }
+      ]
+    },
+    "offence_analysis_victim_sex": {
+      "code": "offence_analysis_victim_sex",
+      "type": "RADIO",
+      "section": "offence-analysis",
+      "collection": "OFFENCE_ANALYSIS_VICTIM",
+      "options": [
+        {
+          "value": "MALE"
+        },
+        {
+          "value": "FEMALE"
+        },
+        {
+          "value": "INTERSEX"
+        },
+        {
+          "value": "UNKNOWN"
+        }
+      ]
+    },
+    "offence_analysis_victim_race": {
+      "code": "offence_analysis_victim_race",
+      "type": "SELECT",
+      "section": "offence-analysis",
+      "collection": "OFFENCE_ANALYSIS_VICTIM",
+      "options": [
+        {
+          "value": ""
+        },
+        {
+          "value": "WHITE_ENGLISH_WELSH_SCOTTISH_NORTHERN_IRISH_OR_BRITISH"
+        },
+        {
+          "value": "WHITE_IRISH"
+        },
+        {
+          "value": "WHITE_GYPSY_OR_IRISH_TRAVELLER"
+        },
+        {
+          "value": "WHITE_ROMA"
+        },
+        {
+          "value": "WHITE_ANY_OTHER_WHITE_BACKGROUND"
+        },
+        {
+          "value": "MIXED_WHITE_AND_BLACK_CARIBBEAN"
+        },
+        {
+          "value": "MIXED_WHITE_AND_BLACK_AFRICAN"
+        },
+        {
+          "value": "MIXED_WHITE_AND_ASIAN"
+        },
+        {
+          "value": "MIXED_ANY_OTHER_MIXED_OR_MULTIPLE_ETHNIC_BACKGROUND_BACKGROUND"
+        },
+        {
+          "value": "ASIAN_OR_ASIAN_BRITISH_INDIAN"
+        },
+        {
+          "value": "ASIAN_OR_ASIAN_BRITISH_PAKISTANI"
+        },
+        {
+          "value": "ASIAN_OR_ASIAN_BRITISH_BANGLADESHI"
+        },
+        {
+          "value": "ASIAN_OR_ASIAN_BRITISH_CHINESE"
+        },
+        {
+          "value": "ASIAN_OR_ASIAN_BRITISH_ANY_OTHER_ASIAN_BACKGROUND"
+        },
+        {
+          "value": "BLACK_OR_BLACK_BRITISH_CARIBBEAN"
+        },
+        {
+          "value": "BLACK_OR_BLACK_BRITISH_AFRICAN"
+        },
+        {
+          "value": "BLACK_OR_BLACK_BRITISH_ANY_OTHER_BLACK_BACKGROUND"
+        },
+        {
+          "value": "ARAB"
+        },
+        {
+          "value": "ANY_OTHER_ETHNIC_GROUP"
+        },
+        {
+          "value": "UNKNOWN"
+        }
+      ]
+    },
+    "accommodation_section_complete": {
+      "code": "accommodation_section_complete",
+      "type": "RADIO",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "employment_education_section_complete": {
+      "code": "employment_education_section_complete",
+      "type": "RADIO",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "finance_section_complete": {
+      "code": "finance_section_complete",
+      "type": "RADIO",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "drug_use_section_complete": {
+      "code": "drug_use_section_complete",
+      "type": "RADIO",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "alcohol_use_section_complete": {
+      "code": "alcohol_use_section_complete",
+      "type": "RADIO",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "health_wellbeing_section_complete": {
+      "code": "health_wellbeing_section_complete",
+      "type": "RADIO",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "personal_relationships_community_section_complete": {
+      "code": "personal_relationships_community_section_complete",
+      "type": "RADIO",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "thinking_behaviours_attitudes_section_complete": {
+      "code": "thinking_behaviours_attitudes_section_complete",
+      "type": "RADIO",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
+    },
+    "offence_analysis_section_complete": {
+      "code": "offence_analysis_section_complete",
+      "type": "RADIO",
+      "options": [
+        {
+          "value": "YES"
+        },
+        {
+          "value": "NO"
+        }
+      ]
     }
   }
 }

@@ -18,6 +18,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.formconfig.Field as FormConfigField
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Collection as DataMappingCollection
 
 class AnswersProviderTest {
   private val testAssessment = AssessmentAggregate().apply {
@@ -33,7 +34,7 @@ class AnswersProviderTest {
         uuid = UUID.randomUUID(),
         createdAt = LocalDateTime.now(),
         updatedAt = LocalDateTime.now(),
-        name = Field.OFFENCE_ANALYSIS_VICTIMS_COLLECTION.lower,
+        name = DataMappingCollection.OFFENCE_ANALYSIS_VICTIM.name,
         items = mutableListOf(),
       ),
     )
@@ -60,6 +61,12 @@ class AnswersProviderTest {
           listOf(Option("Some value")),
           FieldType.CHECKBOX,
         ),
+        Field.OFFENCE_ANALYSIS_VICTIM_RELATIONSHIP.lower to FormConfigField(
+          Field.OFFENCE_ANALYSIS_VICTIM_RELATIONSHIP.lower,
+          listOf(Option("test option")),
+          FieldType.RADIO,
+          collection = DataMappingCollection.OFFENCE_ANALYSIS_VICTIM.name,
+        ),
       ),
     )
 
@@ -75,7 +82,7 @@ class AnswersProviderTest {
           sut.answer(Field.TEST_FIELD)
         },
       )
-      assertEquals("Field/collection test_field does not exist in form config version v1.0", exception.message)
+      assertEquals("Field test_field does not exist in form config version v1.0", exception.message)
     }
 
     @Test
@@ -120,7 +127,7 @@ class AnswersProviderTest {
 
     @Test
     fun `returns the collection values of an existing answer`() {
-      val answer = sut.answer(Field.OFFENCE_ANALYSIS_VICTIMS_COLLECTION)
+      val answer = sut.answer(DataMappingCollection.OFFENCE_ANALYSIS_VICTIM)
 
       assertEquals(emptyList(), answer.collection)
 

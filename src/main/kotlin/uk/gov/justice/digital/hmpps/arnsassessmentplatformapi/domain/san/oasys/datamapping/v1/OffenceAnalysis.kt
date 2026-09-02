@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.v1
 
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Field
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common.FieldsToMap
@@ -109,7 +110,7 @@ class OffenceAnalysis : SectionMapping() {
   }
 
   private fun buildVictimCollectionAnswers(): FieldsToMap {
-    val collection = ap.answer(Field.OFFENCE_ANALYSIS_VICTIMS_COLLECTION).collection
+    val collection = ap.answer(Collection.OFFENCE_ANALYSIS_VICTIM).collection
 
     return collection.mapIndexed { index, entry ->
       "victim$index" to {
@@ -162,7 +163,7 @@ class OffenceAnalysis : SectionMapping() {
       }
     }.orEmpty().toMutableList()
 
-    ap.answer(Field.OFFENCE_ANALYSIS_VICTIMS_COLLECTION).collection.find {
+    ap.answer(Collection.OFFENCE_ANALYSIS_VICTIM).collection.find {
       ap.setContext(Field.OFFENCE_ANALYSIS_VICTIM_RELATIONSHIP)
       when ((it[Field.OFFENCE_ANALYSIS_VICTIM_RELATIONSHIP.lower] as? SingleValue)?.value) {
         ap.get(Value.STRANGER) -> true

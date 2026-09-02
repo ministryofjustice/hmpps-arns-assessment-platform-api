@@ -14,6 +14,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Collection as DataMappingCollection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value as PersistedValue
 
 abstract class SectionMappingTest(
@@ -92,14 +93,14 @@ class Given {
   }
 
   companion object {
-    fun aCollectionOf(field: Field, collectionItems: List<Map<String, PersistedValue>>): Given = Given().apply {
+    fun aCollectionOf(collection: DataMappingCollection, collectionItems: List<Map<String, PersistedValue>>): Given = Given().apply {
       assessment.apply {
         collections.addLast(
           Collection(
             uuid = UUID.randomUUID(),
             createdAt = LocalDateTime.now(),
             updatedAt = LocalDateTime.now(),
-            name = field.name,
+            name = collection.name,
             items = collectionItems.map { item ->
               CollectionItem(
                 uuid = UUID.randomUUID(),
