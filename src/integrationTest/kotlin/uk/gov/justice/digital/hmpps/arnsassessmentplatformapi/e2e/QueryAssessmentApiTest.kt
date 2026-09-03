@@ -22,7 +22,7 @@ class QueryAssessmentApiTest : IntegrationTestBase() {
       queries = listOf(
         AssessmentVersionQuery(
           user = testUserDetails,
-          assessmentIdentifier = UuidIdentifier(UUID.fromString((assessmentId)))
+          assessmentIdentifier = UuidIdentifier(UUID.fromString((assessmentId))),
         ),
       ),
     )
