@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.7"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.6"
   id("org.jetbrains.kotlin.kapt") version "2.4.10"
   kotlin("plugin.spring") version "2.4.10"
   kotlin("plugin.jpa") version "2.4.10"
@@ -27,10 +27,12 @@ configurations {
 
 ext["netty.version"] = "4.2.17.Final"
 ext["httpclient5.version"] = "5.6.4"
+ext["httpcore5.version"] = "5.4.3"
+ext["tomcat.version"] = "11.0.25"
 
 dependencies {
-  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:2.5.0")
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.1")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
   implementation("org.webjars:swagger-ui:5.32.14")
@@ -46,7 +48,7 @@ dependencies {
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   kapt("org.hibernate.orm:hibernate-jpamodelgen:7.4.5.Final")
 
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.1")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.4.10")
   testImplementation("io.swagger.parser.v3:swagger-parser:2.1.45") {
