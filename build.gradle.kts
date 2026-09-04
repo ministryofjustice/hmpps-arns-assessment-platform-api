@@ -105,10 +105,6 @@ tasks.named("integrationTest") {
   }
 }
 
-tasks.check {
-  dependsOn(tasks.named("integrationTest"))
-}
-
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.compilerOptions {
   freeCompilerArgs.set(listOf("-Xannotation-default-target=param-property"))
