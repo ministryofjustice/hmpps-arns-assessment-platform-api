@@ -1,0 +1,23 @@
+# `docker-compose.test.yml` target ONLY the test task
+
+services:
+  int:
+    image: ghcr.io/ministryofjustice/hmpps-arns-assessment-platform-api:local
+    build:
+      target: development
+    command: gradle --parallel --build-cache --configuration-cache --info cleanTest test
+    volumes:
+      - ../.git:/app/.git
+      - ../.gradle:/home/gradle/.gradle
+      - ../build:/app/build
+      - ../src:/app/src
+      - ../build.gradle.kts:/app/build.gradle.kts
+      - ../settings.gradle.kts:/app/settings.gradle.kts
+      - ../glowroot-data:/opt/glowroot/data
+    environment:
+      - AAP_CLIENT_ID
+      - AAP_CLIENT_SECRET
+
+volumes:
+  .gradle:
+  build:

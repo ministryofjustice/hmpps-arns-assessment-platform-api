@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.invoke
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.run.BootRun
@@ -7,6 +8,17 @@ plugins {
   id("org.jetbrains.kotlin.kapt") version "2.4.10"
   kotlin("plugin.spring") version "2.4.10"
   kotlin("plugin.jpa") version "2.4.10"
+}
+
+sourceSets {
+  create("integrationTest") {
+    compileClasspath += sourceSets["main"].output + sourceSets["test"].output
+    runtimeClasspath += sourceSets["main"].output + sourceSets["test"].output
+  }
+}
+
+configurations.named("integrationTestImplementation") {
+  extendsFrom(configurations.testImplementation.get())
 }
 
 configurations {
@@ -67,6 +79,29 @@ tasks {
         "-Dglowroot.agent.id=test",
       )
     }
+  }
+}
+
+tasks.test {
+  exclude("**/src/integrationTest/**")
+}
+
+tasks.register<Test>("integrationTest") {
+  description = "Runs integration tests."
+  group = "verification"
+
+  testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+  classpath = sourceSets["integrationTest"].runtimeClasspath
+
+  // Optional: Force tests to run even if outputs haven't changed
+  outputs.upToDateWhen { false }
+
+  useJUnitPlatform()
+}
+
+tasks.named("integrationTest") {
+  onlyIf {
+    !gradle.startParameter.taskNames.any { it.contains("koverHtmlReport") }
   }
 }
 
