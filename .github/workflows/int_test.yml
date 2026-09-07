@@ -1,12 +1,6 @@
 name: Integration Test
 
 on:
-  push:
-    branches-ignore:
-      - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       environment:
