@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.e2e.dto.AssessmentRequestDto
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.e2e.dto.Command
-import java.util.UUID
+import java.util.*
 
 @DisplayName("AAP API Tests")
 class AapAssessmentApiTest : IntegrationTestBase() {
@@ -32,14 +32,17 @@ class AapAssessmentApiTest : IntegrationTestBase() {
     )
     val assessmentRequestDto = AssessmentRequestDto(commands = listOf(command))
 
-    val commandResponse = webTestClient.post().uri("/command")
+    val commandsResponse = webTestClient.post().uri("/command")
       .bodyValue(assessmentRequestDto)
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isOk
-      .expectBody<CommandResponse>()
+      .expectBody<CommandsResponse>()
       .returnResult().responseBody
 
-    assertThat(commandResponse?.result?.success).isTrue()
+    assertThat(commandsResponse?.commands?.size).isOne()
+    val result = commandsResponse?.commands?.first()?.result
+    assertThat(result).isInstanceOf(CreateAssessmentCommandResult::class.java)
+    assertThat(result?.success).isTrue()
   }
 }
