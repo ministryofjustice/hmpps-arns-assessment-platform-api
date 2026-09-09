@@ -28,8 +28,7 @@ class AapAssessmentApiTest : IntegrationTestBase() {
       properties = emptyMap(),
       user = testUserDetails,
       CRN = testCrn,
-      flags = listOf("SAN_BETA")
-    )
+      flags = listOf("SAN_BETA"))
     val assessmentRequestDto = AssessmentRequestDto(commands = listOf(command))
 
     val commandsResponse = webTestClient.post().uri("/command")
