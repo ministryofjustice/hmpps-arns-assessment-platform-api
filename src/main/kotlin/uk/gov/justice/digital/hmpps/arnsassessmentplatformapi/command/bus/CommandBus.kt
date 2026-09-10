@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus
 
 import org.springframework.http.HttpStatus
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerFactory
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.common.CommandHandlerServiceBundle
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.AddCollectionItemCommandResult
@@ -12,6 +13,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.AssessmentP
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.Reference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.hook.bus.HookBus
 import java.util.UUID
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
@@ -20,10 +22,15 @@ import kotlin.reflect.jvm.isAccessible
 open class CommandBus(
   private val commandHandlerFactory: CommandHandlerFactory,
   private val commandHandlerServiceBundle: CommandHandlerServiceBundle,
+  private val hookBus: HookBus,
 ) {
   private fun handle(command: Command): CommandResult {
     val handler = commandHandlerFactory.create(command, commandHandlerServiceBundle)
-    return handler.execute(command)
+    return handler.execute(command).also {
+      if (command is RequestableCommand) {
+        command.hooks?.let { hookBus.dispatch(it, command, commandHandlerServiceBundle) }
+      }
+    }
   }
 
   fun dispatch(commands: List<Command>) = CommandsResponse(

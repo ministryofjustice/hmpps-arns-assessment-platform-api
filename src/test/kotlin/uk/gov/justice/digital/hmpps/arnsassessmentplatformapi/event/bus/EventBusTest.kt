@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.StateCollection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
@@ -83,27 +82,25 @@ class EventBusTest {
     val registry: EventHandlerRegistry = mockk()
     every { registry.getHandlersFor(any<KClass<AssessmentCreatedEvent>>()) } returns listOf(handler1, handler2)
 
-    val persistenceContext: PersistenceContext = mockk()
-    val state: StateCollection = mutableMapOf()
-    val handledEvents = mutableListOf<EventEntity<*>>()
-    val timeline = mutableListOf<TimelineEntity>()
-
-    every { persistenceContext.state } returns state
-    every { persistenceContext.events } returns handledEvents
-    every { persistenceContext.timeline } returns timeline
+    val persistenceContext = PersistenceContext(
+      stateService = stateService,
+      eventService = mockk(),
+      timelineService = mockk(),
+      userDetailsService = mockk(),
+      assessmentService = mockk(),
+    )
 
     val eventBus = EventBus(
-      stateService = stateService,
       registry = registry,
       persistenceContext = persistenceContext,
     )
 
     eventBus.handle(event).createTimeline(commandTimeline)
 
-    assertThat(handledEvents).hasSize(1)
-    assertThat(handledEvents.first()).isSameAs(event)
+    assertThat(persistenceContext.events).hasSize(1)
+    assertThat(persistenceContext.events.first()).isSameAs(event)
 
-    assertThat(timeline).containsExactly(handler1TimelineEntity, handler2TimelineEntity)
+    assertThat(persistenceContext.timeline).containsExactly(handler1TimelineEntity, handler2TimelineEntity)
 
     verify(exactly = 1) { registry.getHandlersFor(AssessmentCreatedEvent::class) }
     verify(exactly = 1) { handler1.handle(event, initialState) }
@@ -128,21 +125,21 @@ class EventBusTest {
     val cause = IllegalStateException("handler failed")
     val handler = FailingAssessmentCreatedEventHandler(cause)
     val registry: EventHandlerRegistry = mockk()
-    val persistenceContext: PersistenceContext = mockk()
-    val state: StateCollection = mutableMapOf()
-    val handledEvents = mutableListOf<EventEntity<*>>()
-    val timeline = mutableListOf<TimelineEntity>()
     val initialState = AssessmentState()
 
     every { registry.getHandlersFor(any<KClass<AssessmentCreatedEvent>>()) } returns listOf(handler)
     every { stateProvider.fetchOrCreateState(assessment, event.createdAt) } returns initialState
     every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
-    every { persistenceContext.state } returns state
-    every { persistenceContext.events } returns handledEvents
-    every { persistenceContext.timeline } returns timeline
+
+    val persistenceContext = PersistenceContext(
+      stateService = stateService,
+      eventService = mockk(),
+      timelineService = mockk(),
+      userDetailsService = mockk(),
+      assessmentService = mockk(),
+    )
 
     val eventBus = EventBus(
-      stateService = stateService,
       registry = registry,
       persistenceContext = persistenceContext,
     )
@@ -158,8 +155,8 @@ class EventBusTest {
     assertThat(exception.message).isEqualTo(
       "FailingAssessmentCreatedEventHandler was unable to handle AssessmentCreatedEvent with UUID: ${event.uuid}",
     )
-    assertThat(handledEvents).isEmpty()
-    assertThat(timeline).isEmpty()
+    assertThat(persistenceContext.events).isEmpty()
+    assertThat(persistenceContext.timeline).isEmpty()
 
     verify(exactly = 1) { registry.getHandlersFor(AssessmentCreatedEvent::class) }
     verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, event.createdAt) }

@@ -1,0 +1,21 @@
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common
+
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.service.OasysEquivalent
+
+typealias MappingFn = () -> Any?
+typealias FieldsToMap = Map<String, MappingFn>
+
+abstract class SectionMapping {
+  protected lateinit var ap: AnswersProvider
+
+  abstract fun getFieldsToMap(): FieldsToMap
+
+  fun map(answersProvider: AnswersProvider): OasysEquivalent {
+    ap = answersProvider
+    val result = mutableMapOf<String, Any?>()
+    for ((field, method) in getFieldsToMap()) {
+      result[field] = method()
+    }
+    return result
+  }
+}
