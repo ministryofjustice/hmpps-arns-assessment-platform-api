@@ -97,6 +97,15 @@ tasks.register<Test>("integrationTest") {
   outputs.upToDateWhen { false }
 
   useJUnitPlatform()
+
+  testLogging {
+    showStandardStreams = true
+    events("passed", "skipped", "failed")
+
+    showExceptions = true
+    showCauses = true
+    showStackTraces = true
+  }
 }
 
 tasks.named("integrationTest") {
