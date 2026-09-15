@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.UndeleteNotAtTailException
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -41,6 +42,18 @@ class EventService(
     eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid, from).map {
       it.apply { deleted = true }
     }.run(eventRepository::saveAll)
+  }
+
+  fun undelete(assessmentUuid: UUID, from: LocalDateTime) {
+    val deletedEvents = eventRepository.findAllDeletedByAssessmentUuidFrom(assessmentUuid, from)
+    val firstDeletedPosition = deletedEvents.minOfOrNull { checkNotNull(it.position) } ?: return
+
+    // Events written after the deleted ones were built without them, so replaying them together isn't safe
+    if (eventRepository.existsByAssessmentUuidAndPositionGreaterThan(assessmentUuid, firstDeletedPosition)) {
+      throw UndeleteNotAtTailException(assessmentUuid, from)
+    }
+
+    deletedEvents.map { it.apply { deleted = false } }.run(eventRepository::saveAll)
   }
 
   fun findAssessmentsSoftDeletedSince(
