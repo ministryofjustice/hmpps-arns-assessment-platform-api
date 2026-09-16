@@ -15,6 +15,7 @@ data class Timeline(
   JsonSubTypes.Type(value = CreateCollectionCommand::class, name = "CreateCollectionCommand"),
   JsonSubTypes.Type(value = CreateTimelineItemCommand::class, name = "CreateTimelineItemCommand"),
   JsonSubTypes.Type(value = SoftDeleteCommand::class, name = "SoftDeleteCommand"),
+  JsonSubTypes.Type(value = UndeleteCommand::class, name = "UndeleteCommand"),
   JsonSubTypes.Type(value = RemoveCollectionItemCommand::class, name = "RemoveCollectionItemCommand"),
   JsonSubTypes.Type(value = ReorderCollectionItemCommand::class, name = "ReorderCollectionItemCommand"),
   JsonSubTypes.Type(value = RollbackCommand::class, name = "RollbackCommand"),
