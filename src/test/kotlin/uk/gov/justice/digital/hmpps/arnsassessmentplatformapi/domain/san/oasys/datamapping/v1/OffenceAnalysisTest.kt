@@ -9,7 +9,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.d
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value as PersistedValue
 
-class OffenceAnalysisTest : SectionMappingTest(OffenceAnalysis(), "v1.0") {
+class OffenceAnalysisTest : SectionMappingTest(::OffenceAnalysis, "v1.0") {
   @Test
   fun q1() {
     test(

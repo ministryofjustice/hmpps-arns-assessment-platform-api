@@ -5,13 +5,10 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.s
 typealias MappingFn = () -> Any?
 typealias FieldsToMap = Map<String, MappingFn>
 
-abstract class SectionMapping {
-  protected lateinit var ap: AnswersProvider
-
+abstract class SectionMapping(protected val ap: AnswersProvider) {
   abstract fun getFieldsToMap(): FieldsToMap
 
-  fun map(answersProvider: AnswersProvider): OasysEquivalent {
-    ap = answersProvider
+  fun map(): OasysEquivalent {
     val result = mutableMapOf<String, Any?>()
     for ((field, method) in getFieldsToMap()) {
       result[field] = method()

@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.d
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common.SectionMappingTest
 import kotlin.test.Test
 
-class ThinkingBehavioursTest : SectionMappingTest(ThinkingBehaviours(), "v1.0") {
+class ThinkingBehavioursTest : SectionMappingTest(::ThinkingBehaviours, "v1.0") {
   @Test
   fun q2() {
     test(

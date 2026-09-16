@@ -18,7 +18,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.d
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value as PersistedValue
 
 abstract class SectionMappingTest(
-  private val sectionMapping: SectionMapping,
+  private val sectionMappingFactory: (AnswersProvider) -> SectionMapping,
   version: String,
 ) {
   private val formConfig = objectMapper.readValue<FormConfig>(
@@ -30,7 +30,7 @@ abstract class SectionMappingTest(
   fun test(questionCode: String, vararg scenarios: Given) {
     for ((scenarioNumber, scenario) in scenarios.withIndex()) {
       val answersProvider = AnswersProvider(scenario.assessment, formConfig)
-      val result = sectionMapping.map(answersProvider)
+      val result = sectionMappingFactory(answersProvider).map()
 
       assertContains(result, questionCode, "Scenario ${scenarioNumber + 1} failed")
       assertEquals(scenario.expected, result[questionCode], "Scenario ${scenarioNumber + 1} failed")
