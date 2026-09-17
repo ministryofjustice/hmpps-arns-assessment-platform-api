@@ -98,6 +98,36 @@ class TimelineServiceTest {
   }
 
   @Nested
+  inner class Undelete {
+    @Test
+    fun `should mark deleted timeline entries from the point in time as not deleted and save them`() {
+      val from = now.minusHours(1)
+      timelineEntries.forEach { it.deleted = true }
+
+      every { timelineRepository.findAllDeletedByAssessmentUuidFrom(assessment.uuid, from) } returns timelineEntries
+      every { timelineRepository.saveAll(any<List<TimelineEntity>>()) } answers { firstArg() }
+
+      service.undelete(assessment.uuid, from)
+
+      verify(exactly = 1) { timelineRepository.findAllDeletedByAssessmentUuidFrom(assessment.uuid, from) }
+      verify(exactly = 1) { timelineRepository.saveAll(timelineEntries) }
+      timelineEntries.forEach { assertThat(it.deleted).isFalse() }
+    }
+
+    @Test
+    fun `should save an empty list when no deleted timeline entries match`() {
+      val from = now.minusHours(1)
+
+      every { timelineRepository.findAllDeletedByAssessmentUuidFrom(assessment.uuid, from) } returns emptyList()
+      every { timelineRepository.saveAll(any<List<TimelineEntity>>()) } answers { firstArg() }
+
+      service.undelete(assessment.uuid, from)
+
+      verify(exactly = 1) { timelineRepository.saveAll(emptyList()) }
+    }
+  }
+
+  @Nested
   inner class HardDelete {
     @Test
     fun `deletes the supplied timeline entries`() {

@@ -156,7 +156,7 @@ Commands follow the same sealed interface pattern:
 - `CreateAssessmentCommand` / `UpdateAssessmentAnswersCommand` / `UpdateAssessmentPropertiesCommand`
 - `CreateCollectionCommand` / `AddCollectionItemCommand` / `RemoveCollectionItemCommand` / `ReorderCollectionItemCommand`
 - `UpdateCollectionItemAnswersCommand` / `UpdateCollectionItemPropertiesCommand`
-- `RollbackCommand` / `SoftDeleteCommand` / `UpdateFormVersionCommand` / `CreateTimelineItemCommand`
+- `RollbackCommand` / `SoftDeleteCommand` / `UndeleteCommand` / `UpdateFormVersionCommand` / `CreateTimelineItemCommand`
 
 ### Query Types
 

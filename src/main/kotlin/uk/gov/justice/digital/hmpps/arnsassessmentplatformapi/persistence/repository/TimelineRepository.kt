@@ -85,4 +85,19 @@ interface TimelineRepository :
   fun findByUuidsIncludingDeleted(
     timelineUuids: Set<UUID>,
   ): List<TimelineEntity>
+
+  @Query(
+    """
+    SELECT * FROM timeline
+    WHERE assessment_uuid = :assessmentUuid
+      AND created_at >= :from
+      AND deleted IS TRUE
+    ORDER BY position
+    """,
+    nativeQuery = true,
+  )
+  fun findAllDeletedByAssessmentUuidFrom(
+    assessmentUuid: UUID,
+    from: LocalDateTime,
+  ): List<TimelineEntity>
 }
