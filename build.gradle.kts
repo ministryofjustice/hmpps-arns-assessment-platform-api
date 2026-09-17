@@ -25,10 +25,10 @@ configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
 }
 
-ext["netty.version"] = "4.2.17.Final"
+ext["netty.version"] = "4.2.18.Final"
 ext["httpclient5.version"] = "5.6.4"
 ext["httpcore5.version"] = "5.4.3"
-ext["tomcat.version"] = "11.0.25"
+ext["tomcat.version"] = "11.0.26"
 
 dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.1")
