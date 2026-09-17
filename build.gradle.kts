@@ -34,8 +34,8 @@ dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.0.1")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.1")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
-  implementation("org.webjars:swagger-ui:5.32.14")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
+  implementation("org.webjars:swagger-ui:5.32.15")
   implementation("tools.jackson.module:jackson-module-kotlin:3.2.2")
   implementation("org.springframework.retry:spring-retry")
   runtimeOnly("io.netty:netty-codec-classes-quic")
@@ -46,12 +46,12 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.postgresql:postgresql:42.7.13")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  kapt("org.hibernate.orm:hibernate-jpamodelgen:7.4.6.Final")
+  kapt("org.hibernate.orm:hibernate-jpamodelgen:7.4.8.Final")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.1")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.4.20")
-  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.45") {
+  testImplementation("io.swagger.parser.v3:swagger-parser:2.1.48") {
     exclude(group = "io.swagger.core.v3")
   }
   testImplementation("com.ninja-squad:springmockk:5.0.1")
