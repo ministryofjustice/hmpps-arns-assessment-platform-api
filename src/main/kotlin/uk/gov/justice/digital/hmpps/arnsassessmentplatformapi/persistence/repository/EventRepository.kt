@@ -16,6 +16,9 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
   fun findAllByAssessmentUuidAndCreatedAtGreaterThanAndCreatedAtLessThanEqual(assessmentUuid: UUID, from: LocalDateTime, to: LocalDateTime): List<EventEntity<*>>
   fun findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid: UUID, from: LocalDateTime): List<EventEntity<*>>
 
+  // @SQLRestriction applies, so only non-deleted events are counted
+  fun existsByAssessmentUuidAndPositionGreaterThan(assessmentUuid: UUID, position: Int): Boolean
+
   // Cursor pattern used over normal offset pagination because paginating
   // over large result sets take long enough for the underlying data to
   // change, and offset pagination can drop rows when that happens.
@@ -94,5 +97,20 @@ interface EventRepository : JpaRepository<EventEntity<*>, Long> {
   )
   fun findByUuidsIncludingDeleted(
     eventUuids: Set<UUID>,
+  ): List<EventEntity<*>>
+
+  @Query(
+    """
+    SELECT * FROM event
+    WHERE assessment_uuid = :assessmentUuid
+      AND created_at >= :from
+      AND deleted IS TRUE
+    ORDER BY position
+    """,
+    nativeQuery = true,
+  )
+  fun findAllDeletedByAssessmentUuidFrom(
+    assessmentUuid: UUID,
+    from: LocalDateTime,
   ): List<EventEntity<*>>
 }

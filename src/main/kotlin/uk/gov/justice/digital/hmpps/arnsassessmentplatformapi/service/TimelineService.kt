@@ -39,5 +39,11 @@ class TimelineService(
     }.run(timelineRepository::saveAll)
   }
 
+  fun undelete(assessmentUuid: UUID, from: LocalDateTime) {
+    timelineRepository.findAllDeletedByAssessmentUuidFrom(assessmentUuid, from).map {
+      it.apply { deleted = false }
+    }.run(timelineRepository::saveAll)
+  }
+
   fun hardDelete(timelineEntities: List<TimelineEntity>) = timelineRepository.deleteAll(timelineEntities)
 }
