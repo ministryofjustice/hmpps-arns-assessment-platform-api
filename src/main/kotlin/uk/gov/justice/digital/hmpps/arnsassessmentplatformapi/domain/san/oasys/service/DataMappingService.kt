@@ -14,8 +14,8 @@ class DataMappingService(
 ) {
   fun getOasysEquivalent(assessmentAggregate: AssessmentAggregateView, formConfig: FormConfig): OasysEquivalent {
     val answersProvider = AnswersProvider(assessmentAggregate, formConfig)
-    val mapping = mappingProvider.get(formConfig.version)
+    val mapping = mappingProvider.get(formConfig.version, answersProvider)
 
-    return mapping.fold(emptyMap()) { acc, sectionMapping -> acc + sectionMapping.map(answersProvider) }
+    return mapping.fold(emptyMap()) { acc, sectionMapping -> acc + sectionMapping.map() }
   }
 }

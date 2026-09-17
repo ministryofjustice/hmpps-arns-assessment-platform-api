@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Nested
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
@@ -34,8 +35,10 @@ class DataMappingServiceTest {
   inner class GetOasysEquivalent {
     @Test
     fun `returns empty result`() {
-      every { mockSectionMapping.map(any<AnswersProvider>()) } returns emptyMap()
-      every { mockMappingProvider.get(match { formVersion -> formVersion == "1.0" }) } returns setOf(
+      every { mockSectionMapping.map() } returns emptyMap()
+      every {
+        mockMappingProvider.get(match { formVersion -> formVersion == "1.0" }, any<AnswersProvider>())
+      } returns setOf(
         mockSectionMapping,
       )
 
@@ -49,14 +52,21 @@ class DataMappingServiceTest {
     fun `returns non-empty result comprising of multiple section mappings`() {
       val mockSectionMappingTwo: SectionMapping = mockk()
 
-      every { mockSectionMapping.map(any<AnswersProvider>()) } returns mapOf("oasys-key-1" to "val-1")
-      every { mockSectionMappingTwo.map(any<AnswersProvider>()) } returns mapOf(
+      val answersProviderSlot = slot<AnswersProvider>()
+
+      every { mockSectionMapping.map() } returns mapOf("oasys-key-1" to "val-1")
+      every { mockSectionMappingTwo.map() } returns mapOf(
         "oasys-key-2" to listOf(
           "val-2",
           "val-3",
         ),
       )
-      every { mockMappingProvider.get(match { formVersion -> formVersion == "1.0" }) } returns setOf(
+      every {
+        mockMappingProvider.get(
+          match { formVersion -> formVersion == "1.0" },
+          capture(answersProviderSlot),
+        )
+      } returns setOf(
         mockSectionMapping,
         mockSectionMappingTwo,
       )
@@ -70,9 +80,11 @@ class DataMappingServiceTest {
 
       val result = sut.getOasysEquivalent(assessment, testConfig)
 
+      assertEquals("all good", answersProviderSlot.captured.answer(Field.TEST_FIELD).value)
+
       verify(exactly = 1) {
-        mockSectionMapping.map(withArg { assertEquals("all good", it.answer(Field.TEST_FIELD).value) })
-        mockSectionMappingTwo.map(withArg { assertEquals("all good", it.answer(Field.TEST_FIELD).value) })
+        mockSectionMapping.map()
+        mockSectionMappingTwo.map()
       }
 
       assertEquals(
