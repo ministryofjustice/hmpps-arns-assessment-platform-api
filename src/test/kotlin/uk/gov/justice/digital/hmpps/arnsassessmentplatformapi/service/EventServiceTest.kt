@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
@@ -15,6 +16,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.UndeleteNotAtTailException
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -158,6 +160,55 @@ class EventServiceTest {
       service.softDelete(assessment.uuid, from)
 
       verify(exactly = 1) { eventRepository.saveAll(emptyList()) }
+    }
+  }
+
+  @Nested
+  inner class Undelete {
+    private val from = now.minusHours(1)
+
+    private fun markDeletedFromPositionOne() = events.forEachIndexed { index, event ->
+      event.deleted = true
+      event.position = index + 1
+    }
+
+    @Test
+    fun `should mark deleted events as not deleted when they are the tail of the event stream`() {
+      markDeletedFromPositionOne()
+
+      every { eventRepository.findAllDeletedByAssessmentUuidFrom(assessment.uuid, from) } returns events
+      every { eventRepository.existsByAssessmentUuidAndPositionGreaterThan(assessment.uuid, 1) } returns false
+      every { eventRepository.saveAll(any<List<EventEntity<*>>>()) } answers { firstArg() }
+
+      service.undelete(assessment.uuid, from)
+
+      verify(exactly = 1) { eventRepository.existsByAssessmentUuidAndPositionGreaterThan(assessment.uuid, 1) }
+      verify(exactly = 1) { eventRepository.saveAll(events) }
+      events.forEach { assertThat(it.deleted).isFalse() }
+    }
+
+    @Test
+    fun `should refuse to undelete when non-deleted events were written after the deleted ones`() {
+      markDeletedFromPositionOne()
+
+      every { eventRepository.findAllDeletedByAssessmentUuidFrom(assessment.uuid, from) } returns events
+      every { eventRepository.existsByAssessmentUuidAndPositionGreaterThan(assessment.uuid, 1) } returns true
+
+      assertThatThrownBy { service.undelete(assessment.uuid, from) }
+        .isInstanceOf(UndeleteNotAtTailException::class.java)
+
+      verify(exactly = 0) { eventRepository.saveAll(any<List<EventEntity<*>>>()) }
+      events.forEach { assertThat(it.deleted).isTrue() }
+    }
+
+    @Test
+    fun `should do nothing when no deleted events match`() {
+      every { eventRepository.findAllDeletedByAssessmentUuidFrom(assessment.uuid, from) } returns emptyList()
+
+      service.undelete(assessment.uuid, from)
+
+      verify(exactly = 0) { eventRepository.existsByAssessmentUuidAndPositionGreaterThan(any(), any()) }
+      verify(exactly = 0) { eventRepository.saveAll(any<List<EventEntity<*>>>()) }
     }
   }
 

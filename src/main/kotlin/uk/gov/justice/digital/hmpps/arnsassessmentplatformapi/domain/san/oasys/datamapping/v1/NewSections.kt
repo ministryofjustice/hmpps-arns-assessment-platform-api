@@ -2,10 +2,11 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Field
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Value
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common.AnswersProvider
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common.FieldsToMap
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common.SectionMapping
 
-class NewSections : SectionMapping() {
+class NewSections(ap: AnswersProvider) : SectionMapping(ap) {
   override fun getFieldsToMap(): FieldsToMap = mapOf(
     "o1-30" to ::q30,
     "oTBA_SAN_LINKED_ROSH" to ::qLinkedToRosh,

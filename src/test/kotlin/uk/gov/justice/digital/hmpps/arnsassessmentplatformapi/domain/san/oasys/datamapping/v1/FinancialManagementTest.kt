@@ -6,7 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.d
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common.SectionMappingTest
 import kotlin.test.Test
 
-class FinancialManagementTest : SectionMappingTest(FinancialManagement(), "v1.0") {
+class FinancialManagementTest : SectionMappingTest(::FinancialManagement, "v1.0") {
   @Test
   fun q3() {
     test(
