@@ -10,7 +10,8 @@ ADD . .
 RUN gradle --no-daemon assemble
 
 FROM builder AS development
-RUN apk add --no-cache curl
+RUN apk upgrade --no-cache && \
+    apk add --no-cache curl
 WORKDIR /
 RUN curl -L https://github.com/glowroot/glowroot/releases/download/v0.14.6/glowroot-0.14.6-dist.zip -o glowroot.zip
 RUN unzip glowroot.zip
@@ -23,7 +24,8 @@ FROM runtime AS production
 LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 ARG BUILD_NUMBER
 ENV BUILD_NUMBER=${BUILD_NUMBER:-1_0_0}
-RUN apk add --no-cache tzdata curl
+RUN apk upgrade --no-cache && \
+    apk add --no-cache tzdata curl
 ENV TZ=Europe/London
 RUN cp "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
 RUN addgroup --gid 2000 --system appgroup && \
