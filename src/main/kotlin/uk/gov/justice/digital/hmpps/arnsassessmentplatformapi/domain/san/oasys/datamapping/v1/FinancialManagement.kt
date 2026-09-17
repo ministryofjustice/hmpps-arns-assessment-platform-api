@@ -32,7 +32,7 @@ class FinancialManagement(ap: AnswersProvider) : SectionMapping(ap) {
     val income = ap.answer(Field.FINANCE_INCOME).values
 
     return when {
-      (income == null) -> "0"
+      (income == null) -> null
       (income.contains(ap.get(Value.OFFENDING))) -> when {
         (income.size == 1) -> "2"
         else -> "1"
@@ -45,7 +45,7 @@ class FinancialManagement(ap: AnswersProvider) : SectionMapping(ap) {
   private fun q5(): Any? {
     val income = ap.answer(Field.FINANCE_INCOME).values
     return when (income?.contains(ap.get(Value.FAMILY_OR_FRIENDS))) {
-      null -> "0"
+      null -> null
       true -> when (ap.answer(Field.FAMILY_OR_FRIENDS_DETAILS).value) {
         ap.get(Value.YES) -> "2"
         ap.get(Value.UNKNOWN) -> "M"
