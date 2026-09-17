@@ -19,6 +19,9 @@ on:
         default: ''
         type: string
 
+permissions:
+  contents: read
+
 env:
   dev: 'playwright-action.yml'
   test: 'playwright-action-test.yml'
