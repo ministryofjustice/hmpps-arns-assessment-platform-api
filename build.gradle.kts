@@ -46,7 +46,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-flyway")
   implementation("org.postgresql:postgresql:42.7.13")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
-  kapt("org.hibernate.orm:hibernate-jpamodelgen:7.4.8.Final")
+  kapt("org.hibernate.orm:hibernate-jpamodelgen:7.4.9.Final")
 
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.1")
   testImplementation("org.wiremock:wiremock-standalone:3.13.2")
