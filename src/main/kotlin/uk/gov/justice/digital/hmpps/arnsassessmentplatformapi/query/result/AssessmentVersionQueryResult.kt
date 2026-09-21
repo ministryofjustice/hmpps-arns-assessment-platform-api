@@ -12,6 +12,7 @@ import java.util.UUID
 data class AssessmentVersionQueryResult(
   val assessmentUuid: UUID,
   val aggregateUuid: UUID,
+  val aggregateVersion: Long = 0,
   val assessmentType: String,
   val formVersion: FormVersion,
   val createdAt: LocalDateTime,

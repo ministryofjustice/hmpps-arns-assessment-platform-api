@@ -63,7 +63,7 @@ class AssessmentController(
   fun executeCommands(
     @RequestBody
     request: CommandsRequest,
-  ): CommandsResponse = commandDispatcher.dispatch(request.commands)
+  ): CommandsResponse = commandDispatcher.dispatch(request.commands, request.savedDraft)
 
   @RequestMapping(path = ["/query"], method = [RequestMethod.POST])
   @Operation(description = "Execute queries on an assessment")

@@ -65,6 +65,8 @@ management:
 app:
   query:
     max-lookback-days: ${QUERY_MAX_LOOKBACK_DAYS:1}
+  draft:
+    cleanup-cron: ${DRAFT_CLEANUP_CRON:0 0 * * * *}
   services:
     hmpps-auth:
       url: ${hmpps-auth.url:http://localhost:8090/auth}

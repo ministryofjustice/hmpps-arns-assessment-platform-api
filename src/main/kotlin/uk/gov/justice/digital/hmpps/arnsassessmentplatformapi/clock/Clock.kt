@@ -8,5 +8,6 @@ class Clock(
   private val clockProvider: ClockProvider,
 ) {
   fun now(): LocalDateTime = LocalDateTime.now(clockProvider.clock())
+  fun systemNow(): LocalDateTime = LocalDateTime.now()
   fun requestDateTime(): LocalDateTime = clockProvider.requestDateTime
 }

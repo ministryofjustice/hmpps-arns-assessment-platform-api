@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.excepti
 
 data class CommandsRequest(
   val commands: List<RequestableCommand>,
+  val savedDraft: SavedDraft? = null,
 ) {
   init {
     if (commands.isEmpty()) throw InvalidCommandException("No commands received")

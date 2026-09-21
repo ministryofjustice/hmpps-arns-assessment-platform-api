@@ -5,6 +5,7 @@ import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.SavedDraft
 
 @Service
 class RetryableCommandDispatcher(
@@ -15,5 +16,5 @@ class RetryableCommandDispatcher(
     maxAttempts = 3,
     backoff = Backoff(50),
   )
-  fun dispatch(commands: List<Command>) = transactionalCommandDispatcher.dispatch(commands)
+  fun dispatch(commands: List<Command>, savedDraft: SavedDraft? = null) = transactionalCommandDispatcher.dispatch(commands, savedDraft)
 }

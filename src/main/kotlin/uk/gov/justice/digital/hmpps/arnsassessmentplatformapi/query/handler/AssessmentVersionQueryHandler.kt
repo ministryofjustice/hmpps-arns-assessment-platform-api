@@ -34,6 +34,7 @@ class AssessmentVersionQueryHandler(
     val result = AssessmentVersionQueryResult(
       assessmentUuid = assessment.uuid,
       aggregateUuid = aggregate.uuid,
+      aggregateVersion = aggregate.version,
       assessmentType = assessment.type,
       formVersion = data.formVersion,
       createdAt = aggregate.eventsFrom,
