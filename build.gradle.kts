@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.9"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.10"
   id("org.jetbrains.kotlin.kapt") version "2.4.20"
   kotlin("plugin.spring") version "2.4.20"
   kotlin("plugin.jpa") version "2.4.20"
@@ -36,7 +36,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
   implementation("org.webjars:swagger-ui:5.32.15")
-  implementation("tools.jackson.module:jackson-module-kotlin:3.2.2")
+  implementation("tools.jackson.module:jackson-module-kotlin:3.2.3")
   implementation("org.springframework.retry:spring-retry")
   runtimeOnly("io.netty:netty-codec-classes-quic")
 
