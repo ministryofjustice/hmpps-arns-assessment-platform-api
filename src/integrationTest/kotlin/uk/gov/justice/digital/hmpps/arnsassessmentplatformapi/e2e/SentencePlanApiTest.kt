@@ -22,7 +22,7 @@ import java.util.UUID
 @DisplayName("Create Sentence Plan API Tests")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SentencePlanApiTest : IntegrationTestBase() {
-  private lateinit var extractedUuid: UUID
+  private lateinit var sentencePlanAssessmentUuid: UUID
 
   @BeforeAll
   fun `Assert created AAP sentence plan`() {
@@ -45,7 +45,7 @@ class SentencePlanApiTest : IntegrationTestBase() {
       ),
     )
 
-    val commandsResponse = webTestClient.post().uri("/command")
+    val createAssessmentCommandResponse = webTestClient.post().uri("/command")
       .bodyValue(sentencePlanCommandRequest)
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
@@ -53,12 +53,10 @@ class SentencePlanApiTest : IntegrationTestBase() {
       .expectBody<CommandsResponse>()
       .returnResult().responseBody
 
-    assertThat(commandsResponse?.commands?.size).isOne()
-    val result = commandsResponse?.commands?.first()?.result
-    assertThat(result).isInstanceOf(CreateAssessmentCommandResult::class.java)
-    assertThat(result?.success).isTrue()
-    extractedUuid = UUID.fromString(result?.message?.substringAfter("UUID ")?.trim())
-    assertThat(extractedUuid).isNotNull
+    val createAssessmentCommandResult = createAssessmentCommandResponse?.commands?.first()?.result as CreateAssessmentCommandResult
+    assertThat(createAssessmentCommandResult.success).isTrue()
+    assertThat(createAssessmentCommandResult.assessmentUuid).isNotNull
+    sentencePlanAssessmentUuid = createAssessmentCommandResult.assessmentUuid
   }
 
   @Test
@@ -69,12 +67,12 @@ class SentencePlanApiTest : IntegrationTestBase() {
           user = UserDetails("test-user", "Test User"),
           name = "GOALS",
           parentCollectionItemUuid = null,
-          assessmentUuid = extractedUuid.toReference(),
+          assessmentUuid = sentencePlanAssessmentUuid.toReference(),
         ),
       ),
     )
 
-    val commandsResponse = webTestClient.post().uri("/command")
+    val createCollectionCommandResponse = webTestClient.post().uri("/command")
       .bodyValue(createGoalCommandRequest)
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
@@ -82,9 +80,10 @@ class SentencePlanApiTest : IntegrationTestBase() {
       .expectBody<CommandsResponse>()
       .returnResult().responseBody
 
-    assertThat(commandsResponse?.commands?.size).isOne()
-    val result = commandsResponse?.commands?.first()?.result
-    assertThat(result).isInstanceOf(CreateCollectionCommandResult::class.java)
-    assertThat(result?.success).isTrue()
+    assertThat(createCollectionCommandResponse?.commands?.size).isOne()
+    val createCollectionCommandRequest = createCollectionCommandResponse?.commands?.first()?.request as CreateCollectionCommand
+    assertThat(createCollectionCommandRequest.name).isEqualTo("GOALS")
+    val createCollectionCommandResult = createCollectionCommandResponse.commands.first().result as CreateCollectionCommandResult
+    assertThat(createCollectionCommandResult.success).isTrue()
   }
 }
