@@ -21,6 +21,3 @@ spring:
         id:
           new_generator_mappings: true
     show-sql: false
-  h2:
-    console:
-      enabled: false
