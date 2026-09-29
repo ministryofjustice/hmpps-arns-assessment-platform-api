@@ -10,7 +10,6 @@ import org.springframework.test.web.reactive.server.expectBody
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateCollectionCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
@@ -18,6 +17,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.respons
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
 import java.util.UUID
+import kotlin.test.assertIs
 
 @DisplayName("Create Sentence Plan API Tests")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -80,10 +80,9 @@ class SentencePlanApiTest : IntegrationTestBase() {
       .expectBody<CommandsResponse>()
       .returnResult().responseBody
 
-    assertThat(createCollectionCommandResponse?.commands?.size).isOne()
-    val createCollectionCommandRequest = createCollectionCommandResponse?.commands?.first()?.request as CreateCollectionCommand
-    assertThat(createCollectionCommandRequest.name).isEqualTo("GOALS")
-    val createCollectionCommandResult = createCollectionCommandResponse.commands.first().result as CreateCollectionCommandResult
-    assertThat(createCollectionCommandResult.success).isTrue()
+    assertThat(createCollectionCommandResponse?.commands?.first()?.request).isInstanceOf(CreateCollectionCommand::class.java)
+    assertThat(createCollectionCommandResponse?.commands?.first()?.result?.success).isTrue()
+    val createCollection = assertIs<CreateCollectionCommand>(createCollectionCommandResponse?.commands?.first()?.request)
+    assertThat(createCollection.name).isEqualTo("GOALS")
   }
 }
