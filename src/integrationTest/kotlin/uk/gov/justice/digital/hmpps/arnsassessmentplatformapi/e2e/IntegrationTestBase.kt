@@ -17,8 +17,6 @@ abstract class IntegrationTestBase {
   protected lateinit var webTestClient: WebTestClient
   protected lateinit var authTestClient: WebTestClient
 
-  protected val assessmentId: String = System.getenv("AAP_API_ASSESSMENT") ?: "caff2f14-a083-41f0-8d26-638b30177511"
-
   @BeforeAll
   fun setup() {
     val authBaseUrl = System.getenv("AUTH_BASE_URL")
