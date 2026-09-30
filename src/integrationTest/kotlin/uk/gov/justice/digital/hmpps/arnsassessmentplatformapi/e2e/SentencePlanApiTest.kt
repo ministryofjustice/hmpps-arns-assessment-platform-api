@@ -14,7 +14,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.e2e.queries.QueryApiHelper.Companion.executeSentencePlanQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.e2e.queries.QueryApiHelper.executeSentencePlanQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
@@ -27,7 +27,7 @@ import kotlin.test.assertIs
 class SentencePlanApiTest : IntegrationTestBase() {
   private lateinit var sentencePlanAssessmentUuid: UUID
   companion object {
-    val sentencePlanId: String = System.getenv("AAP_API_SENTENCE_PLAN") ?: "fb56a1f9-85b9-40e7-8be4-14134dfcfed1"
+    val sentencePlanId: UUID = UUID.fromString(System.getenv("AAP_API_SENTENCE_PLAN") ?: "fb56a1f9-85b9-40e7-8be4-14134dfcfed1")
   }
 
   @BeforeAll
@@ -93,8 +93,8 @@ class SentencePlanApiTest : IntegrationTestBase() {
   }
 
   @Test
-  fun `Query the created sentence plan`() {
-    val queryResponse = executeSentencePlanQuery(webTestClient, sentencePlanAssessmentUuid.toString())
+  fun `should query sentence plan`() {
+    val queryResponse = executeSentencePlanQuery(webTestClient, sentencePlanAssessmentUuid)
     assertThat(queryResponse?.queries?.first()?.request).isInstanceOf(AssessmentVersionQuery::class.java)
     val assessmentVersionQueryResult = assertIs<AssessmentVersionQueryResult>(queryResponse?.queries?.first()?.result)
     assertThat(assessmentVersionQueryResult.assessmentUuid).isEqualTo(sentencePlanAssessmentUuid)

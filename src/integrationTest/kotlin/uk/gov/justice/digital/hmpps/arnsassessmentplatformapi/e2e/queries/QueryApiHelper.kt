@@ -12,33 +12,30 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVe
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import java.util.UUID
 
-class QueryApiHelper {
+object QueryApiHelper {
+  fun executeAssessmentQuery(webTestClient: WebTestClient, assessmentIdentifier: UUID = assessmentId): QueriesResponse? = getQueryResponse(webTestClient, assessmentIdentifier)
 
-  companion object {
-    fun executeAssessmentQuery(webTestClient: WebTestClient, assessmentIdentifier: String = assessmentId): QueriesResponse? = getQueryResponse(webTestClient, assessmentIdentifier)
+  fun executeSentencePlanQuery(webTestClient: WebTestClient, sentencePlanIdentifier: UUID = sentencePlanId): QueriesResponse? = getQueryResponse(webTestClient, sentencePlanIdentifier)
 
-    fun executeSentencePlanQuery(webTestClient: WebTestClient, sentencePlanIdentifier: String = sentencePlanId): QueriesResponse? = getQueryResponse(webTestClient, sentencePlanIdentifier)
-
-    fun getQueryResponse(webTestClient: WebTestClient, identifier: String): QueriesResponse? {
-      val testUserDetails = UserDetails(id = "test-user", name = "Test User")
-      val assessmentVersionQuery = QueriesRequest(
-        queries = listOf(
-          AssessmentVersionQuery(
-            user = testUserDetails,
-            assessmentIdentifier = UuidIdentifier(UUID.fromString((identifier))),
-          ),
+  fun getQueryResponse(webTestClient: WebTestClient, identifier: UUID): QueriesResponse? {
+    val testUserDetails = UserDetails(id = "test-user", name = "Test User")
+    val assessmentVersionQuery = QueriesRequest(
+      queries = listOf(
+        AssessmentVersionQuery(
+          user = testUserDetails,
+          assessmentIdentifier = UuidIdentifier(identifier),
         ),
-      )
+      ),
+    )
 
-      val queryResponse = webTestClient.post().uri("/query")
-        .bodyValue(assessmentVersionQuery)
-        .accept(MediaType.APPLICATION_JSON)
-        .exchange()
-        .expectStatus().isOk
-        .expectBody<QueriesResponse>()
-        .returnResult().responseBody
+    val queryResponse = webTestClient.post().uri("/query")
+      .bodyValue(assessmentVersionQuery)
+      .accept(MediaType.APPLICATION_JSON)
+      .exchange()
+      .expectStatus().isOk
+      .expectBody<QueriesResponse>()
+      .returnResult().responseBody
 
-      return queryResponse
-    }
+    return queryResponse
   }
 }
