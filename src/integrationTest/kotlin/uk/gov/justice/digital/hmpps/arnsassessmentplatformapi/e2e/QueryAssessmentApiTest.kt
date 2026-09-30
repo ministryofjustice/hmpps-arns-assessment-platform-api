@@ -7,10 +7,13 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.e2e.queries.QueryA
 
 @DisplayName("AAP API Tests")
 class QueryAssessmentApiTest : IntegrationTestBase() {
+  companion object {
+    val assessmentId: String = System.getenv("AAP_API_ASSESSMENT") ?: "caff2f14-a083-41f0-8d26-638b30177511"
+  }
 
   @Test
   fun `query assessment`() {
-    val queryResponse = executeAssessmentQuery(webTestClient)
+    val queryResponse = executeAssessmentQuery(webTestClient, assessmentId)
     assertThat(queryResponse?.queries).isNotEmpty()
   }
 }

@@ -26,6 +26,9 @@ import kotlin.test.assertIs
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SentencePlanApiTest : IntegrationTestBase() {
   private lateinit var sentencePlanAssessmentUuid: UUID
+  companion object {
+    val sentencePlanId: String = System.getenv("AAP_API_SENTENCE_PLAN") ?: "fb56a1f9-85b9-40e7-8be4-14134dfcfed1"
+  }
 
   @BeforeAll
   fun `Assert created AAP sentence plan`() {
@@ -93,7 +96,7 @@ class SentencePlanApiTest : IntegrationTestBase() {
   fun `Query the created sentence plan`() {
     val queryResponse = executeSentencePlanQuery(webTestClient, sentencePlanAssessmentUuid.toString())
     assertThat(queryResponse?.queries?.first()?.request).isInstanceOf(AssessmentVersionQuery::class.java)
-    val assessmentVersionQueryResult = queryResponse?.queries?.first()?.result as AssessmentVersionQueryResult
+    val assessmentVersionQueryResult = assertIs<AssessmentVersionQueryResult>(queryResponse?.queries?.first()?.result)
     assertThat(assessmentVersionQueryResult.assessmentUuid).isEqualTo(sentencePlanAssessmentUuid)
     assertThat(assessmentVersionQueryResult.properties).containsEntry("PLAN_TYPE", SingleValue("INITIAL"))
   }
