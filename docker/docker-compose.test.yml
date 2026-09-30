@@ -8,7 +8,7 @@ services:
     command: gradle --parallel --build-cache --configuration-cache --info cleanTest test
     volumes:
       - ../.git:/app/.git
-      - ../.gradle:/home/gradle/.gradle
+      - .gradle:/home/gradle/.gradle
       - ../build:/app/build
       - ../src:/app/src
       - ../build.gradle.kts:/app/build.gradle.kts

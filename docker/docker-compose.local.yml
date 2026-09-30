@@ -9,7 +9,7 @@ services:
     command: gradle --parallel --build-cache --configuration-cache --info bootRun
     volumes:
       - ../.git:/app/.git
-      - ../.gradle:/home/gradle/.gradle
+      - .gradle:/home/gradle/.gradle
       - ../build:/app/build
       - ../src:/app/src
       - ../build.gradle.kts:/app/build.gradle.kts
@@ -19,6 +19,9 @@ services:
       - '5006:5005'
       - '4000:4000'
       - '4001:4001'
+    environment:
+      - JAVA_TOOL_OPTIONS='-Djava.net.preferIPv4Stack=true'
+      - SPRING_JPA_SHOW_SQL=true
 
 volumes:
   .gradle:
