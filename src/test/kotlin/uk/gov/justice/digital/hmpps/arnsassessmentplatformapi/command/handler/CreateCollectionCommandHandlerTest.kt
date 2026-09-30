@@ -19,6 +19,7 @@ class CreateCollectionCommandHandlerTest : AbstractCommandHandlerTest<CreateColl
         parentCollectionItemUuid = UUID.randomUUID().toReference(),
         assessmentUuid = assessment.uuid.toReference(),
         timeline = timeline,
+        autosaved = true,
       )
       expectedEvent = CollectionCreatedEvent(
         collectionUuid = command.collectionUuid,

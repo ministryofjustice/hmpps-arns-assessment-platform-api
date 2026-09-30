@@ -17,6 +17,7 @@ class CreateCollectionCommandHandler(
         assessment = services.persistenceContext.findAssessment(assessmentUuid.value),
         data = CollectionCreatedEvent(collectionUuid, name, parentCollectionItemUuid?.value),
         createdAt = services.clock.requestDateTime(),
+        autosaved = autosaved,
       )
     }
 

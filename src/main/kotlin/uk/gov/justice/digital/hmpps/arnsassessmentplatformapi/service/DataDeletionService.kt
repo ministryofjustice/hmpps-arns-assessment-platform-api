@@ -87,6 +87,7 @@ class DataDeletionService(
             redactedBy = authenticationHolder.principal,
           )
         },
+        autosaved = existing.autosaved,
         deleted = existing.deleted,
       )
     }

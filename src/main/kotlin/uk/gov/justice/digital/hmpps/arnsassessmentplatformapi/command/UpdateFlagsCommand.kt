@@ -10,4 +10,5 @@ data class UpdateFlagsCommand(
   val flags: List<String>,
   override val timeline: Timeline? = null,
   override val hooks: List<Hook>? = null,
+  override val autosaved: Boolean = false,
 ) : RequestableCommand

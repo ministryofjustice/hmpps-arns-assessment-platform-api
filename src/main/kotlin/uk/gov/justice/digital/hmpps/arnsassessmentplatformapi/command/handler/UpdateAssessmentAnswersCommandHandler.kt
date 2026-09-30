@@ -20,6 +20,7 @@ class UpdateAssessmentAnswersCommandHandler(
           removed = removed,
         ),
         createdAt = services.clock.requestDateTime(),
+        autosaved = autosaved,
       )
     }
 

@@ -19,6 +19,7 @@ class ReorderCollectionItemCommandHandlerTest : AbstractCommandHandlerTest<Reord
         collectionItemUuid = UUID.randomUUID().toReference(),
         index = 0,
         timeline = timeline,
+        autosaved = true,
       )
       expectedEvent = CollectionItemReorderedEvent(
         collectionItemUuid = command.collectionItemUuid.value,
