@@ -43,7 +43,7 @@ services:
       - /var/lib/postgresql
 
   redis:
-    image: redis:8.6
+    image: redis:8.10
     networks:
       - hmpps
     ports:
