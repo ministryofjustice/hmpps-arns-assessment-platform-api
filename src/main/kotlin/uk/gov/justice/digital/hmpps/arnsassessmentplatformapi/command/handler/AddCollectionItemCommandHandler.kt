@@ -23,6 +23,7 @@ class AddCollectionItemCommandHandler(
           index,
         ),
         createdAt = services.clock.requestDateTime(),
+        autosaved = autosaved,
       )
     }
 

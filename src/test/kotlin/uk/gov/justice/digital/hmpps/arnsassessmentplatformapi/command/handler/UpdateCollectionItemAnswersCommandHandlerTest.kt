@@ -21,6 +21,7 @@ class UpdateCollectionItemAnswersCommandHandlerTest : AbstractCommandHandlerTest
         added = mapOf("foo" to SingleValue("foo_value")),
         removed = listOf("bar"),
         timeline = timeline,
+        autosaved = true,
       )
       expectedEvent = CollectionItemAnswersUpdatedEvent(
         collectionItemUuid = command.collectionItemUuid.value,

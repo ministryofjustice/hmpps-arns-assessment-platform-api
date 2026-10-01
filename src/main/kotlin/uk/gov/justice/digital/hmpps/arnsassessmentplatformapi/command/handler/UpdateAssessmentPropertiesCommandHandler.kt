@@ -17,6 +17,7 @@ class UpdateAssessmentPropertiesCommandHandler(
         assessment = services.persistenceContext.findAssessment(assessmentUuid.value),
         data = AssessmentPropertiesUpdatedEvent(added, removed),
         createdAt = services.clock.requestDateTime(),
+        autosaved = autosaved,
       )
     }
 

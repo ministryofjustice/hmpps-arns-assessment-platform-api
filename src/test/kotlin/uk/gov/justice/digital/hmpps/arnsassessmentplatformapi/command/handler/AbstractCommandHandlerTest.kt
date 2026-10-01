@@ -120,6 +120,7 @@ abstract class AbstractCommandHandlerTest<C : RequestableCommand> {
         assertThat(handledEvent.captured.user.displayName).isEqualTo(scenario.command.user.name)
         assertThat(handledEvent.captured.user.authSource).isEqualTo(scenario.command.user.authSource)
         assertThat(handledEvent.captured.data).isEqualTo(scenario.expectedEvent)
+        assertThat(handledEvent.captured.autosaved).isEqualTo(scenario.command.autosaved)
 
         assertThat(result).isEqualTo(scenario.expectedResult)
       }
