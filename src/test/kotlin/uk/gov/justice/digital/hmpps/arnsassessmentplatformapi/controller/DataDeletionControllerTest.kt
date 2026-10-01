@@ -14,8 +14,8 @@ import org.springframework.web.context.request.ServletRequestAttributes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFlagsCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBusFactory
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.DataDeletionOperation
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.DataDeletionRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.EventUpdate
