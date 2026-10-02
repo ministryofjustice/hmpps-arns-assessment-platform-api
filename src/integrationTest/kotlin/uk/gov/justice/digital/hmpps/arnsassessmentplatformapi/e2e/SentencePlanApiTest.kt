@@ -14,8 +14,11 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.e2e.queries.QueryApiHelper.executeSentencePlanQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
 import java.util.UUID
 import kotlin.test.assertIs
 
@@ -84,5 +87,14 @@ class SentencePlanApiTest : IntegrationTestBase() {
     assertThat(createCollectionCommandResponse?.commands?.first()?.result?.success).isTrue()
     val createCollection = assertIs<CreateCollectionCommand>(createCollectionCommandResponse?.commands?.first()?.request)
     assertThat(createCollection.name).isEqualTo("GOALS")
+  }
+
+  @Test
+  fun `should query sentence plan`() {
+    val queryResponse = executeSentencePlanQuery(webTestClient, sentencePlanAssessmentUuid)
+    assertThat(queryResponse?.queries?.first()?.request).isInstanceOf(AssessmentVersionQuery::class.java)
+    val assessmentVersionQueryResult = assertIs<AssessmentVersionQueryResult>(queryResponse?.queries?.first()?.result)
+    assertThat(assessmentVersionQueryResult.assessmentUuid).isEqualTo(sentencePlanAssessmentUuid)
+    assertThat(assessmentVersionQueryResult.properties).containsEntry("PLAN_TYPE", SingleValue("INITIAL"))
   }
 }
