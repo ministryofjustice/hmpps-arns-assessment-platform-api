@@ -65,7 +65,7 @@ int-test-dev: ## Runs all integration tests
 	docker compose ${TEST_COMPOSE_FILES} run --rm int gradle integrationTest
 
 int-test-test: ## Runs on test environment
-	docker compose ${TEST_COMPOSE_FILES} run --rm --env ARNS_TEST_BASE_URL="https://assess-risks-and-needs-test.hmpps.service.justice.gov.uk" --env ARNS_TEST_API_ASSESSMENT_ID="<ARNS_TEST_API_ASSESSMENT_ID>" int gradle integrationTest
+	docker compose ${TEST_COMPOSE_FILES} run --rm --env ARNS_TEST_BASE_URL="https://arns-assessment-platform-api-test.hmpps.service.justice.gov.uk" --env ARNS_TEST_API_ASSESSMENT_ID="<ARNS_TEST_API_ASSESSMENT_ID>" int gradle integrationTest
 
 lint: ## Runs the Kotlin linter.
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle ktlintCheck --parallel
