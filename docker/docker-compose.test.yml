@@ -17,8 +17,8 @@ services:
     environment:
       - AAP_CLIENT_ID
       - AAP_CLIENT_SECRET
-      - ARNS_TEST_BASE_URL
-      - ARNS_TEST_API_ASSESSMENT_ID
+      - AAP_TEST_BASE_URL
+      - AAP_TEST_API_ASSESSMENT_ID
 
 volumes:
   .gradle:

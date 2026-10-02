@@ -21,7 +21,7 @@ abstract class IntegrationTestBase {
   fun setup() {
     val authBaseUrl = System.getenv("AUTH_BASE_URL")
       ?: "https://sign-in-dev.hmpps.service.justice.gov.uk"
-    val apiBaseUrl = System.getenv("ARNS_TEST_BASE_URL")
+    val apiBaseUrl = System.getenv("AAP_TEST_BASE_URL")
       ?: "https://arns-assessment-platform-api-dev.hmpps.service.justice.gov.uk"
 
     authTestClient = WebTestClient.bindToServer()
