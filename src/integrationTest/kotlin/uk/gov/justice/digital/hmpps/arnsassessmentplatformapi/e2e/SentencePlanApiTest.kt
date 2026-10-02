@@ -26,9 +26,6 @@ import kotlin.test.assertIs
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SentencePlanApiTest : IntegrationTestBase() {
   private lateinit var sentencePlanAssessmentUuid: UUID
-  companion object {
-    val sentencePlanId: UUID = UUID.fromString(System.getenv("AAP_API_SENTENCE_PLAN") ?: "fb56a1f9-85b9-40e7-8be4-14134dfcfed1")
-  }
 
   @BeforeAll
   fun `Assert created AAP sentence plan`() {

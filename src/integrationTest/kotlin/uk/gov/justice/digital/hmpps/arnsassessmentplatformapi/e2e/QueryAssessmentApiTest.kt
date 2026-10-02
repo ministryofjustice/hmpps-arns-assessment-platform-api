@@ -8,9 +8,7 @@ import java.util.UUID
 
 @DisplayName("AAP API Tests")
 class QueryAssessmentApiTest : IntegrationTestBase() {
-  companion object {
-    val assessmentId: UUID = UUID.fromString(System.getenv("AAP_API_ASSESSMENT") ?: "caff2f14-a083-41f0-8d26-638b30177511")
-  }
+  val assessmentId: UUID = UUID.fromString(System.getenv("AAP_API_ASSESSMENT") ?: "caff2f14-a083-41f0-8d26-638b30177511")
 
   @Test
   fun `query assessment`() {
