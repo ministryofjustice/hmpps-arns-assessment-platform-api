@@ -120,7 +120,26 @@ class UpdateOasysDataMappingHandlerTest {
     assertThat(handledEvent.captured.assessment).isEqualTo(assessment)
     assertThat(handledEvent.captured.user).isEqualTo(userEntity)
     assertThat(handledEvent.captured.createdAt).isEqualTo(now)
+    assertThat(handledEvent.captured.autosaved).isFalse()
 
     verify(exactly = 1) { eventBus.handle(any<EventEntity<*>>()) }
+  }
+
+  @Test
+  fun `it preserves autosave metadata from the originating command`() {
+    every { dataMappingService.getOasysEquivalent(any(), any()) } returns emptyMap()
+    val handledEvent = slot<EventEntity<*>>()
+    every { eventBus.handle(capture(handledEvent)) } returns mockk(relaxed = true)
+    val autosavedCommand = UpdateFlagsCommand(
+      user = commandUser,
+      assessmentUuid = assessment.uuid.toReference(),
+      flags = listOf("SAN_BETA"),
+      autosaved = true,
+    )
+
+    handler.handle(hook, autosavedCommand, services)
+
+    assertThat(handledEvent.captured.autosaved).isTrue()
+    assertThat(command.autosaved).isFalse()
   }
 }

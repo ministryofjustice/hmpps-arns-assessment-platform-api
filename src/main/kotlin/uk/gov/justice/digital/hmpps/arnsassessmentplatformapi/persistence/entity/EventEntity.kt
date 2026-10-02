@@ -51,6 +51,9 @@ class EventEntity<E : Event>(
   @Column(name = "data", columnDefinition = "jsonb", updatable = false, nullable = false)
   val data: E,
 
+  @Column(name = "autosaved", nullable = false)
+  val autosaved: Boolean = false,
+
   @Column(name = "deleted")
   var deleted: Boolean = false,
 )

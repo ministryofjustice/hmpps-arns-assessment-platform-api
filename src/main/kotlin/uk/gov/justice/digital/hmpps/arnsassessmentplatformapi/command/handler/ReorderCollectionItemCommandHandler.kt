@@ -20,6 +20,7 @@ class ReorderCollectionItemCommandHandler(
           index = command.index,
         ),
         createdAt = services.clock.requestDateTime(),
+        autosaved = autosaved,
       )
     }
 

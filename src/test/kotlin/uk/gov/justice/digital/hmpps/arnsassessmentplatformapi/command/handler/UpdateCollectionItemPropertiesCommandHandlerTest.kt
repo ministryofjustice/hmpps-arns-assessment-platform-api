@@ -21,6 +21,7 @@ class UpdateCollectionItemPropertiesCommandHandlerTest : AbstractCommandHandlerT
         added = mapOf("foo" to SingleValue("foo_value")),
         removed = listOf("bar"),
         timeline = timeline,
+        autosaved = true,
       )
       expectedEvent = CollectionItemPropertiesUpdatedEvent(
         collectionItemUuid = command.collectionItemUuid.value,

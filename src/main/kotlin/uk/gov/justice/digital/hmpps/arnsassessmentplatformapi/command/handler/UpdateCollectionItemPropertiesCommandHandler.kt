@@ -21,6 +21,7 @@ class UpdateCollectionItemPropertiesCommandHandler(
           removed = removed,
         ),
         createdAt = services.clock.requestDateTime(),
+        autosaved = autosaved,
       )
     }
 

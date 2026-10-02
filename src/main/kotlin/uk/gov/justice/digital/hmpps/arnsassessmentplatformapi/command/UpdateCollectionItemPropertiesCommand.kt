@@ -13,4 +13,5 @@ data class UpdateCollectionItemPropertiesCommand(
   override val assessmentUuid: Reference,
   override val timeline: Timeline? = null,
   override val hooks: List<Hook>? = null,
+  override val autosaved: Boolean = false,
 ) : RequestableCommand

@@ -88,6 +88,7 @@ class DataDeletionServiceTest {
       assertThat(result.events.first().uuid).isEqualTo(event.uuid)
       assertThat(result.events.first().position).isEqualTo(1)
       assertThat(result.events.first().data).isEqualTo(event.data)
+      assertThat(result.events.first().autosaved).isFalse()
 
       assertThat(result.timeline).hasSize(1)
       assertThat(result.timeline.first().uuid).isEqualTo(timeline.uuid)
@@ -104,6 +105,7 @@ class DataDeletionServiceTest {
       val eventToUpdate = existingEvent(
         position = 3,
         data = AssessmentCreatedEvent(formVersion = "1", properties = emptyMap()),
+        autosaved = true,
       )
       val eventToDelete = existingEvent(
         position = 4,
@@ -111,6 +113,7 @@ class DataDeletionServiceTest {
           added = mapOf("old" to SingleValue("value")),
           removed = emptyList(),
         ),
+        autosaved = true,
       )
       val timelineToUpdate = existingTimeline(
         position = 5,
@@ -190,6 +193,7 @@ class DataDeletionServiceTest {
         assertThat(it.assessment).isEqualTo(eventToUpdate.assessment)
         assertThat(it.data).isEqualTo(replacementEvent)
         assertThat(it.deleted).isEqualTo(eventToUpdate.deleted)
+        assertThat(it.autosaved).isTrue()
       }
       savedEvents.captured.first { it.uuid == eventToDelete.uuid }.also {
         assertThat(it.position).isEqualTo(eventToDelete.position)
@@ -201,6 +205,7 @@ class DataDeletionServiceTest {
           ),
         )
         assertThat(it.deleted).isEqualTo(eventToDelete.deleted)
+        assertThat(it.autosaved).isTrue()
       }
 
       verify(exactly = 1) { stateService.delete(assessment.uuid) }
@@ -274,12 +279,14 @@ class DataDeletionServiceTest {
   private fun existingEvent(
     position: Int,
     data: Event,
+    autosaved: Boolean = false,
   ) = EventEntity(
     position = position,
     createdAt = now,
     user = user,
     assessment = assessment,
     data = data,
+    autosaved = autosaved,
   )
 
   private fun existingTimeline(

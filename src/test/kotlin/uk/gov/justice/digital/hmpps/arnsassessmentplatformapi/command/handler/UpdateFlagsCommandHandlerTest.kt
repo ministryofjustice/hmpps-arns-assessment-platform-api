@@ -17,6 +17,7 @@ class UpdateFlagsCommandHandlerTest : AbstractCommandHandlerTest<UpdateFlagsComm
         assessmentUuid = assessment.uuid.toReference(),
         flags = listOf("SAN_BETA"),
         timeline = timeline,
+        autosaved = true,
       )
       expectedEvent = AssessmentFlagsUpdatedEvent(
         flags = command.flags,
