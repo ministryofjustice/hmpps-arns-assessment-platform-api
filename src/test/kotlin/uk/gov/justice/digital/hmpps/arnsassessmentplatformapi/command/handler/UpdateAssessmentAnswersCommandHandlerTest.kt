@@ -19,6 +19,7 @@ class UpdateAssessmentAnswersCommandHandlerTest : AbstractCommandHandlerTest<Upd
         added = mapOf("foo" to SingleValue("foo_value")),
         removed = listOf("bar"),
         timeline = timeline,
+        autosaved = true,
       )
       expectedEvent = AssessmentAnswersUpdatedEvent(
         added = command.added,

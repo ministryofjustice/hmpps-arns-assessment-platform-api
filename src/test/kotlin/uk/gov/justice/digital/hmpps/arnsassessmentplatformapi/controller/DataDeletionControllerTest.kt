@@ -12,8 +12,10 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFlagsCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBusFactory
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.DataDeletionOperation
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.DataDeletionRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.EventUpdate
@@ -59,6 +61,16 @@ class DataDeletionControllerTest(
 
       try {
         commandBus.dispatchAndPersist(listOf(assessment))
+        commandBus.dispatchAndPersist(
+          listOf(
+            UpdateFlagsCommand(
+              user = UserDetails("test-user-1", "Test User"),
+              assessmentUuid = assessmentUuid.toReference(),
+              flags = listOf("AUTOSAVED"),
+              autosaved = true,
+            ),
+          ),
+        )
       } finally {
         RequestContextHolder.resetRequestAttributes()
       }
@@ -76,6 +88,8 @@ class DataDeletionControllerTest(
 
       assertThat(response?.events?.size).isEqualTo(persistedEvents.size)
       assertThat(response?.timeline?.size).isEqualTo(persistedTimeline.size)
+      assertThat(persistedEvents.map { it.autosaved }).contains(true, false)
+      assertThat(response?.events?.map { it.autosaved }).isEqualTo(persistedEvents.map { it.autosaved })
     }
 
     @Test

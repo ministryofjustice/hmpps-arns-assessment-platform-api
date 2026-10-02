@@ -10,4 +10,5 @@ data class TestableRequestableCommand(
   override val timeline: Timeline? = null,
   override val hooks: List<Hook>? = null,
   val param: String = "",
+  override val autosaved: Boolean = false,
 ) : RequestableCommand

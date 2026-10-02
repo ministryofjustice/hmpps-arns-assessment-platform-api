@@ -11,6 +11,7 @@ data class EventDTO(
   val createdAt: LocalDateTime,
   val position: Int,
   val data: Event,
+  val autosaved: Boolean,
 ) {
   companion object {
     fun from(event: EventEntity<*>) = EventDTO(
@@ -18,6 +19,7 @@ data class EventDTO(
       createdAt = event.createdAt,
       position = event.position ?: throw UndefinedPosition("Event with UUID: ${event.uuid} does not have a valid position"),
       data = event.data,
+      autosaved = event.autosaved,
     )
   }
 }

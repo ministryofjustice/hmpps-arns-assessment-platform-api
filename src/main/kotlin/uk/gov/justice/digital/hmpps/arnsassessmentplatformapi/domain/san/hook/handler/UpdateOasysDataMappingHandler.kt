@@ -38,6 +38,7 @@ class UpdateOasysDataMappingHandler(
           listOf(),
         ),
         createdAt = services.clock.requestDateTime(),
+        autosaved = autosaved,
       )
     }
 

@@ -8,4 +8,6 @@ sealed interface RequestableCommand : Command {
   val user: UserDetails
   val assessmentUuid: Reference
   val hooks: List<Hook>?
+  val autosaved: Boolean
+    get() = false
 }

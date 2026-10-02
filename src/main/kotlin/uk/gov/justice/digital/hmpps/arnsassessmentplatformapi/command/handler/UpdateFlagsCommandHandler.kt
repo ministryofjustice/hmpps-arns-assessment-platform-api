@@ -18,6 +18,7 @@ class UpdateFlagsCommandHandler(
         assessment = services.persistenceContext.findAssessment(assessmentUuid.value),
         data = AssessmentFlagsUpdatedEvent(flags),
         createdAt = services.clock.requestDateTime(),
+        autosaved = autosaved,
       )
     }
 

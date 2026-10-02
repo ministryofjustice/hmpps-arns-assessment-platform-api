@@ -25,6 +25,7 @@ class AddCollectionItemCommandHandlerTest : AbstractCommandHandlerTest<AddCollec
         user = commandUser,
         assessmentUuid = assessment.uuid.toReference(),
         timeline = timeline,
+        autosaved = true,
       )
 
       expectedEvent = CollectionItemAddedEvent(
