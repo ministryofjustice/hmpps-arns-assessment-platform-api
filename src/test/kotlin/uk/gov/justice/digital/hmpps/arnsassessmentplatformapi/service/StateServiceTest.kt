@@ -125,7 +125,7 @@ class StateServiceTest {
 
   @Nested
   inner class FetchOrCreateState {
-    private val assessmentCreatedAt = LocalDateTime.parse("2026-10-05T08:36:22.719716")
+    private val assessmentCreatedAt = LocalDateTime.parse("2026-10-05T08:36:22.719717")
     private val assessment = AssessmentEntity(createdAt = assessmentCreatedAt, type = "TEST")
 
     @Test
