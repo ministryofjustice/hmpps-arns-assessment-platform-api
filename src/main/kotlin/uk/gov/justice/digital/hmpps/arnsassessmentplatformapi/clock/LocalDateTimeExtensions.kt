@@ -7,5 +7,4 @@ import java.time.temporal.ChronoUnit
  * PostgreSQL persists timestamps at microsecond precision, rounding fractional
  * microseconds to the nearest microsecond.
  */
-fun LocalDateTime.toDatabasePrecision(): LocalDateTime =
-  plusNanos(500).truncatedTo(ChronoUnit.MICROS)
+fun LocalDateTime.toDatabasePrecision(): LocalDateTime = plusNanos(500).truncatedTo(ChronoUnit.MICROS)
