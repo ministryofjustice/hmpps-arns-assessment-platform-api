@@ -48,7 +48,7 @@ class DataDeletionControllerTest(
   @Nested
   inner class GetData {
     @Test
-    fun `it returns events and timeline data for an assessment`() {
+    fun `it returns data deletion events after an immediate autosaved update`() {
       val assessment = CreateAssessmentCommand(
         UserDetails("test-user-1", "Test User"),
         assessmentType = "TEST",

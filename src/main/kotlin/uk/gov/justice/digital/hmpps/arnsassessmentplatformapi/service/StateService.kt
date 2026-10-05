@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.State
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.toDatabasePrecision
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventBusFactory
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.PersistenceContextFactory
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
@@ -73,10 +74,14 @@ class StateService(
     fun fetchOrCreateState(
       assessment: AssessmentEntity,
       pointInTime: LocalDateTime?,
-    ): AggregateState<A> = when {
-      pointInTime == null -> fetchOrCreateLatestState(assessment)
-      pointInTime < assessment.createdAt -> throw InvalidTimestampException(pointInTime, "Timestamp cannot be before the assessment created date")
-      else -> createPointInTimeStateFromAggregate(assessment, pointInTime)
+    ): AggregateState<A> {
+      val normalizedPointInTime = pointInTime?.toDatabasePrecision()
+
+      return when {
+        normalizedPointInTime == null -> fetchOrCreateLatestState(assessment)
+        normalizedPointInTime < assessment.createdAt -> throw InvalidTimestampException(normalizedPointInTime, "Timestamp cannot be before the assessment created date")
+        else -> createPointInTimeStateFromAggregate(assessment, normalizedPointInTime)
+      }
     }
 
     private fun createState(aggregateEntity: AggregateEntity<A>): AggregateState<A> = when (type) {
