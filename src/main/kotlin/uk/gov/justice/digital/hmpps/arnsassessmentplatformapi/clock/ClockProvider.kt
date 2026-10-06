@@ -17,7 +17,7 @@ class ClockProvider(
 
   init {
     clock = createClock()
-    requestDateTime = LocalDateTime.now(clock)
+    requestDateTime = LocalDateTime.now(clock).toDatabasePrecision()
   }
 
   fun clock(): Clock = clock
@@ -27,6 +27,7 @@ class ClockProvider(
 
     val backdateTo = request.getParameter("backdateTo")
       ?.let(LocalDateTime::parse)
+      ?.toDatabasePrecision()
       ?.atZone(baseClock.zone)
       ?.toInstant()
 

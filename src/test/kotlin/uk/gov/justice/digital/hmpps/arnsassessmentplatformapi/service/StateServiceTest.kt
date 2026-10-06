@@ -7,6 +7,8 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -28,6 +30,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.InvalidTimestampException
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -117,6 +120,43 @@ class StateServiceTest {
       service.delete(assessmentUuid)
 
       verify(exactly = 1) { aggregateRepository.deleteByAssessmentUuid(assessmentUuid) }
+    }
+  }
+
+  @Nested
+  inner class FetchOrCreateState {
+    private val assessmentCreatedAt = LocalDateTime.parse("2026-10-05T08:36:22.719717")
+    private val assessment = AssessmentEntity(createdAt = assessmentCreatedAt, type = "TEST")
+
+    @Test
+    fun `normalizes sub-microsecond point in time differences`() {
+      val aggregate = AggregateEntity(
+        assessment = assessment,
+        data = AssessmentAggregate(),
+        updatedAt = assessmentCreatedAt,
+        eventsFrom = assessmentCreatedAt,
+        eventsTo = assessmentCreatedAt,
+      )
+      every {
+        aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
+          assessment.uuid,
+          AssessmentAggregate::class.simpleName!!,
+          assessmentCreatedAt,
+        )
+      } returns aggregate
+
+      assertThatCode {
+        service.stateForType(AssessmentAggregate::class)
+          .fetchOrCreateState(assessment, LocalDateTime.parse("2026-10-05T08:36:22.719716868"))
+      }.doesNotThrowAnyException()
+    }
+
+    @Test
+    fun `rejects point in time genuinely before assessment creation`() {
+      assertThatThrownBy {
+        service.stateForType(AssessmentAggregate::class)
+          .fetchOrCreateState(assessment, assessmentCreatedAt.minusNanos(1_000))
+      }.isInstanceOf(InvalidTimestampException::class.java)
     }
   }
 

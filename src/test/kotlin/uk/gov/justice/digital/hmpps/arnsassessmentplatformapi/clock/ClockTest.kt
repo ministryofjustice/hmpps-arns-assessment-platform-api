@@ -16,16 +16,19 @@ class ClockTest {
   private val clock = Clock(clockProvider)
 
   @Test
-  fun `now returns current time from provided clock`() {
-    val fixedInstant = Instant.parse("2024-01-01T10:00:00Z")
+  fun `now and request date time use microsecond precision`() {
+    val fixedInstant = Instant.parse("2024-01-01T10:00:00.719716868Z")
     val zone = ZoneId.systemDefault()
     val fixedClock = Clock.fixed(fixedInstant, zone)
+    val requestDateTime = LocalDateTime.ofInstant(fixedInstant, zone)
 
     every { clockProvider.clock() } returns fixedClock
+    every { clockProvider.requestDateTime } returns requestDateTime
 
-    val result = clock.now()
+    val expected = LocalDateTime.ofInstant(fixedInstant, zone).toDatabasePrecision()
 
-    assertEquals(LocalDateTime.ofInstant(fixedInstant, zone), result)
+    assertEquals(expected, clock.now())
+    assertEquals(expected, clock.requestDateTime())
     verify(exactly = 1) { clockProvider.clock() }
   }
 }
