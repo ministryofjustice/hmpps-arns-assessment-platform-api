@@ -34,7 +34,8 @@ class AggregateBoundaryTest(
 
   var now: LocalDateTime = LocalDateTime.parse("2025-10-06T10:15:30")
   fun nextDay(): LocalDateTime {
-    now = now.plusDays(1); return now
+    now = now.plusDays(1)
+    return now
   }
 
   @Test
