@@ -7,6 +7,6 @@ import java.time.LocalDateTime
 class Clock(
   private val clockProvider: ClockProvider,
 ) {
-  fun now(): LocalDateTime = LocalDateTime.now(clockProvider.clock())
-  fun requestDateTime(): LocalDateTime = clockProvider.requestDateTime
+  fun now(): LocalDateTime = LocalDateTime.now(clockProvider.clock()).toDatabasePrecision()
+  fun requestDateTime(): LocalDateTime = clockProvider.requestDateTime.toDatabasePrecision()
 }
