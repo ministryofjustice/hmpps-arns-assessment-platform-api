@@ -28,7 +28,7 @@ class AssessmentAggregate :
   override fun clone() = AssessmentAggregate().also { clone ->
     clone.properties.putAll(properties)
     clone.answers.putAll(answers)
-    clone.collections.addAll(collections)
+    collections.mapTo(clone.collections) { it.deepCopy() }
     clone.collaborators.addAll(collaborators)
     clone.flags.addAll(flags)
     clone.formVersion = formVersion
