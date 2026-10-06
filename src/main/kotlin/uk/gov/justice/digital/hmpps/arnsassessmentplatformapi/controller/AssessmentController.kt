@@ -122,4 +122,34 @@ class AssessmentController(
     assessmentService.findBy(assessmentUuid)
       .run(assessmentService::delete)
   }
+
+  @RequestMapping(path = ["/assessment/{assessmentUuid}/rebuild"], method = [RequestMethod.POST])
+  @Operation(description = "Deletes all of the assessment's aggregates and rebuilds new ones from events")
+  @ApiResponses(
+    value = [
+      ApiResponse(responseCode = "200", description = "Assessment aggregates rebuilt"),
+      ApiResponse(
+        responseCode = "400",
+        description = "Unable to rebuild aggregates",
+        content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
+      ),
+      ApiResponse(
+        responseCode = "404",
+        description = "Assessment not found",
+        content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
+      ),
+      ApiResponse(
+        responseCode = "500",
+        description = "Unexpected error",
+        content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
+      ),
+    ],
+  )
+  @PreAuthorize("hasAnyRole('ROLE_AAP__COORDINATOR_RW', 'ROLE_SENTENCE_PLAN_WRITE', 'ROLE_AAP_DATA_DELETION')")
+  fun rebuildAggregates(
+    @PathVariable("assessmentUuid") assessmentUuid: UUID,
+  ) {
+    assessmentService.findBy(assessmentUuid)
+      .run(assessmentService::rebuildAggregates)
+  }
 }
