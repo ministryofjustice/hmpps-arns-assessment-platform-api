@@ -58,7 +58,7 @@ class AssessmentService(
   @Transactional
   fun rebuildAggregates(assessment: AssessmentEntity) {
     stateService.delete(assessment.uuid)
-    val rebuiltState = stateService.rebuildFromEvents(assessment, null)
+    val rebuiltState = stateService.rebuildFromEvents(assessment, LocalDateTime.now())
     val aggregateCount = rebuiltState.values.fold(0) { acc, state -> acc + state.aggregates.size }
     stateService.persist(mutableMapOf(assessment.uuid to rebuiltState))
     auditService.audit(
