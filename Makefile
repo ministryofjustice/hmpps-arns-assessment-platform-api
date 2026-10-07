@@ -64,6 +64,9 @@ test-glowroot: ## Starts up the test Glowroot agent
 int-test-dev: ## Runs all integration tests
 	docker compose ${TEST_COMPOSE_FILES} run --rm int gradle integrationTest
 
+int-test-test: ## Runs on test environment
+	docker compose ${TEST_COMPOSE_FILES} run --rm --env AAP_TEST_BASE_URL="https://arns-assessment-platform-api-test.hmpps.service.justice.gov.uk" --env AAP_TEST_API_ASSESSMENT_ID="cd8e4301-562e-4a31-b01a-d09bc3520cdb" int gradle integrationTest
+
 lint: ## Runs the Kotlin linter.
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle ktlintCheck --parallel
 
