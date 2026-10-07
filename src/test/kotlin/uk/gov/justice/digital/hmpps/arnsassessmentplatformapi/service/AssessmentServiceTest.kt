@@ -170,25 +170,29 @@ class AssessmentServiceTest {
     fun `it deletes existing aggregates, rebuilds from events and persists the rebuilt state`() {
       val rebuiltState = stateWithAggregates(3)
       val persisted = slot<MutableMap<UUID, State>>()
+      val pointInTime = slot<LocalDateTime>()
 
-      every { stateService.rebuildFromEvents(assessment, null) } returns rebuiltState
+      every { stateService.rebuildFromEvents(assessment, capture(pointInTime)) } returns rebuiltState
       every { stateService.persist(capture(persisted)) } just Runs
 
+      val before = LocalDateTime.now()
       service.rebuildAggregates(assessment)
+      val after = LocalDateTime.now()
 
       verifyOrder {
         stateService.delete(assessment.uuid)
-        stateService.rebuildFromEvents(assessment, null)
+        stateService.rebuildFromEvents(assessment, any())
         stateService.persist(any())
       }
 
+      assertThat(pointInTime.captured).isBetween(before, after)
       assertThat(persisted.captured).containsOnlyKeys(assessment.uuid)
       assertThat(persisted.captured[assessment.uuid]).isSameAs(rebuiltState)
     }
 
     @Test
     fun `it audits the rebuild with the principal and aggregate count`() {
-      every { stateService.rebuildFromEvents(assessment, null) } returns stateWithAggregates(3)
+      every { stateService.rebuildFromEvents(assessment, any()) } returns stateWithAggregates(3)
 
       service.rebuildAggregates(assessment)
 
@@ -203,7 +207,7 @@ class AssessmentServiceTest {
 
     @Test
     fun `it reports zero aggregates when the rebuilt state is empty`() {
-      every { stateService.rebuildFromEvents(assessment, null) } returns mutableMapOf()
+      every { stateService.rebuildFromEvents(assessment, any()) } returns mutableMapOf()
 
       service.rebuildAggregates(assessment)
 
@@ -219,7 +223,7 @@ class AssessmentServiceTest {
 
     @Test
     fun `it does not persist or audit when rebuilding from events fails`() {
-      every { stateService.rebuildFromEvents(assessment, null) } throws IllegalStateException("boom")
+      every { stateService.rebuildFromEvents(assessment, any()) } throws IllegalStateException("boom")
 
       assertThrows<IllegalStateException> {
         service.rebuildAggregates(assessment)
