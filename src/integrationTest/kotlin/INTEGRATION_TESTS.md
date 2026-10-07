@@ -2,8 +2,13 @@
 
 ### Run Tests
 
+Dev environment:
 ```bash
 make int-test-dev
+```
+Test environment:
+```bash
+make int-test-test
 ```
 
 ### Environment Variables
