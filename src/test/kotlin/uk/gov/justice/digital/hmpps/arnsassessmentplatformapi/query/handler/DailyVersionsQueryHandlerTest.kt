@@ -19,6 +19,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIden
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.DailyVersionsQueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import java.time.LocalDateTime
 import java.util.UUID
@@ -27,6 +28,7 @@ import java.util.UUID
 class DailyVersionsQueryHandlerTest {
   val assessmentService: AssessmentService = mockk()
   val timelineService: TimelineService = mockk()
+  val eventService: EventService = mockk()
   val clock: Clock = mockk()
 
   val services = QueryHandlerServiceBundle(
@@ -34,6 +36,7 @@ class DailyVersionsQueryHandlerTest {
     state = mockk(),
     userDetails = mockk(),
     timeline = timelineService,
+    event = eventService,
     clock = clock,
   )
 

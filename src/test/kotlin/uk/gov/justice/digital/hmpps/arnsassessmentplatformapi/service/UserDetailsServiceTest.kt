@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -7,9 +8,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.UserDetailsRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.UserDetailsRepository
 
 class UserDetailsServiceTest {
 
@@ -18,6 +19,7 @@ class UserDetailsServiceTest {
 
   @BeforeEach
   fun setUp() {
+    clearAllMocks()
     service = UserDetailsService(userDetailsRepository)
   }
 
@@ -54,13 +56,10 @@ class UserDetailsServiceTest {
         commandUser.authSource,
       )
     }
-    verify(exactly = 0) {
-      userDetailsRepository.save(any())
-    }
   }
 
   @Test
-  fun `creates and saves new user when not found`() {
+  fun `creates new user when not found`() {
     // given
     val commandUser = UserDetails(
       id = "user-456",
@@ -75,10 +74,6 @@ class UserDetailsServiceTest {
       )
     } returns null
 
-    every {
-      userDetailsRepository.save(any())
-    } answers { firstArg() }
-
     // when
     val result = service.findOrCreate(commandUser)
 
@@ -91,16 +86,6 @@ class UserDetailsServiceTest {
       userDetailsRepository.findByUserIdAndAuthSource(
         commandUser.id,
         commandUser.authSource,
-      )
-    }
-
-    verify(exactly = 1) {
-      userDetailsRepository.save(
-        match {
-          it.userId == commandUser.id &&
-            it.displayName == commandUser.name &&
-            it.authSource == commandUser.authSource
-        },
       )
     }
   }

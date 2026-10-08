@@ -1,15 +1,17 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import org.springframework.stereotype.Service
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentIdentifierRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
+import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.criteria.AssessmentsByExternalIdentifiersCriteria
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentIdentifierRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.AssessmentNotFoundException
+import uk.gov.justice.hmpps.kotlin.auth.HmppsAuthenticationHolder
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -18,6 +20,9 @@ import java.util.UUID
 class AssessmentService(
   private val assessmentRepository: AssessmentRepository,
   private val assessmentIdentifierRepository: AssessmentIdentifierRepository,
+  private val stateService: StateService,
+  private val auditService: AuditService,
+  private val authenticationHolder: HmppsAuthenticationHolder,
 ) {
   fun findBy(uuid: UUID) = findBy(UuidIdentifier(uuid), LocalDateTime.now())
 
@@ -46,5 +51,20 @@ class AssessmentService(
 
   fun save(assessment: AssessmentEntity): AssessmentEntity = assessmentRepository.save(assessment)
 
+  fun saveAll(assessments: List<AssessmentEntity>): List<AssessmentEntity> = assessmentRepository.saveAll(assessments)
+
   fun delete(assessment: AssessmentEntity) = assessmentRepository.delete(assessment)
+
+  @Transactional
+  fun rebuildAggregates(assessment: AssessmentEntity) {
+    stateService.delete(assessment.uuid)
+    val rebuiltState = stateService.rebuildFromEvents(assessment, LocalDateTime.now())
+    val aggregateCount = rebuiltState.values.fold(0) { acc, state -> acc + state.aggregates.size }
+    stateService.persist(mutableMapOf(assessment.uuid to rebuiltState))
+    auditService.audit(
+      authenticationHolder.principal,
+      "RebuiltAggregates",
+      "Rebuilt all ($aggregateCount) aggregates for assessment ${assessment.uuid}",
+    )
+  }
 }

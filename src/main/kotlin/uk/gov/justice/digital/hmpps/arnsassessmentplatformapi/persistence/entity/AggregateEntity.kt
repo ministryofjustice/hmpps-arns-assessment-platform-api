@@ -8,8 +8,10 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.SequenceGenerator
 import jakarta.persistence.Table
 import jakarta.persistence.Version
+import org.hibernate.annotations.DynamicUpdate
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
@@ -18,15 +20,23 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
+@DynamicUpdate
 @Table(name = "aggregate")
 class AggregateEntity<T : Aggregate<T>>(
   @Id
-  @Column(name = "id")
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "aggregate_sequence_gen")
+  @SequenceGenerator(
+    name = "aggregate_sequence_gen",
+    sequenceName = "aggregate_sequence",
+    allocationSize = 10,
+  )
   override val id: Long? = null,
 
   @Column(name = "uuid")
   override val uuid: UUID = UUID.randomUUID(),
+
+  @Column(name = "position", nullable = false, updatable = false)
+  var position: Int? = null,
 
   @Version
   override val version: Long = 0,
@@ -50,6 +60,9 @@ class AggregateEntity<T : Aggregate<T>>(
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "data", columnDefinition = "jsonb", nullable = false)
   override var data: T,
+
+  @Column(name = "data_type", insertable = false, updatable = false)
+  val dataType: String? = null,
 ) : AggregateEntityView<T> {
   fun clone(clock: Clock) = AggregateEntity(
     eventsFrom = this.eventsFrom,

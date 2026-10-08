@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemRemovedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
@@ -19,13 +20,23 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
     Scenario.Executes<CollectionItemRemovedEvent>("handles the event").apply {
       val collectionUuid: UUID = UUID.randomUUID()
       val collectionItemUuid: UUID = UUID.randomUUID()
-      val collectionItemRemovedEvent = eventEntityFor(
+
+      commandTimeline = Timeline(type = "CUSTOM_TIMELINE", data = mapOf("foo" to "bar"))
+
+      event = eventEntityFor(
         CollectionItemRemovedEvent(
           collectionItemUuid = collectionItemUuid,
         ),
       )
 
-      events = listOf(collectionItemRemovedEvent)
+      expectedTimeline = timelineEntityFor(
+        event,
+        mapOf(
+          "collection" to "TOP_LEVEL_COLLECTION",
+          "index" to 0,
+        ),
+        commandTimeline,
+      )
 
       initialState = AssessmentState().also { state ->
         state.aggregates.add(
@@ -68,7 +79,7 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
             uuid = aggregateUuid,
             updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-            eventsTo = events.last().createdAt,
+            eventsTo = event.createdAt,
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
@@ -93,13 +104,21 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
     Scenario.Executes<CollectionItemRemovedEvent>("handles when no timeline provided").apply {
       val collectionUuid: UUID = UUID.randomUUID()
       val collectionItemUuid: UUID = UUID.randomUUID()
-      val collectionItemRemovedEvent = eventEntityFor(
+
+      event = eventEntityFor(
         CollectionItemRemovedEvent(
           collectionItemUuid = collectionItemUuid,
         ),
       )
 
-      events = listOf(collectionItemRemovedEvent)
+      expectedTimeline = timelineEntityFor(
+        event,
+        mapOf(
+          "collection" to "TOP_LEVEL_COLLECTION",
+          "index" to 0,
+        ),
+        null,
+      )
 
       initialState = AssessmentState().also { state ->
         state.aggregates.add(
@@ -142,7 +161,7 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
             uuid = aggregateUuid,
             updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-            eventsTo = events.last().createdAt,
+            eventsTo = event.createdAt,
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
@@ -165,13 +184,12 @@ class CollectionItemRemovedEventHandlerTest : AbstractEventHandlerTest<Collectio
       }
     },
     Scenario.Throws<CollectionItemRemovedEvent, CollectionItemNotFoundException>("throws when collection does not exist").apply {
-      events = listOf(
+      event =
         eventEntityFor(
           CollectionItemRemovedEvent(
             collectionItemUuid = UUID.randomUUID(),
           ),
-        ),
-      )
+        )
 
       initialState = AssessmentState().also { state ->
         state.aggregates.add(

@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.PropertyNotFoundException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentPropertiesUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
@@ -14,13 +15,22 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
 
   override val scenarios = listOf(
     Scenario.Executes<AssessmentPropertiesUpdatedEvent>("handles the event").apply {
-      events = listOf(
+      commandTimeline = Timeline(type = "CUSTOM_TIMELINE", data = mapOf("foo" to "bar"))
+      event =
         eventEntityFor(
           AssessmentPropertiesUpdatedEvent(
             added = mapOf("foo" to SingleValue("foo_value")),
             removed = listOf("bar"),
           ),
+        )
+
+      expectedTimeline = timelineEntityFor(
+        event,
+        mapOf(
+          "added" to event.data.added.keys,
+          "removed" to event.data.removed,
         ),
+        commandTimeline,
       )
 
       initialState = AssessmentState().also { state ->
@@ -45,26 +55,34 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
             uuid = aggregateUuid,
             updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-            eventsTo = events.last().createdAt,
+            eventsTo = event.createdAt,
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
               collaborators.add(user.uuid)
-              events.forEach { it.data.added.forEach { (key, value) -> properties[key] = value } }
+              properties["foo"] = SingleValue("foo_value")
             },
           ),
         )
       }
     },
     Scenario.Executes<AssessmentPropertiesUpdatedEvent>("handles when no timeline provided").apply {
-      events = listOf(
+      event =
         eventEntityFor(
           AssessmentPropertiesUpdatedEvent(
             added = mapOf("foo" to SingleValue("foo_value")),
             removed = listOf("bar"),
           ),
+        )
+
+      expectedTimeline = timelineEntityFor(
+        event,
+        mapOf(
+          "added" to event.data.added.keys,
+          "removed" to event.data.removed,
         ),
+        null,
       )
 
       initialState = AssessmentState().also { state ->
@@ -89,27 +107,26 @@ class AssessmentPropertiesUpdatedEventHandlerTest : AbstractEventHandlerTest<Ass
             uuid = aggregateUuid,
             updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-            eventsTo = events.last().createdAt,
+            eventsTo = event.createdAt,
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
               collaborators.add(user.uuid)
-              events.forEach { it.data.added.forEach { (key, value) -> properties[key] = value } }
+              properties["foo"] = SingleValue("foo_value")
             },
           ),
         )
       }
     },
     Scenario.Throws<AssessmentPropertiesUpdatedEvent, PropertyNotFoundException>("throws when the property to remove does no exist").apply {
-      events = listOf(
+      event =
         eventEntityFor(
           AssessmentPropertiesUpdatedEvent(
             added = mapOf(),
             removed = listOf("bar"),
           ),
-        ),
-      )
+        )
 
       initialState = AssessmentState().also { state ->
         state.aggregates.add(

@@ -20,6 +20,8 @@ data class Collection(
   override val name: String,
   override val items: MutableList<CollectionItem>,
 ) : CollectionView {
+  fun deepCopy(): Collection = copy(items = items.mapTo(mutableListOf()) { it.deepCopy() })
+
   override fun findItem(id: UUID): CollectionItem? = items.firstOrNull { it.uuid == id }
     ?: items.firstNotNullOfOrNull { item -> item.collections.firstNotNullOfOrNull { it.findItem(id) } }
 

@@ -5,7 +5,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssignedToUserEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
 class AssignedToUserEventHandler(
@@ -17,7 +19,7 @@ class AssignedToUserEventHandler(
   override fun handle(
     event: EventEntity<AssignedToUserEvent>,
     state: AssessmentState,
-  ): AssessmentState {
+  ): EventHandlerResult<AssessmentState> {
     state.getForWrite(clock).data.apply {
       assignedUser = event.data.userUuid
     }
@@ -28,6 +30,14 @@ class AssignedToUserEventHandler(
       numberOfEventsApplied += 1
     }
 
-    return state
+    return EventHandlerResult(
+      state = state,
+      timeline = TimelineEntity.resolver(
+        event,
+        mapOf(
+          "assignee" to event.user,
+        ),
+      ),
+    )
   }
 }

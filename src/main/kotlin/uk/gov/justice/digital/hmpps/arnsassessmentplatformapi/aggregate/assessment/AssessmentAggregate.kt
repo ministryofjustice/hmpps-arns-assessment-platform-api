@@ -16,7 +16,7 @@ typealias FormVersion = String
 class AssessmentAggregate :
   Aggregate<AssessmentAggregate>,
   AssessmentAggregateView {
-  override lateinit var formVersion: FormVersion
+  override var formVersion: FormVersion = ""
   override var assignedUser: UUID? = null
 
   override val properties: Properties = mutableMapOf()
@@ -28,10 +28,34 @@ class AssessmentAggregate :
   override fun clone() = AssessmentAggregate().also { clone ->
     clone.properties.putAll(properties)
     clone.answers.putAll(answers)
-    clone.collections.addAll(collections)
+    collections.mapTo(clone.collections) { it.deepCopy() }
     clone.collaborators.addAll(collaborators)
     clone.flags.addAll(flags)
     clone.formVersion = formVersion
+    clone.assignedUser = assignedUser
+  }
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is AssessmentAggregate) return false
+    return formVersion == other.formVersion &&
+      assignedUser == other.assignedUser &&
+      properties == other.properties &&
+      answers == other.answers &&
+      collections == other.collections &&
+      collaborators == other.collaborators &&
+      flags == other.flags
+  }
+
+  override fun hashCode(): Int {
+    var result = formVersion.hashCode()
+    result = 31 * result + (assignedUser?.hashCode() ?: 0)
+    result = 31 * result + properties.hashCode()
+    result = 31 * result + answers.hashCode()
+    result = 31 * result + collections.hashCode()
+    result = 31 * result + collaborators.hashCode()
+    result = 31 * result + flags.hashCode()
+    return result
   }
 
   override fun getCollection(collectionUuid: UUID) = collections.firstOrNull { it.uuid == collectionUuid }

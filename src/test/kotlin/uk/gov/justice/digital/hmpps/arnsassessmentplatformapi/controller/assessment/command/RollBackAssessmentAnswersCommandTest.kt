@@ -17,12 +17,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentRolledBackEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
@@ -49,9 +49,10 @@ class RollBackAssessmentAnswersCommandTest(
     assessmentRepository.save(assessmentEntity)
     val aggregateEntity = AggregateEntity(
       assessment = assessmentEntity,
-      updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+      updatedAt = LocalDateTime.parse("2025-01-02T09:30:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
-      eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
+      eventsTo = LocalDateTime.parse("2025-01-02T09:30:00"),
+      position = 0,
       data = AssessmentAggregate().apply {
         formVersion = "1"
       },
@@ -68,6 +69,7 @@ class RollBackAssessmentAnswersCommandTest(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -79,6 +81,7 @@ class RollBackAssessmentAnswersCommandTest(
             ),
             removed = emptyList(),
           ),
+          position = 1,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -90,6 +93,7 @@ class RollBackAssessmentAnswersCommandTest(
             ),
             removed = emptyList(),
           ),
+          position = 2,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -101,6 +105,7 @@ class RollBackAssessmentAnswersCommandTest(
             ),
             removed = emptyList(),
           ),
+          position = 3,
         ),
       ),
     )
@@ -130,12 +135,12 @@ class RollBackAssessmentAnswersCommandTest(
     assertThat(response?.commands[0]?.request).isEqualTo(request.commands[0])
     assertIs<CommandSuccessCommandResult>(response?.commands[0]?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(5)
     assertThat(eventsForAssessment.last().data).isInstanceOf(AssessmentRolledBackEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),
@@ -164,12 +169,12 @@ class RollBackAssessmentAnswersCommandTest(
       .exchange()
       .expectStatus().isOk
 
-    val eventsAfterSecondRollback = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsAfterSecondRollback = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsAfterSecondRollback.size).isEqualTo(6)
     assertThat(eventsAfterSecondRollback.last().data).isInstanceOf(AssessmentRolledBackEvent::class.java)
 
-    val aggregateAfterSecondUpdate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregateAfterSecondUpdate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),

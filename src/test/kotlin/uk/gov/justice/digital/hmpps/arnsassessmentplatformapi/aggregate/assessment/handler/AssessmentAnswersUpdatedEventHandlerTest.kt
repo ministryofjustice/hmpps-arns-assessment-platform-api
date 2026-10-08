@@ -3,6 +3,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.AnswerNotFoundException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
@@ -14,14 +15,24 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
 
   override val scenarios = listOf(
     Scenario.Executes<AssessmentAnswersUpdatedEvent>("handles the event").apply {
-      events = listOf(
-        eventEntityFor(
-          AssessmentAnswersUpdatedEvent(
-            added = mapOf("foo" to SingleValue("foo_value")),
-            removed = listOf("bar"),
-          ),
+      commandTimeline = Timeline(type = "CUSTOM_TIMELINE", data = mapOf("foo" to "bar"))
+
+      event = eventEntityFor(
+        AssessmentAnswersUpdatedEvent(
+          added = mapOf("foo" to SingleValue("foo_value")),
+          removed = listOf("bar"),
         ),
       )
+
+      expectedTimeline = timelineEntityFor(
+        event,
+        mapOf(
+          "added" to event.data.added.keys,
+          "removed" to event.data.removed,
+        ),
+        commandTimeline,
+      )
+
       initialState = AssessmentState().also { state ->
         state.aggregates.add(
           AggregateEntity(
@@ -29,7 +40,7 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              answers.put("bar", SingleValue("value_to_remove"))
+              answers["bar"] = SingleValue("value_to_remove")
             },
             assessment = assessment,
             updatedAt = now,
@@ -37,32 +48,39 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
           ),
         )
       }
+
       expectedState = AssessmentState().also { state ->
         state.aggregates.add(
           AggregateEntity(
             uuid = aggregateUuid,
             updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-            eventsTo = events.last().createdAt,
+            eventsTo = event.createdAt,
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
               collaborators.add(user.uuid)
-              events.forEach { it.data.added.forEach { (key, value) -> answers[key] = value } }
+              answers["foo"] = SingleValue("foo_value")
             },
           ),
         )
       }
     },
     Scenario.Executes<AssessmentAnswersUpdatedEvent>("handles when no timeline provided").apply {
-      events = listOf(
-        eventEntityFor(
-          AssessmentAnswersUpdatedEvent(
-            added = mapOf("foo" to SingleValue("foo_value")),
-            removed = listOf("bar"),
-          ),
+      event = eventEntityFor(
+        AssessmentAnswersUpdatedEvent(
+          added = mapOf("foo" to SingleValue("foo_value")),
+          removed = listOf("bar"),
         ),
+      )
+      expectedTimeline = timelineEntityFor(
+        event,
+        mapOf(
+          "added" to event.data.added.keys,
+          "removed" to event.data.removed,
+        ),
+        null,
       )
       initialState = AssessmentState().also { state ->
         state.aggregates.add(
@@ -71,7 +89,7 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
             data = AssessmentAggregate().apply {
               formVersion = "1"
-              answers.put("bar", SingleValue("value_to_remove"))
+              answers["bar"] = SingleValue("value_to_remove")
             },
             assessment = assessment,
             updatedAt = now,
@@ -85,25 +103,23 @@ class AssessmentAnswersUpdatedEventHandlerTest : AbstractEventHandlerTest<Assess
             uuid = aggregateUuid,
             updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-            eventsTo = events.last().createdAt,
+            eventsTo = event.createdAt,
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
               formVersion = "1"
               collaborators.add(user.uuid)
-              events.forEach { it.data.added.forEach { (key, value) -> answers.put(key, value) } }
+              answers["foo"] = SingleValue("foo_value")
             },
           ),
         )
       }
     },
     Scenario.Throws<AssessmentAnswersUpdatedEvent, AnswerNotFoundException>("throws when answer to remove does not exist").apply {
-      events = listOf(
-        eventEntityFor(
-          AssessmentAnswersUpdatedEvent(
-            added = mapOf(),
-            removed = listOf("foo"),
-          ),
+      event = eventEntityFor(
+        AssessmentAnswersUpdatedEvent(
+          added = mapOf(),
+          removed = listOf("foo"),
         ),
       )
 

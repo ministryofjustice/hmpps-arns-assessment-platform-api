@@ -1,8 +1,15 @@
 SHELL = '/bin/bash'
-LOCAL_COMPOSE_FILES = -f docker-compose.yml -f docker-compose.local.yml
-DEV_COMPOSE_FILES = -f docker-compose.yml -f docker-compose.local.yml -f docker-compose.dev.yml -f docker-compose.pact.yml
+
+## Useful to keep this the same for backend/frontend
 PROJECT_NAME = hmpps-assess-risks-and-needs
-SERVICE_NAME = api
+
+## Must match name of container in Docker
+SERVICE_NAME = aap-api
+
+## Compose files to stack on each other
+PROD_COMPOSE_FILES = -f docker/docker-compose.base.yml
+DEV_COMPOSE_FILES = -f docker/docker-compose.base.yml -f docker/docker-compose.local.yml -f docker-compose.pact.yml
+TEST_COMPOSE_FILES = -f docker/docker-compose.test.yml
 
 export COMPOSE_PROJECT_NAME=${PROJECT_NAME}
 
@@ -11,26 +18,22 @@ default: help
 help: ## The help text you're reading.
 	@grep --no-filename -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-up: ## Starts/restarts the API in a production container.
-	docker compose ${LOCAL_COMPOSE_FILES} down ${SERVICE_NAME}
-	docker compose ${LOCAL_COMPOSE_FILES} up ${SERVICE_NAME} --wait --no-recreate
+prod-build: ## Builds a production image of the API.
+	docker compose ${PROD_COMPOSE_FILES} build ${SERVICE_NAME}
 
-down: ## Stops and removes all containers in the project.
-	docker compose ${DEV_COMPOSE_FILES} down
-	docker compose ${LOCAL_COMPOSE_FILES} down
+prod-up: ## Starts/restarts the API in a production container.
+	docker compose ${PROD_COMPOSE_FILES} down ${SERVICE_NAME}
+	docker compose ${PROD_COMPOSE_FILES} up ${SERVICE_NAME} --wait --no-recreate
 
-build-api: ## Builds a production image of the API.
-	docker compose build ${SERVICE_NAME}
+dev-build: ## Builds a development image of the API.
+	docker compose ${DEV_COMPOSE_FILES} build ${SERVICE_NAME}
 
 dev-up: ## Starts/restarts the API in a development container. A remote debugger can be attached on port 5005.
 	docker compose down ${SERVICE_NAME}
 	docker compose ${DEV_COMPOSE_FILES} up --wait --no-recreate ${SERVICE_NAME}
 
-dev-build: ## Builds a development image of the API.
-	docker compose ${DEV_COMPOSE_FILES} build ${SERVICE_NAME}
-
-dev-down: ## Stops and removes the API container.
-	docker compose down ${SERVICE_NAME}
+down: ## Stops and removes all containers in the project.
+	docker compose down
 
 rebuild: ## Re-builds and live-reloads the API.
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle compileKotlin --parallel --build-cache --configuration-cache
@@ -44,11 +47,25 @@ test: ## Runs all the test suites.
       ${SERVICE_NAME} \
       gradle test --parallel -Dpactbroker.host=host.docker.internal -Dpactbroker.port=9292
 
-test-unit: ## Runs the unit test suite.
-	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle unitTests --parallel
+TESTS=
+test-targeted: ## Targets specific tests e.g. TESTS="*BatchInsertsTest"
+	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle test --tests "${TESTS}" --parallel
 
-test-integration: ## Runs the integration test suite.
-	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle integrationTests --parallel
+test-targeted-debug: ## Targets specific tests e.g. TESTS="*BatchInsertsTest" with debug logging
+	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle test --tests "${TESTS}" --parallel --debug
+
+test-glowroot: ## Starts up the test Glowroot agent
+	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} java \
+    -javaagent:/glowroot/glowroot.jar \
+    -Dglowroot.agent.id=test \
+    -cp /glowroot/build \
+    GlowrootDummy
+
+int-test-dev: ## Runs all integration tests
+	docker compose ${TEST_COMPOSE_FILES} run --rm int gradle integrationTest
+
+int-test-test: ## Runs on test environment
+	docker compose ${TEST_COMPOSE_FILES} run --rm --env AAP_TEST_BASE_URL="https://arns-assessment-platform-api-test.hmpps.service.justice.gov.uk" --env AAP_TEST_API_ASSESSMENT_ID="cd8e4301-562e-4a31-b01a-d09bc3520cdb" int gradle integrationTest
 
 lint: ## Runs the Kotlin linter.
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle ktlintCheck --parallel
@@ -59,8 +76,8 @@ lint-fix: ## Runs the Kotlin linter and auto-fixes.
 lint-baseline: ## Generate a baseline file, ignoring all existing code smells.
 	docker compose ${DEV_COMPOSE_FILES} exec ${SERVICE_NAME} gradle --parallel
 
-update: ## Downloads the latest versions of containers.
-	docker compose pull
+update: ## Downloads the latest versions of container images.
+	docker compose ${DEV_COMPOSE_FILES} pull --ignore-buildable
 
 build-client: ## Generates typescript client code
 	docker compose ${DEV_COMPOSE_FILES} run --rm typescript-client-builder
@@ -71,7 +88,7 @@ clean: ## Stops and removes all project containers. Deletes local build/cache di
 
 db-port-forward-pod: ## Creates a DB port-forwarding pod in your currently active Kubernetes context
 	kubectl delete pod --ignore-not-found=true port-forward-pod
-	INSTANCE_ADDRESS=$$(kubectl get secret rds-postgresql-instance-output -o json | jq -r '.data.rds_instance_address' | base64 --decode) \
+	INSTANCE_ADDRESS=$$(kubectl get secret rds-aurora-instance-output -o json | jq -r '.data.rds_cluster_endpoint' | base64 --decode) \
 	; kubectl run port-forward-pod --image=ministryofjustice/port-forward --port=5432 --env="REMOTE_HOST=$$INSTANCE_ADDRESS" --env="LOCAL_PORT=5432" --env="REMOTE_PORT=5432"
 
 DB_PORT_FORWARD_PORT=5434
@@ -80,13 +97,16 @@ db-port-forward: ## Forwards port 5434 on your local machine to port 5432 on the
 	kubectl port-forward port-forward-pod ${DB_PORT_FORWARD_PORT}:5432
 
 db-connection-string: ## Outputs a DB connection string that will let you connect to the remote DB through the port-forwarding pod. Override the local port with DB_PORT_FORWARD_PORT=XXXX
-	@DATABASE_USERNAME=$$(kubectl get secret rds-postgresql-instance-output -o json | jq -r '.data.database_username' | base64 --decode) \
-	DATABASE_PASSWORD=$$(kubectl get secret rds-postgresql-instance-output -o json | jq -r '.data.database_password' | base64 --decode) \
-	DATABASE_NAME=$$(kubectl get secret rds-postgresql-instance-output -o json | jq -r '.data.database_name' | base64 --decode) \
+	@DATABASE_USERNAME=$$(kubectl get secret rds-aurora-instance-output -o json | jq -r '.data.database_username' | base64 --decode) \
+	DATABASE_PASSWORD=$$(kubectl get secret rds-aurora-instance-output -o json | jq -r '.data.database_password' | base64 --decode) \
+	DATABASE_NAME=$$(kubectl get secret rds-aurora-instance-output -o json | jq -r '.data.database_name' | base64 --decode) \
 	; echo postgres://$$DATABASE_USERNAME:$$DATABASE_PASSWORD@localhost:${DB_PORT_FORWARD_PORT}/$$DATABASE_NAME
 
 db-connect: ## Connects to the remote DB though the port-forwarding pod
 	psql --pset=pager=off $$(make db-connection-string)
 
 db-export: ## Export the remote DB to out.sql
-	pg_dump --no-owner $$(make db-connection-string) > out.sql
+	pg_dump --schema="assessment-platform" --clean --no-owner --no-privileges $$(make db-connection-string) > out.sql
+
+db-import: ## Import out.sql to remote DB
+	psql $$(make db-connection-string) < out.sql

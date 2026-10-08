@@ -14,19 +14,18 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.respons
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.UserDetailsRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.UserDetailsRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
@@ -63,12 +62,14 @@ class AssessmentVersionQueryTest(
           formVersion = "1",
           properties = emptyMap(),
         ),
+        position = 0,
       ),
       EventEntity(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent(version = "1"),
+        position = 1,
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -78,6 +79,7 @@ class AssessmentVersionQueryTest(
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
         ),
+        position = 2,
       ),
     ).run(eventRepository::saveAll)
 
@@ -93,6 +95,7 @@ class AssessmentVersionQueryTest(
       eventsTo = LocalDateTime.parse("2025-01-01T12:05:00"),
       updatedAt = clock.now(),
       data = aggregateData,
+      position = 0,
     )
       .apply { numberOfEventsApplied = events.size.toLong() }
       .run(aggregateRepository::save)
@@ -144,12 +147,14 @@ class AssessmentVersionQueryTest(
           formVersion = "1",
           properties = mapOf(),
         ),
+        position = 0,
       ),
       EventEntity(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent(version = "1"),
+        position = 1,
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -159,6 +164,7 @@ class AssessmentVersionQueryTest(
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
         ),
+        position = 2,
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -168,6 +174,7 @@ class AssessmentVersionQueryTest(
           added = mapOf("foo" to SingleValue("updated_foo_value")),
           removed = emptyList(),
         ),
+        position = 3,
       ),
     ).run(eventRepository::saveAll)
 
@@ -190,6 +197,7 @@ class AssessmentVersionQueryTest(
         eventsTo = LocalDateTime.parse("2025-01-01T12:30:00"),
         updatedAt = clock.now(),
         data = secondAggregateData,
+        position = 1,
       ).apply { numberOfEventsApplied = 2 },
       AggregateEntity(
         assessment = assessment,
@@ -197,6 +205,7 @@ class AssessmentVersionQueryTest(
         eventsTo = LocalDateTime.parse("2025-01-01T12:05:00"),
         updatedAt = clock.now(),
         data = firstAggregateData,
+        position = 0,
       ).apply { numberOfEventsApplied = 1 },
     ).run(aggregateRepository::saveAll)
 
@@ -243,12 +252,14 @@ class AssessmentVersionQueryTest(
           formVersion = "1",
           properties = mapOf(),
         ),
+        position = 0,
       ),
       EventEntity(
         user = testUserDetailsEntity,
         assessment = assessment,
         createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
         data = FormVersionUpdatedEvent(version = "1"),
+        position = 1,
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -258,6 +269,7 @@ class AssessmentVersionQueryTest(
           added = mapOf("foo" to SingleValue("foo_value")),
           removed = emptyList(),
         ),
+        position = 2,
       ),
       EventEntity(
         user = testUserDetailsEntity,
@@ -267,6 +279,7 @@ class AssessmentVersionQueryTest(
           added = mapOf("foo" to SingleValue("updated_foo_value")),
           removed = emptyList(),
         ),
+        position = 3,
       ),
     ).run(eventRepository::saveAll)
 
@@ -304,107 +317,7 @@ class AssessmentVersionQueryTest(
     assertThat(result.assessmentType).isEqualTo(assessment.type)
     assertThat(result.formVersion).isEqualTo(expectedAggregate.formVersion)
 
-    val persistedAggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
-      assessment.uuid,
-      AssessmentAggregate::class.simpleName!!,
-      clock.now(),
-    )
-
-    assertThat(persistedAggregate).isNull()
-  }
-
-  @Test
-  fun `events with nested child events are atomic`() {
-    val assessment = AssessmentEntity(
-      type = "TEST",
-      createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-    ).run(assessmentRepository::save)
-
-    val assessmentCreatedEvent = EventEntity(
-      user = testUserDetailsEntity,
-      assessment = assessment,
-      createdAt = assessment.createdAt,
-      data = AssessmentCreatedEvent(
-        formVersion = "1",
-        properties = mapOf(),
-      ),
-    )
-
-    val groupEvent = EventEntity(
-      user = testUserDetailsEntity,
-      assessment = assessment,
-      createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
-      data = GroupEvent(3),
-    )
-
-    listOf(
-      assessmentCreatedEvent,
-      groupEvent,
-      EventEntity(
-        user = testUserDetailsEntity,
-        assessment = assessment,
-        createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
-        data = FormVersionUpdatedEvent(version = "2"),
-        parent = groupEvent,
-      ),
-      EventEntity(
-        user = testUserDetailsEntity,
-        assessment = assessment,
-        createdAt = LocalDateTime.parse("2025-01-01T12:20:00"),
-        data = AssessmentAnswersUpdatedEvent(
-          added = mapOf("foo" to SingleValue("foo_value")),
-          removed = emptyList(),
-        ),
-        parent = groupEvent,
-      ),
-      EventEntity(
-        user = testUserDetailsEntity,
-        assessment = assessment,
-        createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
-        data = AssessmentAnswersUpdatedEvent(
-          added = mapOf("foo" to SingleValue("updated_foo_value")),
-          removed = emptyList(),
-        ),
-        parent = groupEvent,
-      ),
-    ).run(eventRepository::saveAll)
-
-    val request = QueriesRequest(
-      queries = listOf(
-        AssessmentVersionQuery(
-          user = testUserDetails,
-          assessmentIdentifier = UuidIdentifier(assessment.uuid),
-          timestamp = LocalDateTime.parse("2025-01-01T12:25:00"),
-        ),
-      ),
-    )
-
-    val response = webTestClient.post().uri("/query")
-      .contentType(MediaType.APPLICATION_JSON)
-      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
-      .bodyValue(request)
-      .exchange()
-      .expectStatus().isOk
-      .expectBody(QueriesResponse::class.java)
-      .returnResult()
-      .responseBody
-
-    assertThat(response?.queries).hasSize(1)
-    assertThat(response?.queries[0]?.request).isEqualTo(request.queries[0])
-    val result = assertIs<AssessmentVersionQueryResult>(response?.queries[0]?.result)
-
-    val expectedAggregate = AssessmentAggregate().apply {
-      answers["foo"] = SingleValue("updated_foo_value")
-      collaborators.add(testUserDetailsEntity.uuid)
-      formVersion = "2"
-    }
-
-    assertThat(result.answers).isEqualTo(expectedAggregate.answers)
-    assertThat(result.collaborators.map { it.id }.toSet()).isEqualTo(expectedAggregate.collaborators)
-    assertThat(result.assessmentType).isEqualTo(assessment.type)
-    assertThat(result.formVersion).isEqualTo(expectedAggregate.formVersion)
-
-    val persistedAggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val persistedAggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessment.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),
@@ -447,6 +360,7 @@ class AssessmentVersionQueryTest(
         formVersion = "1",
         properties = emptyMap(),
       ),
+      position = 0,
     ).run(eventRepository::save)
 
     val aggregateData = AssessmentAggregate().apply {
@@ -460,6 +374,7 @@ class AssessmentVersionQueryTest(
       eventsTo = event.createdAt,
       updatedAt = clock.now(),
       data = aggregateData,
+      position = 0,
     )
       .apply { numberOfEventsApplied = 1 }
       .run(aggregateRepository::save)
@@ -489,27 +404,22 @@ class AssessmentVersionQueryTest(
     assertThat(response?.developerMessage).isEqualTo("Timestamp cannot be before the assessment created date")
   }
 
-  fun assessmentAndIdentifierProvider() = AssessmentEntity(type = "TEST", createdAt = clock.now()).apply {
-    identifiers.add(
-      AssessmentIdentifierEntity(
-        externalIdentifier = IdentifierPair(IdentifierType.CRN, UUID.randomUUID().toString()),
-        assessment = this,
-        createdAt = clock.now(),
-      ),
-    )
-  }.let { assessment ->
-    listOf(
-      Arguments.of(assessment, UuidIdentifier(assessment.uuid)),
-      Arguments.of(
-        assessment,
-        with(assessment.identifiers.first()) {
-          ExternalIdentifier(
-            identifier = externalIdentifier.id,
-            identifierType = externalIdentifier.type,
-            assessmentType = assessment.type,
-          )
-        },
-      ),
+  fun assessmentAndIdentifierProvider(): List<Arguments> {
+    val assessment = {
+      AssessmentEntity(type = "TEST", createdAt = clock.now()).apply {
+        identifiers.add(
+          AssessmentIdentifierEntity(
+            externalIdentifier = IdentifierPair(IdentifierType.CRN, UUID.randomUUID().toString()),
+            assessment = this,
+            createdAt = clock.now(),
+          ),
+        )
+      }
+    }
+
+    return listOf(
+      assessment().let { Arguments.of(it, UuidIdentifier(it.uuid)) },
+      assessment().let { Arguments.of(it, ExternalIdentifier(it.identifiers.first().externalIdentifier.id, IdentifierType.CRN, it.type)) },
     )
   }
 }

@@ -22,12 +22,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.Integr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertIs
@@ -57,18 +57,20 @@ class UpdateCollectionItemAnswersCommandTest(
     val collectionUuid = UUID.randomUUID()
     val collectionItemToBeUnchangedUuid = UUID.randomUUID()
     val collectionItemToBeUpdatedUuid = UUID.randomUUID()
+
     val aggregateEntity = AggregateEntity(
       assessment = assessmentEntity,
-      updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+      updatedAt = LocalDateTime.parse("2025-01-01T12:20:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
-      eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
+      eventsTo = LocalDateTime.parse("2025-01-01T12:20:00"),
+      position = 0,
       data = AssessmentAggregate().apply {
         formVersion = "1"
         collections.add(
           Collection(
             uuid = collectionUuid,
-            createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-            updatedAt = LocalDateTime.parse("2025-01-01T13:00:00"),
+            createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
+            updatedAt = LocalDateTime.parse("2025-01-01T12:05:00"),
             name = "COLLECTION_NAME",
             items = mutableListOf(
               CollectionItem(
@@ -102,11 +104,12 @@ class UpdateCollectionItemAnswersCommandTest(
         EventEntity(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
-          createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
+          createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -117,6 +120,7 @@ class UpdateCollectionItemAnswersCommandTest(
             name = "COLLECTION_NAME",
             parentCollectionItemUuid = null,
           ),
+          position = 1,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -124,11 +128,12 @@ class UpdateCollectionItemAnswersCommandTest(
           createdAt = LocalDateTime.parse("2025-01-01T12:10:00"),
           data = CollectionItemAddedEvent(
             collectionUuid = collectionUuid,
-            collectionItemUuid = UUID.randomUUID(),
+            collectionItemUuid = collectionItemToBeUnchangedUuid,
             answers = mutableMapOf("title" to SingleValue("unchanged_1")),
             properties = mutableMapOf(),
             index = null,
           ),
+          position = 2,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -136,7 +141,7 @@ class UpdateCollectionItemAnswersCommandTest(
           createdAt = LocalDateTime.parse("2025-01-01T12:20:00"),
           data = CollectionItemAddedEvent(
             collectionUuid = collectionUuid,
-            collectionItemUuid = UUID.randomUUID(),
+            collectionItemUuid = collectionItemToBeUpdatedUuid,
             answers = mutableMapOf(
               "title" to SingleValue("unchanged_2"),
               "to_be_removed" to SingleValue("should_not_exist"),
@@ -144,6 +149,7 @@ class UpdateCollectionItemAnswersCommandTest(
             properties = mutableMapOf(),
             index = null,
           ),
+          position = 3,
         ),
       ),
     )
@@ -175,12 +181,12 @@ class UpdateCollectionItemAnswersCommandTest(
     assertThat(response?.commands?.first()?.request).isEqualTo(request.commands.first())
     assertIs<CommandSuccessCommandResult>(response?.commands?.first()?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(5)
     assertThat(eventsForAssessment.last().data).isInstanceOf(CollectionItemAnswersUpdatedEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),

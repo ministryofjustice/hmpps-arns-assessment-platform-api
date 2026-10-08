@@ -6,10 +6,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentVersionCacheService
 
 @Component
 class AssessmentVersionQueryHandler(
   private val services: QueryHandlerServiceBundle,
+  private val cache: AssessmentVersionCacheService,
 ) : QueryHandler<AssessmentVersionQuery> {
   override val type = AssessmentVersionQuery::class
   override fun handle(query: AssessmentVersionQuery): AssessmentVersionQueryResult {
@@ -29,7 +31,7 @@ class AssessmentVersionQueryHandler(
         ?: services.userDetails.findByUserUuid(userUuid).run(User::from)
     }
 
-    return AssessmentVersionQueryResult(
+    val result = AssessmentVersionQueryResult(
       assessmentUuid = assessment.uuid,
       aggregateUuid = aggregate.uuid,
       assessmentType = assessment.type,
@@ -44,5 +46,11 @@ class AssessmentVersionQueryHandler(
       assignedUser = assignedUser,
       flags = data.flags,
     )
+
+    if (query.timestamp == null) {
+      cache.cacheLatest(result)
+    }
+
+    return result
   }
 }

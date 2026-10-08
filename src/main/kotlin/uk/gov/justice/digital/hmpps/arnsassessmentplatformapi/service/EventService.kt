@@ -2,9 +2,9 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.GroupEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.UndeleteNotAtTailException
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -12,13 +12,54 @@ import java.util.UUID
 class EventService(
   private val eventRepository: EventRepository,
 ) {
-  private val parentEvent = ThreadLocal<EventEntity<GroupEvent>?>()
-  fun setParentEvent(event: EventEntity<GroupEvent>) = parentEvent.set(event)
-  fun clearParentEvent() = parentEvent.remove()
+  fun findAllForPointInTime(
+    assessmentUuid: UUID,
+    pointInTime: LocalDateTime,
+  ) = eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessmentUuid, pointInTime)
 
-  fun findAllForPointInTime(assessmentUuid: UUID, pointInTime: LocalDateTime) = eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(assessmentUuid, pointInTime)
+  fun findAllBetween(
+    assessmentUuid: UUID,
+    from: LocalDateTime,
+    to: LocalDateTime,
+  ) = eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanAndCreatedAtLessThanEqual(assessmentUuid, from, to)
 
-  fun <E : Event> save(event: EventEntity<E>): EventEntity<E> = eventRepository.save(event.apply { parent = parentEvent.get() })
+  fun findAllIncludingDeleted(assessmentUuid: UUID) = eventRepository.findAllIncludingDeleted(assessmentUuid)
 
-  fun saveAll(events: List<EventEntity<*>>): List<EventEntity<*>> = eventRepository.saveAll(events.map { it.apply { parent = parentEvent.get() } })
+  fun findByUuidsIncludingDeleted(eventUuids: Set<UUID>): List<EventEntity<*>> = eventRepository.findByUuidsIncludingDeleted(eventUuids)
+
+  fun saveAll(entities: List<EventEntity<*>>): List<EventEntity<*>> {
+    entities.groupBy { it.assessment.uuid }
+      .forEach { (assessmentUuid, events) ->
+        val maxPosition = eventRepository.findMaxPositionForAssessment(assessmentUuid) ?: -1
+        events.forEachIndexed { index, entity -> entity.position = entity.position ?: (maxPosition + 1 + index) }
+      }
+    return eventRepository.saveAll(entities)
+  }
+
+  fun <E : Event> save(event: EventEntity<E>): EventEntity<E> = eventRepository.save(event)
+
+  fun softDelete(assessmentUuid: UUID, from: LocalDateTime) {
+    eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid, from).map {
+      it.apply { deleted = true }
+    }.run(eventRepository::saveAll)
+  }
+
+  fun undelete(assessmentUuid: UUID, from: LocalDateTime) {
+    val deletedEvents = eventRepository.findAllDeletedByAssessmentUuidFrom(assessmentUuid, from)
+    val firstDeletedPosition = deletedEvents.minOfOrNull { checkNotNull(it.position) } ?: return
+
+    // Events written after the deleted ones were built without them, so replaying them together isn't safe
+    if (eventRepository.existsByAssessmentUuidAndPositionGreaterThan(assessmentUuid, firstDeletedPosition)) {
+      throw UndeleteNotAtTailException(assessmentUuid, from)
+    }
+
+    deletedEvents.map { it.apply { deleted = false } }.run(eventRepository::saveAll)
+  }
+
+  fun findAssessmentsSoftDeletedSince(
+    assessmentType: String,
+    since: LocalDateTime,
+  ) = eventRepository.findAssessmentsSoftDeletedSince(assessmentType, since)
+
+  fun hardDelete(events: List<EventEntity<*>>) = eventRepository.deleteAll(events)
 }

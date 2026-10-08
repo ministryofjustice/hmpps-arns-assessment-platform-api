@@ -21,9 +21,21 @@ spring:
   http:
     codecs:
       max-in-memory-size: 10MB
+  data:
+    redis:
+      host: ${cache.redis.host:localhost}
+      port: ${cache.redis.port:6379}
+      password: ${cache.redis.auth-token:}
+      ssl:
+        enabled: ${cache.redis.ssl.enabled:false}
   web:
     error:
       include-message: always
+
+# Override the swagger-ui version to support the bump in dependency
+springdoc:
+  swagger-ui:
+    version: 5.32.15
 
 server:
   port: 8080
@@ -56,6 +68,8 @@ management:
         time-to-live: 2000ms
 
 app:
+  query:
+    max-lookback-days: ${QUERY_MAX_LOOKBACK_DAYS:1}
   services:
     hmpps-auth:
       url: ${hmpps-auth.url:http://localhost:8090/auth}

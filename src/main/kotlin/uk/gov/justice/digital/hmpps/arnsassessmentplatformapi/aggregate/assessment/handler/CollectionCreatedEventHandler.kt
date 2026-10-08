@@ -6,8 +6,10 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionCreatedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
 class CollectionCreatedEventHandler(
@@ -19,7 +21,7 @@ class CollectionCreatedEventHandler(
   override fun handle(
     event: EventEntity<CollectionCreatedEvent>,
     state: AssessmentState,
-  ): AssessmentState {
+  ): EventHandlerResult<AssessmentState> {
     val collection = with(event.data) {
       Collection(
         uuid = collectionUuid,
@@ -32,9 +34,11 @@ class CollectionCreatedEventHandler(
 
     val aggregate = state.getForWrite(clock)
 
-    val collections = if (event.data.parentCollectionItemUuid != null) {
-      aggregate.data.getCollectionItem(event.data.parentCollectionItemUuid)?.collections
-        ?: throw CollectionItemNotFoundException(event.data.parentCollectionItemUuid, aggregate.uuid)
+    val parentCollectionItemUuid = event.data.parentCollectionItemUuid
+
+    val collections = if (parentCollectionItemUuid != null) {
+      aggregate.data.getCollectionItem(parentCollectionItemUuid)?.collections
+        ?: throw CollectionItemNotFoundException(parentCollectionItemUuid, aggregate.uuid)
     } else {
       aggregate.data.collections
     }
@@ -50,6 +54,15 @@ class CollectionCreatedEventHandler(
       numberOfEventsApplied += 1
     }
 
-    return state
+    return EventHandlerResult(
+      state = state,
+      timeline = TimelineEntity.resolver(
+        event,
+        mapOf(
+          "collection" to event.data.name,
+          "collectionUuid" to event.data.collectionUuid,
+        ),
+      ),
+    )
   }
 }

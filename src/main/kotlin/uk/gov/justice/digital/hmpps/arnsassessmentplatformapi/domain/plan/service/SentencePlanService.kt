@@ -1,0 +1,131 @@
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.plan.service
+
+import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateTimelineItemCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveCollectionItemCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateCollectionItemPropertiesCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.RetryableCommandDispatcher
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.plan.exception.AssessmentNotPlanException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.bus.QueryBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
+import java.time.LocalDateTime
+import java.util.UUID
+
+@Service
+class SentencePlanService(
+  private val commandDispatcher: RetryableCommandDispatcher,
+  private val queryBus: QueryBus,
+) {
+  fun newPeriodOfSupervision(assessmentUuid: UUID, userDetails: UserDetails) {
+    val assessment = queryBus.dispatch(
+      AssessmentVersionQuery(
+        user = userDetails,
+        assessmentIdentifier = UuidIdentifier(assessmentUuid),
+      ),
+    ) as AssessmentVersionQueryResult
+
+    if (assessment.assessmentType != "SENTENCE_PLAN") throw AssessmentNotPlanException(assessmentUuid)
+
+    val goalsToRemove = assessment.collections.firstOrNull { it.name == "GOALS" }
+      ?.let { goalsCollection ->
+        goalsCollection.items
+          .filter {
+            val status = it.properties["status"] as SingleValue
+            status.value == "ACTIVE" || status.value == "FUTURE"
+          }
+      }.orEmpty()
+
+    val now = LocalDateTime.now().toString()
+
+    val noteText = "Automatically removed as the previous supervision period has ended."
+
+    val goalCommands = goalsToRemove.flatMap { goal ->
+      val notesCollection = goal.collections.firstOrNull { it.name == "NOTES" }
+
+      val createNotesCollection = if (notesCollection == null) {
+        CreateCollectionCommand(
+          name = "NOTES",
+          parentCollectionItemUuid = goal.uuid.toReference(),
+          user = userDetails,
+          assessmentUuid = assessmentUuid.toReference(),
+        )
+      } else {
+        null
+      }
+
+      val notesCollectionUuid = notesCollection?.uuid ?: createNotesCollection!!.collectionUuid
+
+      listOfNotNull(
+        UpdateCollectionItemPropertiesCommand(
+          collectionItemUuid = goal.uuid.toReference(),
+          added = mapOf(
+            "status" to SingleValue("REMOVED"),
+            "status_date" to SingleValue(now),
+          ),
+          removed = emptyList(),
+          user = userDetails,
+          assessmentUuid = assessmentUuid.toReference(),
+        ),
+        UpdateCollectionItemAnswersCommand(
+          collectionItemUuid = goal.uuid.toReference(),
+          added = emptyMap(),
+          removed = listOf("target_date"),
+          user = userDetails,
+          assessmentUuid = assessmentUuid.toReference(),
+        ),
+        createNotesCollection,
+        AddCollectionItemCommand(
+          collectionUuid = notesCollectionUuid.toReference(),
+          answers = mapOf(
+            "note" to SingleValue(noteText),
+            "created_by" to SingleValue("System"),
+          ),
+          properties = mapOf(
+            "type" to SingleValue("REMOVED"),
+            "created_at" to SingleValue(now),
+          ),
+          index = null,
+          user = userDetails,
+          assessmentUuid = assessmentUuid.toReference(),
+        ),
+      )
+    }
+
+    val agreementCommands = assessment.collections
+      .firstOrNull { it.name == "PLAN_AGREEMENTS" }
+      ?.let { planAgreements ->
+        planAgreements.items.map {
+          RemoveCollectionItemCommand(
+            collectionItemUuid = it.uuid.toReference(),
+            user = userDetails,
+            assessmentUuid = assessmentUuid.toReference(),
+          )
+        }
+      }.orEmpty()
+
+    val timelineCommands = listOf(
+      CreateTimelineItemCommand(
+        timestamp = LocalDateTime.now(),
+        user = userDetails,
+        assessmentUuid = assessmentUuid.toReference(),
+        timeline = Timeline(
+          type = "NEW_PERIOD_OF_SUPERVISION",
+          data = mapOf(
+            "Goals removed" to goalsToRemove.size,
+          ),
+        ),
+      ),
+    )
+
+    commandDispatcher.dispatch(listOf(goalCommands, agreementCommands, timelineCommands).flatten())
+  }
+}

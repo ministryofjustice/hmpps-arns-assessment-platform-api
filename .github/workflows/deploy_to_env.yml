@@ -19,6 +19,13 @@ on:
         default: ''
         type: string
 
+<<<<<<< HEAD
+=======
+permissions:
+  contents: read
+  packages: write
+
+>>>>>>> main
 env:
   dev: 'playwright-action.yml'
   test: 'playwright-action-test.yml'
@@ -30,6 +37,12 @@ jobs:
     with:
       environment: ${{ inputs.environment }}
       image_tag: ${{ inputs.image_tag }}
+  int_test:
+    needs: deploy_to_env
+    uses: ./.github/workflows/int_test.yml
+    with:
+      environment: ${{ inputs.environment }}
+    secrets: inherit
   trigger_integration_tests:
     name: Trigger integration tests
     if: contains(fromJSON('["dev", "test"]'), inputs.environment)
@@ -37,7 +50,7 @@ jobs:
     needs: deploy_to_env
     steps:
       - name: Generate Token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         id: generate-token
         with:
           app-id: ${{ secrets.INTEGRATION_TESTS_TRIGGER_APP_ID }}
@@ -47,7 +60,7 @@ jobs:
           repositories:
             hmpps-arns-integrations-test-playwright
       - name: Run integration tests
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           github-token: ${{ steps.generate-token.outputs.token }}
           script: |
@@ -55,5 +68,6 @@ jobs:
               owner: context.repo.owner,
               repo: 'hmpps-arns-integrations-test-playwright',
               workflow_id: '${{ env[inputs.environment] }}',
-              ref: 'main'
+              ref: 'main',
+              inputs: { "source":"aap" }
             })

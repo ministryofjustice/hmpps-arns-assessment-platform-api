@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifi
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.PageInfo
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.TimelineQueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
@@ -38,6 +39,7 @@ class TimelineQueryHandlerTest {
   val stateService: StateService = mockk()
   val userDetailsService: UserDetailsService = mockk()
   val timelineService: TimelineService = mockk()
+  val eventService: EventService = mockk()
   val clock: Clock = mockk()
 
   val services = QueryHandlerServiceBundle(
@@ -45,6 +47,7 @@ class TimelineQueryHandlerTest {
     state = stateService,
     userDetails = userDetailsService,
     timeline = timelineService,
+    event = eventService,
     clock = clock,
   )
   val handler = TimelineQueryHandler(services)
@@ -70,7 +73,7 @@ class TimelineQueryHandlerTest {
   val count: Int = 10
   val totalPages: Int = 5
   val pageNumber: Int = 0
-  val pageRequest: PageRequest = PageRequest.of(pageNumber, count, Sort.by(Sort.Direction.DESC, "createdAt"))
+  val pageRequest: PageRequest = PageRequest.of(pageNumber, count, Sort.by(Sort.Direction.DESC, "position"))
 
   @BeforeEach
   fun setup() {
@@ -86,6 +89,7 @@ class TimelineQueryHandlerTest {
     fun `returns the timeline for a given timeframe`() {
       val timelinePage: Page<TimelineEntity> = mockk()
       val timelineEntity = TimelineEntity(
+        position = 1,
         createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
         assessment = assessment,
         user = userEntity,
@@ -127,6 +131,7 @@ class TimelineQueryHandlerTest {
           timeline = listOf(
             TimelineItem(
               uuid = timelineEntity.uuid,
+              position = 1,
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
               assessment = assessment.uuid,
@@ -147,6 +152,7 @@ class TimelineQueryHandlerTest {
     fun `returns a timeline containing a specified number of items`() {
       val timelinePage: Page<TimelineEntity> = mockk()
       val timelineEntity = TimelineEntity(
+        position = 1,
         createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
         assessment = assessment,
         user = userEntity,
@@ -185,6 +191,7 @@ class TimelineQueryHandlerTest {
           timeline = listOf(
             TimelineItem(
               uuid = timelineEntity.uuid,
+              position = 1,
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
               assessment = assessment.uuid,
@@ -210,6 +217,7 @@ class TimelineQueryHandlerTest {
     fun `returns the timeline for a given timeframe`() {
       val timelinePage: Page<TimelineEntity> = mockk()
       val timelineEntity = TimelineEntity(
+        position = 1,
         createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
         assessment = assessment,
         user = userEntity,
@@ -252,6 +260,7 @@ class TimelineQueryHandlerTest {
           timeline = listOf(
             TimelineItem(
               uuid = timelineEntity.uuid,
+              position = 1,
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
               assessment = assessment.uuid,
@@ -272,6 +281,7 @@ class TimelineQueryHandlerTest {
     fun `returns a timeline containing a specified number of items`() {
       val timelinePage: Page<TimelineEntity> = mockk()
       val timelineEntity = TimelineEntity(
+        position = 1,
         createdAt = LocalDateTime.parse("2026-01-02T12:00:00"),
         assessment = assessment,
         user = userEntity,
@@ -310,6 +320,7 @@ class TimelineQueryHandlerTest {
           timeline = listOf(
             TimelineItem(
               uuid = timelineEntity.uuid,
+              position = 1,
               timestamp = LocalDateTime.parse("2026-01-02T12:00:00"),
               user = User(userEntity.uuid, user.name),
               assessment = assessment.uuid,

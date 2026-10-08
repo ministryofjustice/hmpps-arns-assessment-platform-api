@@ -6,8 +6,10 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemAddedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
 class CollectionItemAddedEventHandler(
@@ -19,7 +21,7 @@ class CollectionItemAddedEventHandler(
   override fun handle(
     event: EventEntity<CollectionItemAddedEvent>,
     state: AssessmentState,
-  ): AssessmentState {
+  ): EventHandlerResult<AssessmentState> {
     val collectionItem = with(event.data) {
       CollectionItem(
         uuid = collectionItemUuid,
@@ -35,8 +37,10 @@ class CollectionItemAddedEventHandler(
     val collection = aggregate.data.getCollection(event.data.collectionUuid)
       ?: throw CollectionNotFoundException(event.data.collectionUuid, aggregate.uuid)
 
-    if (event.data.index != null) {
-      collection.items.add(event.data.index, collectionItem)
+    val index = event.data.index
+
+    if (index != null && index <= collection.items.size) {
+      collection.items.add(index, collectionItem)
     } else {
       collection.items.add(collectionItem)
     }
@@ -51,6 +55,17 @@ class CollectionItemAddedEventHandler(
       numberOfEventsApplied += 1
     }
 
-    return state
+    return EventHandlerResult(
+      state = state,
+      timeline = TimelineEntity.resolver(
+        event,
+        mapOf(
+          "index" to (event.data.index ?: (collection.items.size - 1)),
+          "collection" to collection.name,
+          "collectionItemUuid" to event.data.collectionItemUuid,
+          "collectionUuid" to event.data.collectionUuid,
+        ),
+      ),
+    )
   }
 }

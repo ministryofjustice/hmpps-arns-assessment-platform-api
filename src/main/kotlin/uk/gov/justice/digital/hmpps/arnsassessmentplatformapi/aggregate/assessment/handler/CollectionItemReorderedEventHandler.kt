@@ -6,7 +6,9 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessme
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.exception.CollectionItemNotFoundException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.CollectionItemReorderedEvent
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus.EventHandlerResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
 
 @Component
 class CollectionItemReorderedEventHandler(
@@ -18,12 +20,20 @@ class CollectionItemReorderedEventHandler(
   override fun handle(
     event: EventEntity<CollectionItemReorderedEvent>,
     state: AssessmentState,
-  ): AssessmentState {
+  ): EventHandlerResult<AssessmentState> {
     val aggregate = state.getForWrite(clock)
 
-    if (!aggregate.data.collections.any { collection -> collection.reorderItem(event.data.collectionItemUuid, event.data.index) }) {
-      throw CollectionItemNotFoundException(event.data.collectionItemUuid, aggregate.uuid)
-    }
+    val collection = aggregate.data.getCollectionWithItem(event.data.collectionItemUuid)
+      ?: throw CollectionItemNotFoundException(event.data.collectionItemUuid, aggregate.uuid)
+
+    val timelineData = mapOf(
+      "collection" to collection.name,
+      "collectionItemUuid" to event.data.collectionItemUuid,
+      "index" to event.data.index,
+      "previousIndex" to collection.items.indexOf(collection.findItem(event.data.collectionItemUuid)),
+    )
+
+    collection.reorderItem(event.data.collectionItemUuid, event.data.index)
 
     aggregate.data.apply {
       collaborators.add(event.user.uuid)
@@ -35,6 +45,9 @@ class CollectionItemReorderedEventHandler(
       numberOfEventsApplied += 1
     }
 
-    return state
+    return EventHandlerResult(
+      state = state,
+      timeline = TimelineEntity.resolver(event, timelineData),
+    )
   }
 }

@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.clock.Clock
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.QueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
@@ -17,6 +18,7 @@ class QueryHandlerServiceBundle(
   val state: StateService,
   val userDetails: UserDetailsService,
   val timeline: TimelineService,
+  val event: EventService,
   val clock: Clock,
 )
 

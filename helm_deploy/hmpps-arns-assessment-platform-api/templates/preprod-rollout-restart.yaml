@@ -1,0 +1,25 @@
+{{- if eq .Values.global.environment "preprod" -}}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: aap-api-rollout-restart
+spec:
+  schedule: "30 8 * * 0" # 8:30AM on Sunday, after the DB refresh job has run
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: restart-deployment
+          restartPolicy: OnFailure
+          containers:
+            - name: kubectl
+              image: bitnami/kubectl:latest
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  kubectl rollout restart deployment/hmpps-arns-assessment-platform-api \
+                    -n {{ .Release.Namespace }}
+{{- end }}

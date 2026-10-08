@@ -11,13 +11,13 @@ import tools.jackson.databind.ObjectMapper
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentIdentifierEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierPair
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.RenderedValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.SubjectAccessRequestAssessmentVersion
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.SubjectAccessRequestQueryResult
@@ -90,6 +90,7 @@ class SubjectAccessRequestTest(
         eventsTo = LocalDateTime.parse("2026-01-02T12:00:00"),
         assessment = assessment,
         numberOfEventsApplied = 3,
+        position = 0,
         data = AssessmentAggregate().apply {
           answers["foo"] = SingleValue("foo_value")
           formVersion = "v1.0"

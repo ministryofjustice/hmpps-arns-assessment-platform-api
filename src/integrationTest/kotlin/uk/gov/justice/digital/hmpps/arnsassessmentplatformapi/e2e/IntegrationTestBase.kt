@@ -1,0 +1,60 @@
+package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.e2e
+
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.http.MediaType
+import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.expectBody
+import org.springframework.web.reactive.function.BodyInserters
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.e2e.dto.TokenDto
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.e2e.helpers.FailedTestLogger
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(FailedTestLogger::class)
+abstract class IntegrationTestBase {
+
+  protected lateinit var webTestClient: WebTestClient
+  protected lateinit var authTestClient: WebTestClient
+
+  @BeforeAll
+  fun setup() {
+    val authBaseUrl = System.getenv("AUTH_BASE_URL")
+      ?: "https://sign-in-dev.hmpps.service.justice.gov.uk"
+    val apiBaseUrl = System.getenv("AAP_TEST_BASE_URL")
+      ?: "https://arns-assessment-platform-api-dev.hmpps.service.justice.gov.uk"
+
+    authTestClient = WebTestClient.bindToServer()
+      .baseUrl(authBaseUrl)
+      .build()
+
+    val clientId = System.getenv("AAP_CLIENT_ID") ?: "local-development-client-id"
+    val clientSecret = System.getenv("AAP_CLIENT_SECRET") ?: "default_secret"
+
+    val token = fetchAccessToken(clientId, clientSecret)
+
+    webTestClient = WebTestClient.bindToServer()
+      .baseUrl(apiBaseUrl)
+      .defaultHeader("Authorization", "Bearer $token")
+      .entityExchangeResultConsumer { result ->
+        FailedTestLogger.record(result)
+      }
+      .build()
+  }
+
+  private fun fetchAccessToken(clientId: String, clientSecret: String): String {
+    val body = authTestClient.post()
+      .uri("/auth/oauth/token")
+      .headers { it.setBasicAuth(clientId, clientSecret) }
+      .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+      .body(BodyInserters.fromFormData("grant_type", "client_credentials"))
+      .exchange()
+      .expectStatus()
+      .isOk
+      .expectBody<TokenDto>()
+      .returnResult()
+      .responseBody
+
+    return body?.access_token ?: throw IllegalStateException("Failed to retrieve OAuth access token")
+  }
+}

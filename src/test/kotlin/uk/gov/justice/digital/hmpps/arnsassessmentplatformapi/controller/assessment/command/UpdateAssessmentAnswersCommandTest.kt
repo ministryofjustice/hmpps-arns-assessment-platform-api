@@ -17,12 +17,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.MultiValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
@@ -52,6 +52,7 @@ class UpdateAssessmentAnswersCommandTest(
       updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
+      position = 0,
       data = AssessmentAggregate().apply {
         formVersion = "1"
         answers.putAll(
@@ -74,6 +75,7 @@ class UpdateAssessmentAnswersCommandTest(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -86,6 +88,7 @@ class UpdateAssessmentAnswersCommandTest(
             ),
             removed = emptyList(),
           ),
+          position = 1,
         ),
       ),
     )
@@ -131,12 +134,12 @@ class UpdateAssessmentAnswersCommandTest(
     assertThat(response?.commands[0]?.request).isEqualTo(expectedCommandRequest)
     assertIs<CommandSuccessCommandResult>(response?.commands[0]?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(3)
     assertThat(eventsForAssessment.last().data).isInstanceOf(AssessmentAnswersUpdatedEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),

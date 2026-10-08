@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletRequest
@@ -10,16 +12,19 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBus
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.CommandBusFactory
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.CommandsRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.request.QueriesRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.CommandsResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
@@ -31,9 +36,23 @@ class AssessmentControllerTest(
   private val assessmentRepository: AssessmentRepository,
   @Autowired
   private val aggregateRepository: AggregateRepository,
-) : IntegrationTestBase() {
   @Autowired
-  private lateinit var commandBus: CommandBus
+  private val commandBusFactory: CommandBusFactory,
+) : IntegrationTestBase() {
+  val commandBus = commandBusFactory.create()
+
+  private fun createAssessment() = assertIs<CreateAssessmentCommandResult>(
+    command(CreateAssessmentCommand(testUserDetails, assessmentType = "TEST", formVersion = "1")).commands.single().result,
+  ).assessmentUuid
+
+  private fun latestAggregate(assessmentUuid: UUID) = aggregateRepository.findTopByAssessmentUuidAndDataTypeOrderByPositionDesc(
+    assessmentUuid,
+    AssessmentAggregate::class.simpleName!!,
+  )
+
+  private fun rebuild(assessmentUuid: UUID, roles: List<String> = listOf("ROLE_AAP__COORDINATOR_RW")) = webTestClient.post().uri("/assessment/$assessmentUuid/rebuild")
+    .headers(setAuthorisation(roles = roles))
+    .exchange()
 
   @Nested
   inner class Command {
@@ -157,8 +176,8 @@ class AssessmentControllerTest(
       RequestContextHolder.setRequestAttributes(ServletRequestAttributes(httpRequest))
 
       try {
-        commandBus.dispatch(assessment1)
-        commandBus.dispatch(assessment2)
+        commandBus.dispatchAndPersist(listOf(assessment1))
+        commandBus.dispatchAndPersist(listOf(assessment2))
       } finally {
         RequestContextHolder.resetRequestAttributes()
       }
@@ -194,12 +213,78 @@ class AssessmentControllerTest(
       assertIs<AssessmentVersionQueryResult>(response?.queries[1]?.result)
 
       listOf(assessment1, assessment2).forEach { assessment ->
-        aggregateRepository.findByAssessmentAndTypeBeforeDate(
+        aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
           assessment.assessmentUuid.value,
           AssessmentAggregate::class.simpleName!!,
           clock.now(),
         ).let { assertThat(it).isNotNull() }
       }
+    }
+  }
+
+  @Nested
+  inner class RebuildAggregates {
+    @Test
+    fun `it replaces existing aggregates with ones rebuilt from events`() {
+      val assessmentUuid = createAssessment()
+
+      command(
+        UpdateAssessmentAnswersCommand(
+          user = testUserDetails,
+          assessmentUuid = assessmentUuid.toReference(),
+          added = mapOf("q1" to SingleValue("a1"), "q2" to SingleValue("a2")),
+          removed = emptyList(),
+        ),
+        UpdateAssessmentAnswersCommand(
+          user = testUserDetails,
+          assessmentUuid = assessmentUuid.toReference(),
+          added = mapOf("q3" to SingleValue("a3")),
+          removed = listOf("q2"),
+        ),
+      )
+
+      val originalAggregate = latestAggregate(assessmentUuid)!!
+      val originalData = originalAggregate.data as AssessmentAggregate
+
+      rebuild(assessmentUuid).expectStatus().isOk
+
+      val rebuiltAggregate = latestAggregate(assessmentUuid)!!
+      val rebuiltData = rebuiltAggregate.data as AssessmentAggregate
+
+      assertThat(aggregateRepository.findAll().map { it.uuid }).doesNotContain(originalAggregate.uuid)
+      assertThat(rebuiltAggregate.uuid).isNotEqualTo(originalAggregate.uuid)
+      assertThat(rebuiltData).isEqualTo(originalData)
+      assertThat(rebuiltData.answers).isEqualTo(mapOf("q1" to SingleValue("a1"), "q3" to SingleValue("a3")))
+    }
+
+    @Test
+    fun `the assessment can still be queried after a rebuild`() {
+      val assessmentUuid = createAssessment()
+
+      command(
+        UpdateAssessmentAnswersCommand(
+          user = testUserDetails,
+          assessmentUuid = assessmentUuid.toReference(),
+          added = mapOf("q1" to SingleValue("a1")),
+          removed = emptyList(),
+        ),
+      )
+
+      rebuild(assessmentUuid).expectStatus().isOk
+
+      val response = query(AssessmentVersionQuery(testUserDetails, UuidIdentifier(assessmentUuid)))
+        .expectStatus().isOk
+        .expectBody(QueriesResponse::class.java)
+        .returnResult()
+        .responseBody
+
+      val result = assertIs<AssessmentVersionQueryResult>(response?.queries?.single()?.result)
+      assertThat(result.answers).isEqualTo(mapOf("q1" to SingleValue("a1")))
+    }
+
+    @Test
+    fun `it returns 404 when the assessment does not exist`() {
+      rebuild(UUID.randomUUID()).expectStatus().isNotFound
     }
   }
 
@@ -262,7 +347,7 @@ class AssessmentControllerTest(
         RequestContextHolder.setRequestAttributes(ServletRequestAttributes(httpRequest))
 
         try {
-          commandBus.dispatch(assessment)
+          commandBus.dispatchAndPersist(listOf(assessment))
         } finally {
           RequestContextHolder.resetRequestAttributes()
         }
@@ -301,6 +386,25 @@ class AssessmentControllerTest(
           .bodyValue(request)
           .exchange()
           .expectStatus().isForbidden
+      }
+    }
+
+    @Nested
+    inner class RebuildEndpoint {
+      @ParameterizedTest
+      @ValueSource(strings = ["ROLE_AAP__COORDINATOR_RW", "ROLE_SENTENCE_PLAN_WRITE", "ROLE_AAP_DATA_DELETION"])
+      fun `it allows access with permitted roles`(role: String) {
+        rebuild(createAssessment(), roles = listOf(role)).expectStatus().isOk
+      }
+
+      @Test
+      fun `it denies access with no roles`() {
+        rebuild(UUID.randomUUID(), roles = listOf()).expectStatus().isForbidden
+      }
+
+      @Test
+      fun `it denies access with an unrelated role`() {
+        rebuild(UUID.randomUUID(), roles = listOf("ROLE_AAP__FRONTEND_RW")).expectStatus().isForbidden
       }
     }
   }

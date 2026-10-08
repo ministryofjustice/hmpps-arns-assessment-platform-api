@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
   JsonSubTypes.Type(value = AssessmentRolledBackEvent::class, name = "AssessmentRolledBackEvent"),
   JsonSubTypes.Type(value = AssessmentAnswersUpdatedEvent::class, name = "AssessmentAnswersUpdatedEvent"),
   JsonSubTypes.Type(value = AssessmentCreatedEvent::class, name = "AssessmentCreatedEvent"),
+  JsonSubTypes.Type(value = AssessmentFlagsUpdatedEvent::class, name = "AssessmentFlagsUpdatedEvent"),
   JsonSubTypes.Type(value = AssessmentPropertiesUpdatedEvent::class, name = "AssessmentPropertiesUpdatedEvent"),
   JsonSubTypes.Type(value = CollectionCreatedEvent::class, name = "CollectionCreatedEvent"),
   JsonSubTypes.Type(value = CollectionItemAddedEvent::class, name = "CollectionItemAddedEvent"),
@@ -16,6 +17,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
   JsonSubTypes.Type(value = CollectionItemRemovedEvent::class, name = "CollectionItemRemovedEvent"),
   JsonSubTypes.Type(value = CollectionItemReorderedEvent::class, name = "CollectionItemReorderedEvent"),
   JsonSubTypes.Type(value = FormVersionUpdatedEvent::class, name = "FormVersionUpdatedEvent"),
-  JsonSubTypes.Type(value = GroupEvent::class, name = "GroupEvent"),
+  JsonSubTypes.Type(value = RedactedEvent::class, name = "RedactedEvent"),
 )
 sealed interface Event

@@ -3,16 +3,13 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.bus
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Nested
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.Aggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.AggregateState
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.TestableEvent
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.exception.EventHandlerNotImplementedException
 import kotlin.test.Test
 import kotlin.test.assertSame
-import kotlin.test.assertTrue
 
 class EventHandlerRegistryTest {
   private class SomeEvent : TestableEvent()
@@ -58,7 +55,7 @@ class EventHandlerRegistryTest {
     }
 
     @Test
-    fun `throws when no handlers registered fora given event type`() {
+    fun `returns empty list when no handlers registered for a given event type`() {
       val handler =
         mockk<EventHandler<out Event, out AggregateState<out Aggregate<*>>>>()
 
@@ -66,28 +63,18 @@ class EventHandlerRegistryTest {
 
       val registry = EventHandlerRegistry(listOf(handler))
 
-      val exception = assertThrows(EventHandlerNotImplementedException::class.java) {
-        registry.getHandlersFor(OtherEvent::class)
-      }
+      val result = registry.getHandlersFor(OtherEvent::class)
 
-      assertTrue(
-        exception.developerMessage.contains("No handlers registered for event OtherEvent"),
-        "Should throw with a message explaining there is not handler for the given event type",
-      )
+      assertEquals(0, result.size)
     }
 
     @Test
-    fun `throws when the registry is constructed with empty handler list`() {
+    fun `returns empty list when the registry is constructed with empty handler list`() {
       val registry = EventHandlerRegistry(emptyList())
 
-      val exception = assertThrows(EventHandlerNotImplementedException::class.java) {
-        registry.getHandlersFor(SomeEvent::class)
-      }
+      val result = registry.getHandlersFor(SomeEvent::class)
 
-      assertTrue(
-        exception.developerMessage.contains("No handlers registered for event SomeEvent"),
-        "Should throw with a message explaining there is not handler for the given event type",
-      )
+      assertEquals(0, result.size)
     }
   }
 }

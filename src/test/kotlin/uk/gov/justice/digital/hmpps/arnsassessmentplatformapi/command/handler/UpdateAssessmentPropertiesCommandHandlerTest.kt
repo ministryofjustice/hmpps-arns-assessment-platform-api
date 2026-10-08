@@ -19,6 +19,7 @@ class UpdateAssessmentPropertiesCommandHandlerTest : AbstractCommandHandlerTest<
         added = mapOf("foo" to SingleValue("bar")),
         removed = listOf("baz"),
         timeline = timeline,
+        autosaved = true,
       )
       expectedEvent = AssessmentPropertiesUpdatedEvent(
         added = command.added,

@@ -19,12 +19,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.Integr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertIs
@@ -56,6 +56,7 @@ class CreateCollectionCommandTest(
       updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
+      position = 0,
       data = AssessmentAggregate().apply {
         formVersion = "1"
       },
@@ -72,6 +73,7 @@ class CreateCollectionCommandTest(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
       ),
     )
@@ -102,12 +104,12 @@ class CreateCollectionCommandTest(
     assertThat(response?.commands?.first()?.request).isEqualTo(request.commands.first())
     assertIs<CreateCollectionCommandResult>(response?.commands?.first()?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(2)
     assertThat(eventsForAssessment.last().data).isInstanceOf(CollectionCreatedEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),
@@ -131,6 +133,7 @@ class CreateCollectionCommandTest(
       updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
+      position = 0,
       data = AssessmentAggregate().apply {
         formVersion = "1"
         collections.add(
@@ -165,6 +168,7 @@ class CreateCollectionCommandTest(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
       ),
     )
@@ -195,12 +199,12 @@ class CreateCollectionCommandTest(
     assertThat(response?.commands?.first()?.request).isEqualTo(request.commands.first())
     assertIs<CreateCollectionCommandResult>(response?.commands?.first()?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(2)
     assertThat(eventsForAssessment.last().data).isInstanceOf(CollectionCreatedEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),

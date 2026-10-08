@@ -95,6 +95,37 @@ class AssessmentAggregateTest {
       assertTrue(aggregate.collections.isNotEmpty())
       assertTrue(aggregate.collaborators.isNotEmpty())
     }
+
+    @Test
+    fun `nested collections and items are deep-copied`() {
+      val nestedItem = createCollectionItem()
+      val nestedCollection = creatCollection(items = mutableListOf(nestedItem))
+      val item = createCollectionItem(collections = mutableListOf(nestedCollection))
+      val collection = creatCollection(items = mutableListOf(item))
+      val originalUpdatedAt = collection.updatedAt
+
+      val aggregate = AssessmentAggregate().apply { collections.add(collection) }
+
+      val clone = aggregate.clone()
+
+      assertEquals(aggregate, clone)
+      assertNotSame(collection, clone.collections.single())
+      assertNotSame(item, clone.getCollectionItem(item.uuid))
+      assertNotSame(nestedCollection, clone.getCollection(nestedCollection.uuid))
+      assertNotSame(nestedItem, clone.getCollectionItem(nestedItem.uuid))
+
+      clone.collections.single().updatedAt = originalUpdatedAt.plusDays(1)
+      clone.getCollectionItem(item.uuid)!!.answers["a1"] = SingleValue("changed")
+      clone.getCollectionItem(item.uuid)!!.properties["p1"] = SingleValue("changed")
+      clone.getCollection(nestedCollection.uuid)!!.items.add(createCollectionItem())
+      clone.getCollectionItem(nestedItem.uuid)!!.answers["a2"] = SingleValue("changed")
+
+      assertEquals(originalUpdatedAt, collection.updatedAt)
+      assertTrue(item.answers.isEmpty())
+      assertTrue(item.properties.isEmpty())
+      assertEquals(listOf(nestedItem), nestedCollection.items)
+      assertTrue(nestedItem.answers.isEmpty())
+    }
   }
 
   @Nested

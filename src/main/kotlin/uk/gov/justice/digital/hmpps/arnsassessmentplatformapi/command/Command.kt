@@ -13,7 +13,9 @@ data class Timeline(
   JsonSubTypes.Type(value = AddCollectionItemCommand::class, name = "AddCollectionItemCommand"),
   JsonSubTypes.Type(value = CreateAssessmentCommand::class, name = "CreateAssessmentCommand"),
   JsonSubTypes.Type(value = CreateCollectionCommand::class, name = "CreateCollectionCommand"),
-  JsonSubTypes.Type(value = GroupCommand::class, name = "GroupCommand"),
+  JsonSubTypes.Type(value = CreateTimelineItemCommand::class, name = "CreateTimelineItemCommand"),
+  JsonSubTypes.Type(value = SoftDeleteCommand::class, name = "SoftDeleteCommand"),
+  JsonSubTypes.Type(value = UndeleteCommand::class, name = "UndeleteCommand"),
   JsonSubTypes.Type(value = RemoveCollectionItemCommand::class, name = "RemoveCollectionItemCommand"),
   JsonSubTypes.Type(value = ReorderCollectionItemCommand::class, name = "ReorderCollectionItemCommand"),
   JsonSubTypes.Type(value = RollbackCommand::class, name = "RollbackCommand"),
@@ -21,6 +23,7 @@ data class Timeline(
   JsonSubTypes.Type(value = UpdateAssessmentPropertiesCommand::class, name = "UpdateAssessmentPropertiesCommand"),
   JsonSubTypes.Type(value = UpdateCollectionItemAnswersCommand::class, name = "UpdateCollectionItemAnswersCommand"),
   JsonSubTypes.Type(value = UpdateCollectionItemPropertiesCommand::class, name = "UpdateCollectionItemPropertiesCommand"),
+  JsonSubTypes.Type(value = UpdateFlagsCommand::class, name = "UpdateFlagsCommand"),
   JsonSubTypes.Type(value = UpdateFormVersionCommand::class, name = "UpdateFormVersionCommand"),
 )
 sealed interface Command {

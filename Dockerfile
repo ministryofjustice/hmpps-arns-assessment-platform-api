@@ -1,6 +1,6 @@
-FROM gradle:9-jdk21-alpine AS builder
+FROM gradle:9-jdk25-alpine AS builder
 
-FROM eclipse-temurin:25.0.2_10-jre-alpine AS runtime
+FROM eclipse-temurin:25.0.4_7-jre-alpine AS runtime
 
 FROM builder AS build
 ARG BUILD_NUMBER
@@ -10,14 +10,22 @@ ADD . .
 RUN gradle --no-daemon assemble
 
 FROM builder AS development
-RUN apk add --no-cache curl
+RUN apk upgrade --no-cache && \
+    apk add --no-cache curl
+WORKDIR /
+RUN curl -L https://github.com/glowroot/glowroot/releases/download/v0.14.6/glowroot-0.14.6-dist.zip -o glowroot.zip
+RUN unzip glowroot.zip
+RUN rm glowroot.zip
+ADD docker/glowroot /glowroot/
+RUN javac /glowroot/GlowrootDummy.java -d /glowroot/build
 WORKDIR /app
 
 FROM runtime AS production
 LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 ARG BUILD_NUMBER
 ENV BUILD_NUMBER=${BUILD_NUMBER:-1_0_0}
-RUN apk add --no-cache tzdata curl
+RUN apk upgrade --no-cache && \
+    apk add --no-cache tzdata curl
 ENV TZ=Europe/London
 RUN cp "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
 RUN addgroup --gid 2000 --system appgroup && \

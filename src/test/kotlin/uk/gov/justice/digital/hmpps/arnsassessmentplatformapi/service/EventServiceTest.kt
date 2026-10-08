@@ -4,18 +4,21 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentAnswersUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.Event
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.exception.UndeleteNotAtTailException
 import java.time.LocalDateTime
+import java.util.UUID
 
 class EventServiceTest {
   val eventRepository: EventRepository = mockk()
@@ -49,7 +52,7 @@ class EventServiceTest {
     @Test
     fun `it returns all events for an assessment before a provided timestamp`() {
       val pointInTime = LocalDateTime.parse("2025-01-01T12:00:00")
-      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(assessment.uuid, pointInTime) } returns events
+      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessment.uuid, pointInTime) } returns events
 
       val result = service.findAllForPointInTime(assessment.uuid, pointInTime)
       assertThat(result).isEqualTo(events)
@@ -58,7 +61,7 @@ class EventServiceTest {
     @Test
     fun `it returns empty when no events found`() {
       val pointInTime = LocalDateTime.parse("2025-01-01T12:00:00")
-      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqualAndParentIsNull(assessment.uuid, pointInTime) } returns emptyList()
+      every { eventRepository.findAllByAssessmentUuidAndCreatedAtIsLessThanEqual(assessment.uuid, pointInTime) } returns emptyList()
 
       val result = service.findAllForPointInTime(assessment.uuid, pointInTime)
       assertThat(result).isEmpty()
@@ -66,13 +69,178 @@ class EventServiceTest {
   }
 
   @Nested
-  inner class SaveAll {
+  inner class FindAllIncludingDeleted {
+    @Test
+    fun `returns all events for an assessment including deleted events`() {
+      every { eventRepository.findAllIncludingDeleted(assessment.uuid) } returns events
+
+      val result = service.findAllIncludingDeleted(assessment.uuid)
+
+      assertThat(result).isEqualTo(events)
+      verify(exactly = 1) { eventRepository.findAllIncludingDeleted(assessment.uuid) }
+    }
+  }
+
+  @Nested
+  inner class FindByUuidsIncludingDeleted {
+    @Test
+    fun `returns all events matching the requested UUIDs including deleted events`() {
+      val eventUuids = setOf(UUID.randomUUID(), UUID.randomUUID())
+      every { eventRepository.findByUuidsIncludingDeleted(eventUuids) } returns events
+
+      val result = service.findByUuidsIncludingDeleted(eventUuids)
+
+      assertThat(result).isEqualTo(events)
+      verify(exactly = 1) { eventRepository.findByUuidsIncludingDeleted(eventUuids) }
+    }
+  }
+
+  @Nested
+  inner class Save {
     @Test
     fun `it saves events`() {
       every { eventRepository.save(any<EventEntity<Event>>()) } answers { firstArg() }
 
       service.save(events.first())
       verify(exactly = 1) { eventRepository.save(events.first()) }
+    }
+  }
+
+  @Nested
+  inner class SaveAll {
+    @Test
+    fun `assigns positions to events without an existing position`() {
+      every { eventRepository.findMaxPositionForAssessment(assessment.uuid) } returns 10
+      every { eventRepository.saveAll(any<List<EventEntity<*>>>()) } answers { firstArg() }
+
+      val result = service.saveAll(events)
+
+      assertThat(result.map { it.position }).containsExactly(11, 12)
+      verify(exactly = 1) { eventRepository.findMaxPositionForAssessment(assessment.uuid) }
+      verify(exactly = 1) { eventRepository.saveAll(events) }
+    }
+
+    @Test
+    fun `preserves existing event positions when saving`() {
+      events.first().position = 7
+
+      every { eventRepository.findMaxPositionForAssessment(assessment.uuid) } returns 10
+      every { eventRepository.saveAll(any<List<EventEntity<*>>>()) } answers { firstArg() }
+
+      val result = service.saveAll(listOf(events.first()))
+
+      assertThat(result.single().position).isEqualTo(7)
+      verify(exactly = 1) { eventRepository.saveAll(listOf(events.first())) }
+    }
+  }
+
+  @Nested
+  inner class SoftDelete {
+    @Test
+    fun `should mark matching events as deleted and save them`() {
+      val from = now.minusHours(1)
+
+      every { eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessment.uuid, from) } returns events
+      every { eventRepository.saveAll(any<List<EventEntity<*>>>()) } answers { firstArg() }
+
+      service.softDelete(assessment.uuid, from)
+
+      verify(exactly = 1) { eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessment.uuid, from) }
+      verify(exactly = 1) { eventRepository.saveAll(events) }
+      events.forEach { assertThat(it.deleted).isTrue() }
+    }
+
+    @Test
+    fun `should save an empty list when no events match`() {
+      val from = now.minusHours(1)
+
+      every { eventRepository.findAllByAssessmentUuidAndCreatedAtGreaterThanEqual(assessment.uuid, from) } returns emptyList()
+      every { eventRepository.saveAll(any<List<EventEntity<*>>>()) } answers { firstArg() }
+
+      service.softDelete(assessment.uuid, from)
+
+      verify(exactly = 1) { eventRepository.saveAll(emptyList()) }
+    }
+  }
+
+  @Nested
+  inner class Undelete {
+    private val from = now.minusHours(1)
+
+    private fun markDeletedFromPositionOne() = events.forEachIndexed { index, event ->
+      event.deleted = true
+      event.position = index + 1
+    }
+
+    @Test
+    fun `should mark deleted events as not deleted when they are the tail of the event stream`() {
+      markDeletedFromPositionOne()
+
+      every { eventRepository.findAllDeletedByAssessmentUuidFrom(assessment.uuid, from) } returns events
+      every { eventRepository.existsByAssessmentUuidAndPositionGreaterThan(assessment.uuid, 1) } returns false
+      every { eventRepository.saveAll(any<List<EventEntity<*>>>()) } answers { firstArg() }
+
+      service.undelete(assessment.uuid, from)
+
+      verify(exactly = 1) { eventRepository.existsByAssessmentUuidAndPositionGreaterThan(assessment.uuid, 1) }
+      verify(exactly = 1) { eventRepository.saveAll(events) }
+      events.forEach { assertThat(it.deleted).isFalse() }
+    }
+
+    @Test
+    fun `should refuse to undelete when non-deleted events were written after the deleted ones`() {
+      markDeletedFromPositionOne()
+
+      every { eventRepository.findAllDeletedByAssessmentUuidFrom(assessment.uuid, from) } returns events
+      every { eventRepository.existsByAssessmentUuidAndPositionGreaterThan(assessment.uuid, 1) } returns true
+
+      assertThatThrownBy { service.undelete(assessment.uuid, from) }
+        .isInstanceOf(UndeleteNotAtTailException::class.java)
+
+      verify(exactly = 0) { eventRepository.saveAll(any<List<EventEntity<*>>>()) }
+      events.forEach { assertThat(it.deleted).isTrue() }
+    }
+
+    @Test
+    fun `should do nothing when no deleted events match`() {
+      every { eventRepository.findAllDeletedByAssessmentUuidFrom(assessment.uuid, from) } returns emptyList()
+
+      service.undelete(assessment.uuid, from)
+
+      verify(exactly = 0) { eventRepository.existsByAssessmentUuidAndPositionGreaterThan(any(), any()) }
+      verify(exactly = 0) { eventRepository.saveAll(any<List<EventEntity<*>>>()) }
+    }
+  }
+
+  @Nested
+  inner class FindAssessmentsSoftDeletedSince {
+    @Test
+    fun `returns assessments soft deleted since the given timestamp`() {
+      val since = LocalDateTime.now()
+      val type = "SENTENCE_PLAN"
+      val assessments = listOf(
+        AssessmentEntity(type = type, createdAt = now.plusMinutes(2)),
+        AssessmentEntity(type = type, createdAt = now.plusMinutes(1)),
+      )
+
+      every { eventRepository.findAssessmentsSoftDeletedSince(type, since) } returns assessments
+
+      val result = service.findAssessmentsSoftDeletedSince(type, since)
+
+      assertThat(result).isEqualTo(assessments)
+      verify(exactly = 1) { eventRepository.findAssessmentsSoftDeletedSince(type, since) }
+    }
+  }
+
+  @Nested
+  inner class HardDelete {
+    @Test
+    fun `deletes the supplied events`() {
+      every { eventRepository.deleteAll(events) } returns Unit
+
+      service.hardDelete(events)
+
+      verify(exactly = 1) { eventRepository.deleteAll(events) }
     }
   }
 }

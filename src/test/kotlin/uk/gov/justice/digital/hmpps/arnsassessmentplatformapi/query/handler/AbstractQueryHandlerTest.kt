@@ -21,6 +21,8 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.Query
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.QueryResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.AssessmentVersionCacheService
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.EventService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.StateService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.TimelineService
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.service.UserDetailsService
@@ -37,6 +39,7 @@ abstract class AbstractQueryHandlerTest {
   val stateProvider: StateService.StateForType<AssessmentAggregate> = mockk()
   val userDetailsService: UserDetailsService = mockk()
   val timelineService: TimelineService = mockk()
+  val eventService: EventService = mockk()
   val state: AssessmentState = mockk()
   val clock: Clock = mockk()
 
@@ -45,8 +48,10 @@ abstract class AbstractQueryHandlerTest {
     state = stateService,
     userDetails = userDetailsService,
     timeline = timelineService,
+    event = eventService,
     clock = clock,
   )
+  val cacheService: AssessmentVersionCacheService = mockk()
 
   val user = UserDetails(
     id = "FOO_USER",
@@ -59,6 +64,7 @@ abstract class AbstractQueryHandlerTest {
   fun setUp() {
     clearAllMocks()
     every { clock.now() } returns now
+    every { cacheService.cacheLatest(any()) } returns Unit
   }
 
   fun test(query: Query, aggregate: AggregateEntity<AssessmentAggregate>, expectedResult: QueryResult) {
@@ -76,7 +82,13 @@ abstract class AbstractQueryHandlerTest {
       )
     }.toSet()
 
-    val handlerInstance = handler.primaryConstructor!!.call(services)
+    val handlerInstance = handler.primaryConstructor!!.let { constructor ->
+      if (constructor.parameters.size == 2) {
+        constructor.call(services, cacheService)
+      } else {
+        constructor.call(services)
+      }
+    }
 
     assertThat(handlerInstance.type).isEqualTo(query::class)
 
@@ -98,7 +110,13 @@ abstract class AbstractQueryHandlerTest {
     every { stateProvider.fetchOrCreateState(assessment, query.timestamp) } returns state
     every { stateService.stateForType(AssessmentAggregate::class) } returns stateProvider
 
-    val handlerInstance = handler.primaryConstructor!!.call(services)
+    val handlerInstance = handler.primaryConstructor!!.let { constructor ->
+      if (constructor.parameters.size == 2) {
+        constructor.call(services, cacheService)
+      } else {
+        constructor.call(services)
+      }
+    }
 
     assertThat(handlerInstance.type).isEqualTo(query::class)
 

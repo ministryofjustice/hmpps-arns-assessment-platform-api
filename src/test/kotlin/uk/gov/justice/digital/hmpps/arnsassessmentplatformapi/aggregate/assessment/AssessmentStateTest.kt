@@ -48,7 +48,7 @@ class AssessmentStateTest {
         aggregates = mutableListOf(
           AggregateEntity(
             eventsTo = LocalDateTime.parse("2025-01-01T12:10:00"),
-            numberOfEventsApplied = 2,
+            numberOfEventsApplied = 50,
             assessment = assessment,
             data = AssessmentAggregate(),
             updatedAt = clock.now(),
@@ -66,14 +66,6 @@ class AssessmentStateTest {
             eventsTo = LocalDateTime.parse("2025-01-01T12:15:00"),
             uuid = latestAggregateUuid,
             numberOfEventsApplied = 0,
-            assessment = assessment,
-            data = AssessmentAggregate(),
-            updatedAt = clock.now(),
-            eventsFrom = clock.now(),
-          ),
-          AggregateEntity(
-            eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
-            numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate(),
             updatedAt = clock.now(),

@@ -15,12 +15,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.respons
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.FormVersionUpdatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
 import java.time.LocalDateTime
 import kotlin.test.assertIs
 
@@ -53,6 +53,7 @@ class UpdateFormVersionCommandTest(
       data = AssessmentAggregate().apply {
         formVersion = "1"
       },
+      position = 0,
     )
     aggregateRepository.save(aggregateEntity)
 
@@ -66,6 +67,7 @@ class UpdateFormVersionCommandTest(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
       ),
     )
@@ -94,12 +96,12 @@ class UpdateFormVersionCommandTest(
     assertThat(response?.commands[0]?.request).isEqualTo(updateCommand)
     assertIs<CommandSuccessCommandResult>(response?.commands[0]?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid).sortedBy { it.createdAt }
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid).sortedBy { it.createdAt }
 
     assertThat(eventsForAssessment.size).isEqualTo(2)
     assertThat(eventsForAssessment[1].data).isInstanceOf(FormVersionUpdatedEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),

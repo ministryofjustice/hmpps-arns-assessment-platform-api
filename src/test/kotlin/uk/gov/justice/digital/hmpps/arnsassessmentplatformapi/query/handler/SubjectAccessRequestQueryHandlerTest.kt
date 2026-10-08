@@ -60,7 +60,7 @@ class SubjectAccessRequestQueryHandlerTest : AbstractQueryHandlerTest() {
         )
       } returns setOf(assessment)
       every {
-        stateProvider.fetchLatestStateBefore(
+        stateProvider.fetchOrCreateState(
           assessment,
           toDate.atTime(LocalTime.MAX),
         )
@@ -105,7 +105,7 @@ class SubjectAccessRequestQueryHandlerTest : AbstractQueryHandlerTest() {
       )
     } returns setOf()
     every {
-      stateProvider.fetchLatestStateBefore(
+      stateProvider.fetchOrCreateState(
         assessment,
         toDate.atTime(LocalTime.MAX),
       )
@@ -134,7 +134,7 @@ class SubjectAccessRequestQueryHandlerTest : AbstractQueryHandlerTest() {
       )
     }
     verify(exactly = 1) { state.getForRead() }
-    verify(exactly = 1) { stateProvider.fetchLatestStateBefore(assessment, any()) }
+    verify(exactly = 1) { stateProvider.fetchOrCreateState(assessment, any()) }
     verify(exactly = 1) { stateService.stateForType(AssessmentAggregate::class) }
   }
 }

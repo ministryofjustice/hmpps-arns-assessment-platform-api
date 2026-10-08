@@ -4,9 +4,10 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.DailyVersionDetails
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.TimelineRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.criteria.TimelineCriteria
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.TimelineRepository
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -17,6 +18,32 @@ class TimelineService(
   fun findDailyVersions(assessmentUuid: UUID) = timelineRepository.findDailyVersionsByAssessment(assessmentUuid)
     .map { DailyVersionDetails.from(it) }
 
+  fun findAllIncludingDeleted(assessmentUuid: UUID) = timelineRepository.findAllIncludingDeleted(assessmentUuid)
+
+  fun findByUuidsIncludingDeleted(timelineUuids: Set<UUID>): List<TimelineEntity> = timelineRepository.findByUuidsIncludingDeleted(timelineUuids)
+
   fun save(entity: TimelineEntity): TimelineEntity = timelineRepository.save(entity)
-  fun saveAll(entities: List<TimelineEntity>): List<TimelineEntity> = timelineRepository.saveAll(entities)
+
+  fun saveAll(entities: List<TimelineEntity>): List<TimelineEntity> {
+    entities.groupBy { it.assessment.uuid }
+      .forEach { (assessmentUuid, timelines) ->
+        val maxPosition = timelineRepository.findMaxPositionForAssessment(assessmentUuid) ?: -1
+        timelines.forEachIndexed { index, entity -> entity.position = maxPosition + 1 + index }
+      }
+    return timelineRepository.saveAll(entities)
+  }
+
+  fun softDelete(assessmentUuid: UUID, from: LocalDateTime) {
+    timelineRepository.findByAssessmentUuidAndCreatedAtGreaterThanEqual(assessmentUuid, from).map {
+      it.apply { deleted = true }
+    }.run(timelineRepository::saveAll)
+  }
+
+  fun undelete(assessmentUuid: UUID, from: LocalDateTime) {
+    timelineRepository.findAllDeletedByAssessmentUuidFrom(assessmentUuid, from).map {
+      it.apply { deleted = false }
+    }.run(timelineRepository::saveAll)
+  }
+
+  fun hardDelete(timelineEntities: List<TimelineEntity>) = timelineRepository.deleteAll(timelineEntities)
 }

@@ -20,12 +20,12 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.Integr
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.CollectionItem
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AggregateRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.AssessmentRepository
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.EventRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.EventEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AggregateRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.EventRepository
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertIs
@@ -58,6 +58,7 @@ class AddCollectionItemCommandTest(
       updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
       eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
+      position = 0,
       data = AssessmentAggregate().apply {
         formVersion = "1"
         collections.add(
@@ -83,6 +84,7 @@ class AddCollectionItemCommandTest(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -93,6 +95,7 @@ class AddCollectionItemCommandTest(
             name = "COLLECTION_NAME",
             parentCollectionItemUuid = null,
           ),
+          position = 1,
         ),
       ),
     )
@@ -124,12 +127,12 @@ class AddCollectionItemCommandTest(
     assertThat(response?.commands?.first()?.request).isEqualTo(request.commands.first())
     assertIs<AddCollectionItemCommandResult>(response?.commands?.first()?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(3)
     assertThat(eventsForAssessment.last().data).isInstanceOf(CollectionItemAddedEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),
@@ -151,16 +154,17 @@ class AddCollectionItemCommandTest(
     val collectionUuid = UUID.randomUUID()
     val aggregateEntity = AggregateEntity(
       assessment = assessmentEntity,
-      updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
+      updatedAt = LocalDateTime.parse("2025-01-01T12:20:00"),
       eventsFrom = LocalDateTime.parse("2025-01-01T12:00:00"),
-      eventsTo = LocalDateTime.parse("2025-01-01T12:00:00"),
+      eventsTo = LocalDateTime.parse("2025-01-01T12:20:00"),
+      position = 0,
       data = AssessmentAggregate().apply {
         formVersion = "1"
         collections.add(
           Collection(
             uuid = collectionUuid,
-            createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
-            updatedAt = LocalDateTime.parse("2025-01-01T13:00:00"),
+            createdAt = LocalDateTime.parse("2025-01-01T12:05:00"),
+            updatedAt = LocalDateTime.parse("2025-01-01T12:05:00"),
             name = "COLLECTION_NAME",
             items = mutableListOf(
               CollectionItem(
@@ -191,11 +195,12 @@ class AddCollectionItemCommandTest(
         EventEntity(
           user = testUserDetailsEntity,
           assessment = assessmentEntity,
-          createdAt = LocalDateTime.parse("2025-01-01T12:30:00"),
+          createdAt = LocalDateTime.parse("2025-01-01T12:00:00"),
           data = AssessmentCreatedEvent(
             formVersion = "1",
             properties = emptyMap(),
           ),
+          position = 0,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -206,6 +211,7 @@ class AddCollectionItemCommandTest(
             name = "COLLECTION_NAME",
             parentCollectionItemUuid = null,
           ),
+          position = 1,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -218,6 +224,7 @@ class AddCollectionItemCommandTest(
             properties = mutableMapOf(),
             index = null,
           ),
+          position = 2,
         ),
         EventEntity(
           user = testUserDetailsEntity,
@@ -230,6 +237,7 @@ class AddCollectionItemCommandTest(
             properties = mutableMapOf(),
             index = null,
           ),
+          position = 3,
         ),
       ),
     )
@@ -261,12 +269,12 @@ class AddCollectionItemCommandTest(
     assertThat(response?.commands?.first()?.request).isEqualTo(request.commands.first())
     assertIs<AddCollectionItemCommandResult>(response?.commands?.first()?.result)
 
-    val eventsForAssessment = eventRepository.findAllByAssessmentUuid(assessmentEntity.uuid)
+    val eventsForAssessment = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
 
     assertThat(eventsForAssessment.size).isEqualTo(5)
     assertThat(eventsForAssessment.last().data).isInstanceOf(CollectionItemAddedEvent::class.java)
 
-    val aggregate = aggregateRepository.findByAssessmentAndTypeBeforeDate(
+    val aggregate = aggregateRepository.findTopByAssessmentUuidAndDataTypeAndEventsToLessThanEqualOrderByPositionDesc(
       assessmentEntity.uuid,
       AssessmentAggregate::class.simpleName!!,
       clock.now(),

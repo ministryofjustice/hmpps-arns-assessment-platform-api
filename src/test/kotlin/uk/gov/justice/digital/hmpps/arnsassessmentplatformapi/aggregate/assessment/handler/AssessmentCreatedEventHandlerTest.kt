@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessm
 
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentState
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.event.AssessmentCreatedEvent
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
 import java.time.LocalDateTime
@@ -12,13 +13,20 @@ class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCre
 
   override val scenarios = listOf(
     Scenario.Executes<AssessmentCreatedEvent>("handles the event").apply {
-      events = listOf(
-        eventEntityFor(
-          AssessmentCreatedEvent(
-            formVersion = "1",
-            properties = mutableMapOf(),
-          ),
+      commandTimeline = Timeline(type = "CUSTOM_TIMELINE", data = mapOf("foo" to "bar"))
+      event = eventEntityFor(
+        AssessmentCreatedEvent(
+          formVersion = "1",
+          properties = mutableMapOf(),
         ),
+      )
+      expectedTimeline = timelineEntityFor(
+        event,
+        mapOf(
+          "formVersion" to event.data.formVersion,
+          "properties" to event.data.properties.keys,
+        ),
+        commandTimeline,
       )
       initialState = AssessmentState().also { state ->
         state.aggregates.add(
@@ -38,11 +46,11 @@ class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCre
             uuid = aggregateUuid,
             updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-            eventsTo = events.last().createdAt,
+            eventsTo = event.createdAt,
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
-              formVersion = events.last().data.formVersion
+              formVersion = event.data.formVersion
               collaborators.add(user.uuid)
             },
           ),
@@ -50,13 +58,19 @@ class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCre
       }
     },
     Scenario.Executes<AssessmentCreatedEvent>("handles when no timeline provided").apply {
-      events = listOf(
-        eventEntityFor(
-          AssessmentCreatedEvent(
-            formVersion = "1",
-            properties = mutableMapOf(),
-          ),
+      event = eventEntityFor(
+        AssessmentCreatedEvent(
+          formVersion = "1",
+          properties = mutableMapOf(),
         ),
+      )
+      expectedTimeline = timelineEntityFor(
+        event,
+        mapOf(
+          "formVersion" to event.data.formVersion,
+          "properties" to event.data.properties.keys,
+        ),
+        null,
       )
       initialState = AssessmentState().also { state ->
         state.aggregates.add(
@@ -76,11 +90,11 @@ class AssessmentCreatedEventHandlerTest : AbstractEventHandlerTest<AssessmentCre
             uuid = aggregateUuid,
             updatedAt = LocalDateTime.parse("2025-01-01T12:00:00"),
             eventsFrom = LocalDateTime.parse("2025-01-01T09:00:00"),
-            eventsTo = events.last().createdAt,
+            eventsTo = event.createdAt,
             numberOfEventsApplied = 1,
             assessment = assessment,
             data = AssessmentAggregate().apply {
-              formVersion = events.last().data.formVersion
+              formVersion = event.data.formVersion
               collaborators.add(user.uuid)
             },
           ),
