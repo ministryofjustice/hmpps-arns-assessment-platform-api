@@ -6,7 +6,6 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 plugins {
   id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.11"
   id("org.jetbrains.kotlin.kapt") version "2.4.20"
-  id("au.com.dius.pact") version "4.7.0-beta.4"
   kotlin("plugin.spring") version "2.4.20"
   kotlin("plugin.jpa") version "2.4.20"
 }
@@ -23,10 +22,6 @@ configurations.named("integrationTestImplementation") {
 }
 
 version = "0.0.1-test"
-
-project.extra["pactbroker.url"] = project.properties["pactbroker.url"] ?: "http://host.docker.internal:9292"
-project.extra["pactbroker.host"] = project.properties["pactbroker.host"] ?: "host.docker.internal"
-project.extra["pactbroker.port"] = project.properties["pactbroker.port"] ?: "9292"
 
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
@@ -62,7 +57,7 @@ dependencies {
     exclude(group = "io.swagger.core.v3")
   }
   testImplementation("com.ninja-squad:springmockk:5.0.1")
-  testImplementation("au.com.dius.pact.provider:spring7:4.7.0-beta.4")
+  testImplementation("au.com.dius.pact.provider:junit5spring:4.7.5")
 }
 
 kotlin {
@@ -80,11 +75,6 @@ tasks {
       "-Dglowroot.agent.id=app",
     )
   }
-  withType<Test>().configureEach {
-    systemProperties["pactbroker.url"] = "${project.extra["pactbroker.url"]}"
-    systemProperties["pact.provider.version"] = version
-    systemProperties["pact.verifier.publishResults"] = "true"
-  }
 
   withType<Test> {
     if (File("/glowroot/glowroot.jar").exists()) {
@@ -96,15 +86,9 @@ tasks {
   }
 }
 
-pact {
-  broker {
-    pactBrokerUrl = "${project.extra["pactbroker.url"]}"
-  }
-}
-
-
 tasks.test {
   exclude("**/src/integrationTest/**")
+  exclude("*PactTest")
 }
 
 tasks.register<Test>("integrationTest") {
@@ -129,13 +113,34 @@ tasks.register<Test>("integrationTest") {
   }
 }
 
+tasks.register<Test>("pactTest") {
+  description = "Run and publish Pact provider tests"
+  group = "verification"
+
+  val testSourceSet = sourceSets["test"]
+
+  testClassesDirs = testSourceSet.output.classesDirs
+  classpath = testSourceSet.runtimeClasspath
+
+  filter {
+      includeTestsMatching("*PactTest")
+  }
+
+  systemProperty("pactbroker.url", System.getenv("PACT_BROKER_URL"))
+  systemProperty("pactbroker.auth.username", System.getenv("PACT_BROKER_USERNAME") ?: "")
+  systemProperty("pactbroker.auth.password", System.getenv("PACT_BROKER_PASSWORD") ?: "")
+
+  val consumerBranch = System.getenv("PACT_CONSUMER_BRANCH") ?: "consumer-contract-test-load-plan"
+  val requestedConsumerName = System.getenv("PACT_CONSUMER_NAME") ?: "hmpps-arns-assessment-platform-ui"
+
+  systemProperty("pactbroker.providerBranch", System.getenv("GITHUB_BRANCH") ?: "local")
+  systemProperty("pact.verifier.publishResults", System.getenv("PACT_PUBLISH_RESULTS") ?: "false")
+  systemProperty("pact.provider.version", System.getenv("PACT_PROVIDER_APP_VERSION") ?: "local")
+  systemProperty("pact.provider.branch", System.getenv("GITHUB_BRANCH") ?: "local")
+}
+
 tasks.named("integrationTest") {
   onlyIf {
     !gradle.startParameter.taskNames.any { it.contains("koverHtmlReport") }
   }
-}
-
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.compilerOptions {
-  freeCompilerArgs.set(listOf("-Xannotation-default-target=param-property"))
 }

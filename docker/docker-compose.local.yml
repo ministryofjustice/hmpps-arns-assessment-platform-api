@@ -19,6 +19,9 @@ services:
       - '5006:5005'
       - '4000:4000'
       - '4001:4001'
+    environment:
+      - PACT_BROKER_USERNAME
+      - PACT_BROKER_PASSWORD
 
 volumes:
   .gradle:

@@ -8,7 +8,7 @@ SERVICE_NAME = aap-api
 
 ## Compose files to stack on each other
 PROD_COMPOSE_FILES = -f docker/docker-compose.base.yml
-DEV_COMPOSE_FILES = -f docker/docker-compose.base.yml -f docker/docker-compose.local.yml -f docker-compose.pact.yml
+DEV_COMPOSE_FILES = -f docker/docker-compose.base.yml -f docker/docker-compose.local.yml
 TEST_COMPOSE_FILES = -f docker/docker-compose.test.yml
 
 export COMPOSE_PROJECT_NAME=${PROJECT_NAME}
@@ -45,7 +45,14 @@ test: ## Runs all the test suites.
 	docker compose ${DEV_COMPOSE_FILES} exec \
 	   --env HMPPS_AUTH_URL=http://localhost:9090/auth \
       ${SERVICE_NAME} \
-      gradle test --parallel -Dpactbroker.host=host.docker.internal -Dpactbroker.port=9292
+      gradle test --parallel
+
+test-pact: ## Runs all the test suites.
+	docker compose ${DEV_COMPOSE_FILES} exec \
+	   --env HMPPS_AUTH_URL=http://localhost:9090/auth \
+	   --env PACT_BROKER_URL=https://pact-broker-prod.apps.live-1.cloud-platform.service.justice.gov.uk \
+      ${SERVICE_NAME} \
+      gradle pactTest --parallel
 
 TESTS=
 test-targeted: ## Targets specific tests e.g. TESTS="*BatchInsertsTest"
