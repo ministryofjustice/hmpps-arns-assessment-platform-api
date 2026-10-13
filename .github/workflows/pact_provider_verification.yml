@@ -2,6 +2,9 @@ name: Pact Provider Verification
 run-name: Pact verify - ${{ inputs.consumerName && inputs.consumerBranch && format('{0}@{1}', inputs.consumerName, inputs.consumerBranch) || github.ref_name || 'manual' }}
 
 on:
+  push:
+    branches:
+      - 'provider-contract-test-load-plan'
   workflow_dispatch:
     inputs:
       consumerName:
