@@ -129,9 +129,20 @@ tasks.register<Test>("pactTest") {
   systemProperty("pactbroker.url", System.getenv("PACT_BROKER_URL"))
   systemProperty("pactbroker.auth.username", System.getenv("PACT_BROKER_USERNAME") ?: "")
   systemProperty("pactbroker.auth.password", System.getenv("PACT_BROKER_PASSWORD") ?: "")
+  val selectors = when {
+    consumerBranch.isNotEmpty() && requestedConsumerName.isEmpty() ->
+      throw GradleException("PACT_CONSUMER_NAME must be set when PACT_CONSUMER_BRANCH is provided so only the matching Pact consumer verification runs.")
+    consumerBranch.isNotEmpty() && requestedConsumerName.isNotEmpty() ->
+      """[{"consumer":"$requestedConsumerName","branch":"$consumerBranch"}]"""
+    requestedConsumerName.isNotEmpty() ->
+      """[{"consumer":"$requestedConsumerName","mainBranch":true},{"consumer":"$requestedConsumerName","deployed":true}]"""
+    else ->
+      """[{"deployed":true}]"""
+  }
+  systemProperty("pactbroker.consumerversionselectors.rawjson", selectors)
 
-  val consumerBranch = System.getenv("PACT_CONSUMER_BRANCH") ?: "consumer-contract-test-load-plan"
-  val requestedConsumerName = System.getenv("PACT_CONSUMER_NAME") ?: "hmpps-arns-assessment-platform-ui"
+  val consumerBranch = System.getenv("PACT_CONSUMER_BRANCH") ?: ""
+  val requestedConsumerName = System.getenv("PACT_CONSUMER_NAME") ?: ""
 
   systemProperty("pactbroker.providerBranch", System.getenv("GITHUB_BRANCH") ?: "local")
   systemProperty("pact.verifier.publishResults", System.getenv("PACT_PUBLISH_RESULTS") ?: "false")
