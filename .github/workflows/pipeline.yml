@@ -53,6 +53,15 @@ jobs:
       additional_docker_tag: ${{ inputs.additional_docker_tag }}
       push: ${{ inputs.push || true }}
       docker_multiplatform: true
+  pact_test:
+    name: Run pact Tests
+    uses: ./.github/workflows/pact_provider_verification.yml
+    needs:
+      - build
+    secrets: inherit
+    with:
+     publishResults: true
+     providerAppVersion: '${{ needs.build.outputs.app_version }}'
   deploy_dev:
     name: Deploy to the development environment
     needs:
