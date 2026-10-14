@@ -11,6 +11,6 @@ data class EventHandlingException(
   override val cause: Throwable,
 ) : AssessmentPlatformException(
   message = "$handlerName was unable to handle $eventName with UUID: $eventUuid",
-  developerMessage = cause.message ?: "",
+  developerMessage = (cause as? AssessmentPlatformException)?.developerMessage ?: cause.message ?: "",
   statusCode = HttpStatus.BAD_REQUEST,
 )

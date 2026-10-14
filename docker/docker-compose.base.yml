@@ -3,6 +3,7 @@
 
 services:
   aap-api:
+    image: ghcr.io/ministryofjustice/hmpps-arns-assessment-platform-api:latest
     build:
       context: ../
     networks:
