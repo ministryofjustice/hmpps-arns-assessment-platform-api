@@ -155,6 +155,7 @@ class EventBusTest {
     assertThat(exception.message).isEqualTo(
       "FailingAssessmentCreatedEventHandler was unable to handle AssessmentCreatedEvent with UUID: ${event.uuid}",
     )
+    assertThat(exception.developerMessage).isEqualTo("handler failed")
     assertThat(persistenceContext.events).isEmpty()
     assertThat(persistenceContext.timeline).isEmpty()
 

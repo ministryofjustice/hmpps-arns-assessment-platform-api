@@ -93,8 +93,8 @@ class ArnsAssessmentPlatformApiExceptionHandler {
 
     private fun logException(e: Exception, statusCode: HttpStatusCode? = INTERNAL_SERVER_ERROR) {
       when (e) {
-        is AssessmentPlatformException -> log.debug("Status (${e.statusCode.value()}) returned: {}", e.developerMessage)
-        else -> log.debug("Status ({}) returned: {}", statusCode, e.message)
+        is AssessmentPlatformException -> log.debug("Status ({}) returned by {}: {}", e.statusCode.value(), e::class.simpleName, e.developerMessage)
+        else -> log.debug("Status ({}) returned by {}: {}", statusCode, e::class.simpleName, e.message)
       }
     }
   }
