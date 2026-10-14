@@ -93,7 +93,14 @@ class DataDeletionServiceTest {
       assertThat(result.timeline).hasSize(1)
       assertThat(result.timeline.first().uuid).isEqualTo(timeline.uuid)
       assertThat(result.timeline.first().position).isEqualTo(2)
-      assertThat(result.timeline.first().user).isEqualTo(User(user.uuid, user.displayName))
+      assertThat(result.timeline.first().user).isEqualTo(
+        User(
+          id = user.uuid,
+          name = user.displayName,
+          userId = user.userId,
+          authSource = user.authSource,
+        ),
+      )
       assertThat(result.timeline.first().data).isEqualTo(timeline.data)
     }
   }
