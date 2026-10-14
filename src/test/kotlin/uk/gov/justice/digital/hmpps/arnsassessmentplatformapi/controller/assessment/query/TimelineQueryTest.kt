@@ -5,6 +5,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.support.TransactionTemplate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
@@ -17,7 +19,14 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AssessmentEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.IdentifierType
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.TimelineEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.UserDetailsEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.AssessmentRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.TimelineRepository
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.repository.UserDetailsRepository
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.ExternalIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.TimelineQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
@@ -30,6 +39,12 @@ import kotlin.test.assertIs
 class TimelineQueryTest(
   @Autowired
   val entityManager: EntityManager,
+  @Autowired
+  val assessmentRepository: AssessmentRepository,
+  @Autowired
+  val timelineRepository: TimelineRepository,
+  @Autowired
+  val userDetailsRepository: UserDetailsRepository,
 ) : IntegrationTestBase() {
   private val user1 = UserDetails(id = UUID.randomUUID().toString(), name = "Foo User 1")
   private val user2 = UserDetails(id = UUID.randomUUID().toString(), name = "Foo User 2")
@@ -131,6 +146,45 @@ class TimelineQueryTest(
         user = testUserDetails,
       ),
     ).expectStatus().isBadRequest
+  }
+
+  @ParameterizedTest
+  @EnumSource(AuthSource::class, names = ["OASYS", "HMPPS_AUTH", "NOT_SPECIFIED"])
+  fun `returns the stored timeline actor identity rather than the requesting user`(authSource: AuthSource) {
+    val actorUuid = UUID.randomUUID()
+    val actor = userDetailsRepository.save(
+      UserDetailsEntity(
+        uuid = actorUuid,
+        userId = "OASYS_ACTOR_$actorUuid",
+        displayName = "Timeline Actor",
+        authSource = authSource,
+      ),
+    )
+    val assessment = assessmentRepository.save(
+      AssessmentEntity(type = "TEST", createdAt = clock.now().minusMinutes(1)),
+    )
+    timelineRepository.save(
+      TimelineEntity(
+        position = 1,
+        createdAt = assessment.createdAt,
+        user = actor,
+        assessment = assessment,
+        eventType = "AssessmentCreatedEvent",
+      ),
+    )
+
+    query(
+      TimelineQuery(
+        user = testUserDetails,
+        assessmentIdentifier = UuidIdentifier(assessment.uuid),
+      ),
+    ).expectStatus().isOk
+      .expectBody()
+      .jsonPath("$.queries[0].result.timeline.length()").isEqualTo(1)
+      .jsonPath("$.queries[0].result.timeline[0].user.id").isEqualTo(actorUuid.toString())
+      .jsonPath("$.queries[0].result.timeline[0].user.name").isEqualTo("Timeline Actor")
+      .jsonPath("$.queries[0].result.timeline[0].user.userId").isEqualTo("OASYS_ACTOR_$actorUuid")
+      .jsonPath("$.queries[0].result.timeline[0].user.authSource").isEqualTo(authSource.name)
   }
 
   @Test

@@ -8,6 +8,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Collection
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.User
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AggregateEntity
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.persistence.entity.AuthSource
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.result.AssessmentVersionQueryResult
@@ -59,7 +60,14 @@ class AssessmentVersionQueryHandlerTest : AbstractQueryHandlerTest() {
       answers = aggregate.data.answers,
       properties = aggregate.data.properties,
       collections = aggregate.data.collections,
-      collaborators = setOf(User(collaboratorUuid, "User 0")),
+      collaborators = setOf(
+        User(
+          id = collaboratorUuid,
+          name = "User 0",
+          userId = "user-0",
+          authSource = AuthSource.NOT_SPECIFIED,
+        ),
+      ),
       identifiers = emptyMap(),
       assignedUser = null,
     )
