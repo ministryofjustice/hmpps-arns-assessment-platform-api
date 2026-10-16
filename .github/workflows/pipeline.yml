@@ -69,11 +69,18 @@ jobs:
     with:
       environment: 'dev'
     secrets: inherit
+  e2e_test:
+    needs: deploy_dev
+    uses: ./.github/workflows/run_e2e_test.yml
+    with:
+      environment: 'dev'
+    secrets: inherit
   deploy_preprod:
     name: Deploy to pre-production environment
     needs:
       - build
-      - deploy_dev
+      - int_test
+      - e2e_test
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2 # WORKFLOW_VERSION
     secrets: inherit
     with:
