@@ -1,9 +1,6 @@
 name: Trigger E2E Test
 
 on:
-  push:
-    branches:
-      - 'ci/e2e-test-run'
   workflow_call:
     inputs:
       environment:
