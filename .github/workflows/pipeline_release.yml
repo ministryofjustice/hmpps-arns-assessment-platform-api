@@ -1,0 +1,96 @@
+name: Release pipeline [build -> test -> deploy all envs]
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  helm_lint:
+    strategy:
+      matrix:
+        environments: ['dev', 'test', 'preprod', 'prod']
+    name: helm lint
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/test_helm_lint.yml@v2 # WORKFLOW_VERSION
+    secrets: inherit
+    with:
+      environment: ${{ matrix.environments }}
+  validate:
+    uses: ./.github/workflows/validate.yml
+  build:
+    name: Build docker image from hmpps-github-actions
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2 # WORKFLOW_VERSION
+    needs:
+      - validate
+      - helm_lint
+    with:
+      docker_registry: 'ghcr.io'
+      registry_org: 'ministryofjustice'
+      push: true
+      docker_multiplatform: true
+  deploy_dev:
+    name: Deploy to the development environment
+    needs:
+      - build
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2 # WORKFLOW_VERSION
+    secrets: inherit
+    with:
+      environment: 'dev'
+      app_version: '${{ needs.build.outputs.app_version }}'
+  deploy_test:
+    name: Deploy to the test environment
+    needs:
+      - build
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2 # WORKFLOW_VERSION
+    secrets: inherit
+    with:
+      environment: 'test'
+      app_version: '${{ needs.build.outputs.app_version }}'
+  int_test_test:
+    name: Integration tests (test)
+    needs: deploy_test
+    uses: ./.github/workflows/int_test.yml
+    with:
+      environment: 'test'
+    secrets: inherit
+  e2e_test_test:
+    name: E2E tests (test)
+    needs: deploy_test
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/run_e2e_test.yml
+    with:
+      environment: 'test'
+    secrets: inherit
+  deploy_preprod:
+    name: Deploy to pre-production environment
+    needs:
+      - build
+      - deploy_dev
+      - int_test_test
+      - e2e_test_test
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2 # WORKFLOW_VERSION
+    secrets: inherit
+    with:
+      environment: 'preprod'
+      app_version: '${{ needs.build.outputs.app_version }}'
+  deploy_prod:
+    name: Deploy to production environment
+    if: ${{ !github.event.release.prerelease }}
+    needs:
+      - build
+      - deploy_preprod
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/deploy_env.yml@v2 # WORKFLOW_VERSION
+    secrets: inherit
+    with:
+      environment: 'prod'
+      app_version: '${{ needs.build.outputs.app_version }}'

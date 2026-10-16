@@ -189,15 +189,33 @@ make test-targeted TESTS="*EventTest"  # Specific tests
 ./gradlew test                         # Locally (requires running PostgreSQL)
 ```
 
-## Deployment
+## Deployments and releases
+See [ARNS Release Process](https://dsdmoj.atlassian.net/wiki/spaces/ARN/pages/6260917467/ARNS+Release+Process) for the background, release checks, feature flags and rollback.
 
 The application is deployed to Cloud Platform environments using GitHub Actions and Helm charts.
 
-### Environments
+| Trigger                                                      | Deploys to                          |
+|--------------------------------------------------------------|-------------------------------------|
+| Merge to `main`                                              | dev                                 |
+| Run **Deploy to environment** manually (any branch)          | dev or test                         |
+| Publish a **pre-release** (e.g. `v1.0.0-rc.1`)               | dev + test → preprod                |
+| Publish a **release** (e.g. `v1.0.0`)                        | dev + test → preprod → prod         |
 
-- **Development** - Continuous deployment from `main` branch
-- **Preprod** - Deployed on successful dev testing
-- **Production** - Manual approval required
+Preprod and prod need a manual approval in the release pipeline, and only change through a release.
+
+In the release pipeline, preprod only deploys once the integration tests and e2e tests have passed against test.
+
+### How to do a release
+1. Go to **Releases → Draft a new release** and create a new `vX.Y.Z` tag targeting `main`
+   (patch for fixes, minor for features, major for breaking changes).
+2. Use the tag as the release title and click **Generate release notes**.
+   Tick **Set as a pre-release** if it should stop at preprod.
+3. Inform the Product Manager so they can raise a Change Request, and provide a link to the release notes.
+4. Publish the release and follow the **Release pipeline** run in the Actions tab, approving preprod and prod when prompted.
+
+### Rolling back
+This service uses Postgres with Flyway migrations, and `helm rollback` does not undo migrations.
+Only roll back if the previous version works with the current database schema; otherwise fix forward with a patch release.
 
 ### Security Scanning
 
