@@ -23,10 +23,6 @@ permissions:
   contents: read
   packages: write
 
-env:
-  dev: 'playwright-action.yml'
-  test: 'playwright-action-test.yml'
-
 jobs:
   deploy_to_env:
     uses: ministryofjustice/hmpps-assess-risks-and-needs-github-actions/.github/workflows/deploy_to_env.yml@v1
