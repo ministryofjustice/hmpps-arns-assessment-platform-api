@@ -62,10 +62,12 @@ class AnswersProvider(
 
         when (fieldConfig.type) {
           FieldType.CHECKBOX -> MultipleValuesAnswer(
-            values = (answer as? MultiValue)?.values?.let { values -> values.takeUnless { it == listOf("") }.orEmpty() },
+            values = (answer as? MultiValue)?.values
+              ?.map(::normaliseForOasys)
+              ?.let { values -> values.takeUnless { it == listOf("") }.orEmpty() },
           )
           else -> SingleValueAnswer(
-            (answer as? SingleValue)?.value,
+            (answer as? SingleValue)?.value?.let(::normaliseForOasys),
           )
         }
       }
@@ -110,5 +112,19 @@ class AnswersProvider(
     }
 
     return valueName
+  }
+
+  // Matches the HMPO form wizard default formatters used by original SAN service.
+  // The UI stores backticks HTML-encoded, so the encoded form is matched too.
+  private fun normaliseForOasys(value: String): String = value
+    .trim()
+    .replace(HYPHENS, "-")
+    .replace(APOSTROPHES, "'")
+    .replace(QUOTES, "\"")
+
+  companion object {
+    private val HYPHENS = Regex("[–—-]+")
+    private val APOSTROPHES = Regex("[`‘’]|&#96;")
+    private val QUOTES = Regex("[“”]")
   }
 }

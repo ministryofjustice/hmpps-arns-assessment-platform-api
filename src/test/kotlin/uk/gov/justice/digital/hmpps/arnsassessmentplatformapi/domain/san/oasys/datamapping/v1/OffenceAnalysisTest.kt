@@ -196,6 +196,9 @@ class OffenceAnalysisTest : SectionMappingTest(::OffenceAnalysis, "v1.0") {
       Given(Field.OFFENCE_ANALYSIS_LEADER, Value.YES)
         .and(Field.OFFENCE_ANALYSIS_LEADER_YES_DETAILS, "some details")
         .expect("Yes - some details"),
+      Given(Field.OFFENCE_ANALYSIS_LEADER, Value.YES)
+        .and(Field.OFFENCE_ANALYSIS_LEADER_YES_DETAILS, "  the “main” one – mostly  ")
+        .expect("Yes - the \"main\" one - mostly"),
     )
   }
 
