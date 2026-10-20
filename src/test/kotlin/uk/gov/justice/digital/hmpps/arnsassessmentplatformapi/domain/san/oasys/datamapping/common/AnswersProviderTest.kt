@@ -27,6 +27,9 @@ class AnswersProviderTest {
         Field.CURRENT_ACCOMMODATION.lower to SingleValue(Value.SETTLED.name),
         Field.FINANCE_INCOME.lower to MultiValue(listOf(Value.FAMILY_OR_FRIENDS.name)),
         Field.EDUCATION_DIFFICULTIES.lower to MultiValue(listOf("")),
+        Field.OFFENCE_ANALYSIS_DESCRIPTION_OF_OFFENCE.lower to SingleValue(
+          "  He said “stop” —-- then ‘left’ with a `raw` and &#96;encoded&#96; backtick  ",
+        ),
       ),
     )
     collections.addLast(
@@ -60,6 +63,9 @@ class AnswersProviderTest {
           Field.EDUCATION_DIFFICULTIES.lower,
           listOf(Option("Some value")),
           FieldType.CHECKBOX,
+        ),
+        Field.OFFENCE_ANALYSIS_DESCRIPTION_OF_OFFENCE.lower to FormConfigField(
+          Field.OFFENCE_ANALYSIS_DESCRIPTION_OF_OFFENCE.lower,
         ),
         Field.OFFENCE_ANALYSIS_VICTIM_RELATIONSHIP.lower to FormConfigField(
           Field.OFFENCE_ANALYSIS_VICTIM_RELATIONSHIP.lower,
@@ -117,6 +123,13 @@ class AnswersProviderTest {
         block = { answer.collection },
       )
       assertEquals("Invalid use of '.collection' on a ${MultipleValuesAnswer::class.simpleName}", collectionException.message)
+    }
+
+    @Test
+    fun `should normalise text like the original SAN service when the answer contains special characters`() {
+      val answer = sut.answer(Field.OFFENCE_ANALYSIS_DESCRIPTION_OF_OFFENCE)
+
+      assertEquals("He said \"stop\" - then 'left' with a 'raw' and 'encoded' backtick", answer.value)
     }
 
     @Test
