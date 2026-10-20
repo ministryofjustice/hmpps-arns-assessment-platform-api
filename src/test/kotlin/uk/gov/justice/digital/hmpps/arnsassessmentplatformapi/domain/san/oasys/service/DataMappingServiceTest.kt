@@ -95,5 +95,29 @@ class DataMappingServiceTest {
         result,
       )
     }
+
+    @Test
+    fun `should replace curly quotes and long dashes when mapped values contain them`() {
+      every { mockSectionMapping.map() } returns mapOf(
+        "oasys-key-1" to "He said “stop” – then ‘left’ — quickly",
+        "oasys-key-2" to listOf("it’s", null),
+        "oasys-key-3" to mapOf("nested" to "“quoted”"),
+        "oasys-key-4" to null,
+      )
+      every { mockMappingProvider.get(any(), any<AnswersProvider>()) } returns setOf(mockSectionMapping)
+
+      val sut = DataMappingService(mockMappingProvider)
+      val result = sut.getOasysEquivalent(AssessmentAggregate(), testConfig)
+
+      assertEquals(
+        mapOf(
+          "oasys-key-1" to "He said \"stop\" - then 'left' - quickly",
+          "oasys-key-2" to listOf("it's", null),
+          "oasys-key-3" to mapOf("nested" to "\"quoted\""),
+          "oasys-key-4" to null,
+        ),
+        result,
+      )
+    }
   }
 }
