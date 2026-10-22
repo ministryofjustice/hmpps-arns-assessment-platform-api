@@ -26,6 +26,10 @@ spring:
       host: ${cache.redis.host:localhost}
       port: ${cache.redis.port:6379}
       password: ${cache.redis.auth-token:}
+      # Lettuce defaults to 60s, which also bounds connection initialisation TLS + AUTH;
+      # a hung handshake then blocks every cache call queued behind the shared connection
+      timeout: ${cache.redis.timeout:5s}
+      connect-timeout: ${cache.redis.connect-timeout:2s}
       ssl:
         enabled: ${cache.redis.ssl.enabled:false}
   web:
