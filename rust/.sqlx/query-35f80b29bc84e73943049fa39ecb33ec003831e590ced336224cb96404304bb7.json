@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT a.uuid\n            FROM assessment a\n            WHERE (\n                cardinality($1::text[]) = 0\n                OR EXISTS (\n                    SELECT 1\n                    FROM assessment_identifier ai\n                    WHERE ai.assessment_uuid = a.uuid\n                      AND (ai.identifier_type, ai.identifier) IN (SELECT * FROM UNNEST($1::text[], $2::text[]))\n                )\n            )\n              AND ($3::timestamptz IS NULL OR a.created_at >= $3)\n              AND ($4::timestamptz IS NULL OR a.created_at <= $4)\n            ORDER BY a.id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "uuid",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray",
+        "TextArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "35f80b29bc84e73943049fa39ecb33ec003831e590ced336224cb96404304bb7"
+}

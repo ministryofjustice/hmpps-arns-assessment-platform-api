@@ -1,0 +1,41 @@
+[package]
+edition = "2024"
+name = "hmpps-arns-assessment-platform-api"
+version = "0.1.0"
+rust-version = "1.88"
+
+[dependencies]
+aws-config = {version = "1", features = ["behavior-version-latest"]}
+aws-sdk-sqs = "1"
+axum = {version = "0.8.8"}
+axum-extra = {version = "0.12.5", features = ["typed-header"]}
+chrono = {version = "0.4", features = ["serde"]}
+chrono-tz = "0.10"
+dotenvy = "0.15"
+indexmap = {version = "2", features = ["serde"]}
+jsonwebtoken = {version = "10.3.0", features = ["rust_crypto"]}
+redis = {version = "0.29", features = ["tokio-comp", "tokio-rustls-comp", "connection-manager"]}
+regex = "1.12"
+reqwest = {version = "0.13.1", features = ["json"]}
+serde = {version = "1.0.228", features = ["derive"]}
+serde_json = {version = "1.0.150", features = ["preserve_order"]}
+sqlx = {version = "0.8.6", features = ["migrate", "postgres", "runtime-tokio", "tls-rustls", "chrono", "uuid"]}
+thiserror = "2.0.17"
+tokio = {version = "1.52.1", features = ["full"]}
+tower = "0.5.3"
+tower-http = {version = "0.6", features = ["trace"]}
+tracing = "0.1.44"
+tracing-subscriber = {version = "0.3.22", features = ["env-filter", "json"]}
+utoipa = {version = "5.4.0", features = ["axum_extras", "uuid", "chrono", "indexmap"]}
+utoipa-swagger-ui = {version = "9.0.2", features = ["axum"]}
+uuid = {version = "1.20.0", features = ["serde", "v4"]}
+
+[dev-dependencies]
+base64 = "0.22"
+http-body-util = "0.1.3"
+rand = "0.8"
+rsa = "0.9"
+
+# Generating the RSA key for test tokens is very slow without optimisation
+[profile.dev.package.num-bigint-dig]
+opt-level = 3

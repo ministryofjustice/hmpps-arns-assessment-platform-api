@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT count(*) AS \"count!\"\n            FROM timeline t\n            WHERE t.deleted IS FALSE\n              AND ($1::uuid IS NULL OR t.assessment_uuid = $1)\n              AND ($2::uuid IS NULL OR t.user_details_uuid = $2)\n              AND ($3::timestamptz IS NULL OR t.created_at >= $3)\n              AND ($4::timestamptz IS NULL OR t.created_at <= $4)\n              AND (cardinality($5::text[]) = 0 OR t.event_type = ANY($5))\n              AND (cardinality($6::text[]) = 0 OR NOT (t.event_type = ANY($6)))\n              AND (cardinality($7::text[]) = 0 OR t.custom_type = ANY($7))\n              AND (cardinality($8::text[]) = 0 OR NOT (t.custom_type = ANY($8)))\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz",
+        "TextArray",
+        "TextArray",
+        "TextArray",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "908511d04688a356a346caacc630289829200d116009f4a4b8b88a0c0dc0ed38"
+}

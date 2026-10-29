@@ -1,0 +1,106 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT t.id, t.uuid, t.position, t.created_at, t.event_type, t.data AS \"data: Json<JsonMap>\",\n                   t.custom_type, t.custom_data AS \"custom_data: Json<JsonMap>\", t.deleted, t.assessment_uuid,\n                   u.id AS user_pk, u.uuid AS user_uuid, u.user_id, u.display_name, u.auth_source\n            FROM timeline t\n            JOIN user_details u ON u.uuid = t.user_details_uuid\n            WHERE t.uuid = ANY($1)\n            ORDER BY t.position\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "position",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "event_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "data: Json<JsonMap>",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 6,
+        "name": "custom_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "custom_data: Json<JsonMap>",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 8,
+        "name": "deleted",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 9,
+        "name": "assessment_uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 10,
+        "name": "user_pk",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 11,
+        "name": "user_uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 12,
+        "name": "user_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "display_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 14,
+        "name": "auth_source",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "bcf85427cb42283b1a6ddbf762ef99caee6d45f0ba89f3cb30f9b21003ce4b55"
+}
