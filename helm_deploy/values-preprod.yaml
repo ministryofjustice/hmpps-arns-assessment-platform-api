@@ -26,4 +26,4 @@ generic-service:
   env:
     APPLICATIONINSIGHTS_CONFIGURATION_FILE: "applicationinsights.dev.json"
     HMPPS_AUTH_URL: "https://sign-in-preprod.hmpps.service.justice.gov.uk/auth"
-    QUERY_MAX_LOOKBACK_DAYS: 7
+    QUERY_MAX_LOOKBACK_DAYS: 0
