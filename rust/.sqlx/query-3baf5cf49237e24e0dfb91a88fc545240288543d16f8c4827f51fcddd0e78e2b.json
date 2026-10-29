@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE aggregate\n            SET updated_at = $1, events_to = $2, events_applied = $3, data = $4, version = version + 1\n            WHERE id = $5 AND version = $6\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz",
+        "Int8",
+        "Jsonb",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3baf5cf49237e24e0dfb91a88fc545240288543d16f8c4827f51fcddd0e78e2b"
+}

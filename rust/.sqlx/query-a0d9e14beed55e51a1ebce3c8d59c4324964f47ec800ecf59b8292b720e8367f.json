@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE event SET deleted = FALSE WHERE uuid = ANY($1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a0d9e14beed55e51a1ebce3c8d59c4324964f47ec800ecf59b8292b720e8367f"
+}
