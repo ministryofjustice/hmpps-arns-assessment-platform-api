@@ -9,7 +9,7 @@ services:
     ports:
       - "8081:8080"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ping"]
+      test: ["CMD", "/app/app", "healthcheck"]
       interval: 5s
       retries: 100
     environment:

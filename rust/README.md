@@ -36,10 +36,11 @@ This doesn't need a database or the services running, because queries are checke
 ### Using it in place of the Kotlin service
 
 The image takes the same environment variables as the Kotlin one (including Spring's
-`SPRING_DATA_REDIS_*`), listens on 8080 and has `curl` for the `/health/ping` healthcheck, so it can
-replace `ghcr.io/ministryofjustice/hmpps-arns-assessment-platform-api:latest` without other changes.
-In a compose stack such as the UI repo's, add an override file rather than retagging the image as
-the Kotlin one, which `docker compose pull` would then replace:
+`SPRING_DATA_REDIS_*`) and listens on 8080, so it can replace
+`ghcr.io/ministryofjustice/hmpps-arns-assessment-platform-api:latest`. It's a static (musl) binary
+built `FROM scratch`, so there's no shell or `curl`: healthchecks run `/app/app healthcheck` instead,
+which pings `/health/ping`. In a compose stack such as the UI repo's, add an override file rather
+than retagging the image as the Kotlin one, which `docker compose pull` would then replace:
 
 ```yaml
 # docker-compose.rust.yml
@@ -47,6 +48,8 @@ services:
   aap-api:
     image: hmpps-arns-assessment-platform-api:rust
     pull_policy: never  # it's only available locally, so don't try to pull it
+    healthcheck:
+      test: ["CMD", "/app/app", "healthcheck"]  # replaces the curl check, as there's no curl
 ```
 
 and include it after the other compose files (`-f docker-compose.base.yml -f docker-compose.local.yml
