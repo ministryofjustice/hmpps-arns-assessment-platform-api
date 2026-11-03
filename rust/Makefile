@@ -54,7 +54,7 @@ prepare: up
 
 ## Builds from the committed .sqlx query data, so needs no database
 image:
-	docker build --build-arg BUILD_NUMBER=$(BUILD_NUMBER) -t $(IMAGE) .
+	docker build --build-arg BUILD_NUMBER=$(BUILD_NUMBER) -t $(IMAGE) -f ../Dockerfile ..
 	@echo "Built $(IMAGE) (build $(BUILD_NUMBER))"
 
 clean: down
