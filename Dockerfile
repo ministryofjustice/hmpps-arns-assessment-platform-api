@@ -31,7 +31,8 @@ COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=build /etc/passwd /etc/passwd
 COPY --from=build /etc/group /etc/group
 COPY --from=build /app/hmpps-arns-assessment-platform-api /app/app
-USER app:app
+# Numeric, so Kubernetes can check runAsNonRoot (the app user in /etc/passwd)
+USER 65532:65532
 EXPOSE 8080
 # There's no curl in the image, so the binary checks itself
 HEALTHCHECK --interval=5s --timeout=5s CMD ["/app/app", "healthcheck"]
