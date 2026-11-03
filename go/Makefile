@@ -42,7 +42,7 @@ test: up
 	go test -race ./...
 
 image:
-	docker build --build-arg BUILD_NUMBER=$(BUILD_NUMBER) -t $(IMAGE) .
+	docker build --build-arg BUILD_NUMBER=$(BUILD_NUMBER) -t $(IMAGE) -f ../Dockerfile ..
 	@echo "Built $(IMAGE) (build $(BUILD_NUMBER))"
 
 clean: down

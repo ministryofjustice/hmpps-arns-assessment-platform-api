@@ -3,7 +3,8 @@
 services:
   aap-api:
     build:
-      context: .
+      context: ..
+      dockerfile: Dockerfile
     networks:
       - hmpps
     ports:

@@ -1,0 +1,5 @@
+# The image is built from the Go source in go/ alone
+*
+!go
+go/bin
+go/.env
