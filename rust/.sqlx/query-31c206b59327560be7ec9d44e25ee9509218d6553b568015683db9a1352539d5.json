@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT position\n            FROM aggregate\n            WHERE assessment_uuid = $1 AND data_type = $2\n            ORDER BY position DESC\n            LIMIT 1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "position",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "31c206b59327560be7ec9d44e25ee9509218d6553b568015683db9a1352539d5"
+}

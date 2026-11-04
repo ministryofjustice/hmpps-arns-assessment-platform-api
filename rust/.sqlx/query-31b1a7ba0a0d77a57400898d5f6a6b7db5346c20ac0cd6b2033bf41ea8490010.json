@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT DISTINCT a.uuid\n            FROM event e\n            JOIN assessment a ON a.uuid = e.assessment_uuid\n            JOIN aggregate ag ON ag.assessment_uuid = a.uuid\n            WHERE a.type = $1\n              AND ag.updated_at > $2\n              AND e.deleted = TRUE\n            ORDER BY a.uuid\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "uuid",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "31b1a7ba0a0d77a57400898d5f6a6b7db5346c20ac0cd6b2033bf41ea8490010"
+}

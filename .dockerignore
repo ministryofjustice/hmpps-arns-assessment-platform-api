@@ -1,0 +1,5 @@
+# The image is built from the Rust source in rust/ alone
+*
+!rust
+rust/target
+rust/.env

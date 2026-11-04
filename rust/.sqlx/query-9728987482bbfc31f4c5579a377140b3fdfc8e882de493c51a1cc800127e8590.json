@@ -1,0 +1,78 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, uuid, position, version, updated_at, events_from, events_to, events_applied,\n                   assessment_uuid, data AS \"data: Json<Aggregate>\"\n            FROM aggregate\n            WHERE assessment_uuid = $1\n              AND data_type = $2\n              AND events_to <= $3\n            ORDER BY position DESC\n            LIMIT 1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "position",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "version",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "events_from",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "events_to",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "events_applied",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 8,
+        "name": "assessment_uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 9,
+        "name": "data: Json<Aggregate>",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "9728987482bbfc31f4c5579a377140b3fdfc8e882de493c51a1cc800127e8590"
+}

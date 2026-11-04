@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT EXISTS (\n                SELECT 1 FROM event\n                WHERE assessment_uuid = $1 AND position > $2 AND deleted IS FALSE\n            ) AS \"exists!\"\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "exists!",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "36bc7e827937a117e6f6f20fcbcab3e47fd7029381a460076d9cc4e5075bb230"
+}

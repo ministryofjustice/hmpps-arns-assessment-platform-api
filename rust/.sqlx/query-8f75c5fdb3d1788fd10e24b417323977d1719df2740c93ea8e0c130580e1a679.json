@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT position\n            FROM timeline\n            WHERE assessment_uuid = $1\n            ORDER BY position DESC\n            LIMIT 1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "position",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "8f75c5fdb3d1788fd10e24b417323977d1719df2740c93ea8e0c130580e1a679"
+}
