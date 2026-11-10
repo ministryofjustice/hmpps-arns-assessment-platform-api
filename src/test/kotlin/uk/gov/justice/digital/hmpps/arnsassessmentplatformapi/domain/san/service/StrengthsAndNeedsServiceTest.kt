@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Requestabl
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.RetryableCommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.Pathway
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.exception.AssessmentNotStrengthsAndNeedsException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
@@ -67,7 +68,7 @@ class StrengthsAndNeedsServiceTest {
       )
       every { queryBus.dispatch(any<AssessmentVersionQuery>()) } returns assessment
 
-      service.startNewPathway(assessmentUuid, userDetails, "COMMUNITY", "CUSTODY")
+      service.startNewPathway(assessmentUuid, userDetails, Pathway.COMMUNITY, Pathway.CUSTODY)
 
       val answerCommands = dispatchedCommands().filterIsInstance<UpdateAssessmentAnswersCommand>()
       assertThat(answerCommands).hasSize(1)
@@ -85,7 +86,7 @@ class StrengthsAndNeedsServiceTest {
       )
       every { queryBus.dispatch(any<AssessmentVersionQuery>()) } returns assessment
 
-      service.startNewPathway(assessmentUuid, userDetails, "COMMUNITY", "CUSTODY")
+      service.startNewPathway(assessmentUuid, userDetails, Pathway.COMMUNITY, Pathway.CUSTODY)
 
       val timelineCommands = dispatchedCommands().filterIsInstance<CreateTimelineItemCommand>()
       assertThat(timelineCommands).hasSize(1)
@@ -98,7 +99,7 @@ class StrengthsAndNeedsServiceTest {
       val assessment = buildAssessment(answers = emptyMap())
       every { queryBus.dispatch(any<AssessmentVersionQuery>()) } returns assessment
 
-      service.startNewPathway(assessmentUuid, userDetails, "COMMUNITY", "CUSTODY")
+      service.startNewPathway(assessmentUuid, userDetails, Pathway.COMMUNITY, Pathway.CUSTODY)
 
       val commands = dispatchedCommands()
 
@@ -112,7 +113,7 @@ class StrengthsAndNeedsServiceTest {
       every { queryBus.dispatch(any<AssessmentVersionQuery>()) } returns assessment
 
       assertThrows<AssessmentNotStrengthsAndNeedsException> {
-        service.startNewPathway(assessmentUuid, userDetails, "COMMUNITY", "CUSTODY")
+        service.startNewPathway(assessmentUuid, userDetails, Pathway.COMMUNITY, Pathway.CUSTODY)
       }
       verify(exactly = 0) { commandDispatcher.dispatch(any()) }
     }

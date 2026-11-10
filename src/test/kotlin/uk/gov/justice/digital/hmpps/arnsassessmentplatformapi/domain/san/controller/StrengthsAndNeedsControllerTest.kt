@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.Pathway
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.controller.requests.StartNewPathwayRequest
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.integration.IntegrationTestBase
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
@@ -61,8 +62,8 @@ class StrengthsAndNeedsControllerTest : IntegrationTestBase() {
       StartNewPathwayRequest(
         user = testUserDetails,
         assessmentUuid = assessmentUuid,
-        previousPathway = "COMMUNITY",
-        newPathway = "CUSTODY",
+        previousPathway = Pathway.COMMUNITY,
+        newPathway = Pathway.CUSTODY,
       ),
     )
     .exchange()
@@ -106,6 +107,29 @@ class StrengthsAndNeedsControllerTest : IntegrationTestBase() {
     fun `it should return 404 when the assessment does not exist`() {
       startNewPathway(UUID.randomUUID())
         .expectStatus().isNotFound
+    }
+
+    @Test
+    fun `it should return 400 when the pathway is invalid`() {
+      val assessmentUuid = createAssessment()
+      addAnswers(assessmentUuid)
+      assertThat(fetchAssessment(assessmentUuid).answers).hasSize(2)
+      val requestBody = """
+        {
+          "user": { "id": "test-user", "name": "Test User" },
+          "assessmentUuid": "$assessmentUuid",
+          "previousPathway": "COMMUNITY",
+          "newPathway": "INVALID_PATHWAY"
+        }
+      """.trimIndent()
+
+      webTestClient.post().uri("/san/start-new-pathway")
+        .contentType(MediaType.APPLICATION_JSON)
+        .headers(setAuthorisation(roles = listOf("ROLE_AAP__COORDINATOR_RW")))
+        .bodyValue(requestBody)
+        .exchange().expectStatus().isBadRequest
+
+      assertThat(fetchAssessment(assessmentUuid).answers).hasSize(2)
     }
   }
 

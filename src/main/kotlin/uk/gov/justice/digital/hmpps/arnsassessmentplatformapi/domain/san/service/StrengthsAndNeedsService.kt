@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAsse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.RetryableCommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.Pathway
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.exception.AssessmentNotStrengthsAndNeedsException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.UuidIdentifier
@@ -20,7 +21,7 @@ class StrengthsAndNeedsService(
   private val commandDispatcher: RetryableCommandDispatcher,
   private val queryBus: QueryBus,
 ) {
-  fun startNewPathway(assessmentUuid: UUID, userDetails: UserDetails, previousPathway: String, newPathway: String) {
+  fun startNewPathway(assessmentUuid: UUID, userDetails: UserDetails, previousPathway: Pathway, newPathway: Pathway) {
     val assessment = queryBus.dispatch(
       AssessmentVersionQuery(
         user = userDetails,
