@@ -32,14 +32,18 @@ class StrengthsAndNeedsService(
 
     val removed = assessment.answers.keys.toList()
 
-    val updateAnswersCommand = listOf(
-      UpdateAssessmentAnswersCommand(
-        user = userDetails,
-        assessmentUuid = assessmentUuid.toReference(),
-        added = emptyMap(),
-        removed = removed,
-      ),
-    )
+    val answerCommands = if (removed.isEmpty()) {
+      emptyList()
+    } else {
+      listOf(
+        UpdateAssessmentAnswersCommand(
+          user = userDetails,
+          assessmentUuid = assessmentUuid.toReference(),
+          added = emptyMap(),
+          removed = removed,
+        ),
+      )
+    }
 
     val timelineCommands = listOf(
       CreateTimelineItemCommand(
@@ -55,6 +59,6 @@ class StrengthsAndNeedsService(
       ),
     )
 
-    commandDispatcher.dispatch(listOf(updateAnswersCommand, timelineCommands).flatten())
+    commandDispatcher.dispatch(listOf(answerCommands, timelineCommands).flatten())
   }
 }

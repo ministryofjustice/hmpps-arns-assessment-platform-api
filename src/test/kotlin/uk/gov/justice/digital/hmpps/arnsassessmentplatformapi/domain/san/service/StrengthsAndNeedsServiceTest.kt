@@ -7,11 +7,13 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateTimelineItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.RetryableCommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.exception.AssessmentNotStrengthsAndNeedsException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
@@ -98,10 +100,21 @@ class StrengthsAndNeedsServiceTest {
 
       service.startNewPathway(assessmentUuid, userDetails, "COMMUNITY", "CUSTODY")
 
-      val answerCommands = dispatchedCommands().filterIsInstance<UpdateAssessmentAnswersCommand>()
-      assertThat(answerCommands).hasSize(1)
-      assertThat(answerCommands.first().removed).isEmpty()
-      assertThat(answerCommands.first().added).isEmpty()
+      val commands = dispatchedCommands()
+
+      assertThat(commands.filterIsInstance<UpdateAssessmentAnswersCommand>()).isEmpty()
+      assertThat(commands.filterIsInstance<CreateTimelineItemCommand>()).hasSize(1)
+    }
+
+    @Test
+    fun `should throw an exception if the assessment is not a strengths and needs assessment`() {
+      val assessment = buildAssessment(type = "SENTENCE_PLAN")
+      every { queryBus.dispatch(any<AssessmentVersionQuery>()) } returns assessment
+
+      assertThrows<AssessmentNotStrengthsAndNeedsException> {
+        service.startNewPathway(assessmentUuid, userDetails, "COMMUNITY", "CUSTODY")
+      }
+      verify(exactly = 0) { commandDispatcher.dispatch(any()) }
     }
   }
 }
