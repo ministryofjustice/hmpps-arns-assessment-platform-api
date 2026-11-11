@@ -19,13 +19,18 @@ class StrengthsAndNeedsController(
   private val strengthsAndNeedsService: StrengthsAndNeedsService,
 ) {
   @RequestMapping(path = ["/san/start-new-pathway"], method = [RequestMethod.POST])
-  @Operation(description = "Starts a new pathway for a Strengths and Needs Assessment, removes all existing answers")
+  @Operation(description = "Starts a new pathway for a Strengths and Needs Assessment, removes all existing answers and collection items")
   @ApiResponses(
     value = [
       ApiResponse(responseCode = "200", description = "Started new pathway"),
       ApiResponse(
         responseCode = "400",
         description = "The Assessment is not a Strengths and Needs Assessment, or previous and new pathway are the same",
+        content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
+      ),
+      ApiResponse(
+        responseCode = "403",
+        description = "The user does not have the correct role",
         content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
       ),
       ApiResponse(

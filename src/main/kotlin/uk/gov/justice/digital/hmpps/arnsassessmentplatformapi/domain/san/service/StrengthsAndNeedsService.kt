@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.servic
 
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateTimelineItemCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.RetryableCommandDispatcher
@@ -49,6 +50,16 @@ class StrengthsAndNeedsService(
       )
     }
 
+    val collectionItemCommands = assessment.collections.flatMap { collection ->
+      collection.items.map { item ->
+        RemoveCollectionItemCommand(
+          collectionItemUuid = item.uuid.toReference(),
+          user = userDetails,
+          assessmentUuid = assessmentUuid.toReference(),
+        )
+      }
+    }
+
     val timelineCommands = listOf(
       CreateTimelineItemCommand(
         timestamp = LocalDateTime.now(),
@@ -63,6 +74,6 @@ class StrengthsAndNeedsService(
       ),
     )
 
-    commandDispatcher.dispatch(listOf(answerCommands, timelineCommands).flatten())
+    commandDispatcher.dispatch(listOf(answerCommands, collectionItemCommands, timelineCommands).flatten())
   }
 }

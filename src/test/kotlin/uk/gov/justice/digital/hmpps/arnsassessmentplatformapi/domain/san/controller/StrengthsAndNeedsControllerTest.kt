@@ -6,9 +6,12 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.expectBody
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateCollectionCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.controller.response.QueriesResponse
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.Pathway
@@ -45,6 +48,33 @@ class StrengthsAndNeedsControllerTest : IntegrationTestBase() {
     )
     )
 
+  private fun addVictim(assessmentUuid: UUID) {
+    val collectionUuid = assertIs<CreateCollectionCommandResult>(
+      command(
+        CreateCollectionCommand(
+          name = "OFFENCE_ANALYSIS_VICTIM",
+          parentCollectionItemUuid = null,
+          user = testUserDetails,
+          assessmentUuid = assessmentUuid.toReference(),
+        ),
+      ).commands.single().result,
+    ).collectionUuid
+
+    command(
+      AddCollectionItemCommand(
+        collectionUuid = collectionUuid.toReference(),
+        answers = mapOf(
+          "offence_analysis_victim_relationship" to SingleValue("STRANGER"),
+          "offence_analysis_victim_age" to SingleValue("AGE_50_TO_64_YEARS"),
+        ),
+        properties = emptyMap(),
+        index = null,
+        user = testUserDetails,
+        assessmentUuid = assessmentUuid.toReference(),
+      ),
+    )
+  }
+
   private fun fetchAssessment(assessmentUuid: UUID) = assertIs<AssessmentVersionQueryResult>(
     query(
       AssessmentVersionQuery(user = testUserDetails, assessmentIdentifier = UuidIdentifier(assessmentUuid)),
@@ -69,7 +99,7 @@ class StrengthsAndNeedsControllerTest : IntegrationTestBase() {
     .exchange()
 
   @Nested
-  inner class StartNewPathway {
+  inner class StartNewPathwayTest {
     @Test
     fun `it should remove all answers from the assessment`() {
       val assessmentUuid = createAssessment()
@@ -82,6 +112,23 @@ class StrengthsAndNeedsControllerTest : IntegrationTestBase() {
 
       val assessmentAfter = fetchAssessment(assessmentUuid)
       assertThat(assessmentAfter.answers).isEmpty()
+    }
+
+    @Test
+    fun `it should remove all answers and collections from the assessment`() {
+      val assessmentUuid = createAssessment()
+      addAnswers(assessmentUuid)
+      addVictim(assessmentUuid)
+      val assessmentBefore = fetchAssessment(assessmentUuid)
+      assertThat(assessmentBefore.answers).hasSize(2)
+      assertThat(assessmentBefore.collections.single { it.name == "OFFENCE_ANALYSIS_VICTIM" }.items).hasSize(1)
+
+      startNewPathway(assessmentUuid)
+        .expectStatus().isOk
+
+      val assessmentAfter = fetchAssessment(assessmentUuid)
+      assertThat(assessmentAfter.answers).isEmpty()
+      assertThat(assessmentAfter.collections.single { it.name == "OFFENCE_ANALYSIS_VICTIM" }.items).isEmpty()
     }
 
     @Test
@@ -133,19 +180,22 @@ class StrengthsAndNeedsControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should return 400 and keep the answers when the pathway has not changed`() {
+    fun `it should return 400 and keep the answers and collections when the pathway has not changed`() {
       val assessmentUuid = createAssessment()
       addAnswers(assessmentUuid)
+      addVictim(assessmentUuid)
 
       startNewPathway(assessmentUuid, previousPathway = Pathway.COMMUNITY, newPathway = Pathway.COMMUNITY)
         .expectStatus().isBadRequest
 
-      assertThat(fetchAssessment(assessmentUuid).answers).hasSize(2)
+      val assessmentAfter = fetchAssessment(assessmentUuid)
+      assertThat(assessmentAfter.answers).hasSize(2)
+      assertThat(assessmentAfter.collections.single { it.name == "OFFENCE_ANALYSIS_VICTIM" }.items).hasSize(1)
     }
   }
 
   @Nested
-  inner class StartNewPathwayAuthorisation {
+  inner class StartNewPathwayAuthorisationTest {
     @ParameterizedTest
     @ValueSource(strings = ["ROLE_AAP__FRONTEND_RW", "ROLE_AAP__COORDINATOR_RW"])
     fun `it should succeed when the user has the correct role`(role: String) {
