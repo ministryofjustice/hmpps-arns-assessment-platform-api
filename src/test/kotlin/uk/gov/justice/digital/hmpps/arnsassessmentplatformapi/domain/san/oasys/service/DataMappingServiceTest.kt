@@ -1,17 +1,21 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.service
 
+import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Nested
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.formconfig.FormConfig
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.Field
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.MappingProvider
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common.AnswersProvider
-import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common.SectionMapping
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common.OasysSectionMapping
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.common.SanSectionMapping
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -20,11 +24,6 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.formcon
 
 class DataMappingServiceTest {
   private val mockMappingProvider: MappingProvider = mockk()
-  private val mockSectionMapping: SectionMapping = mockk()
-  private val testConfig = FormConfig(
-    "1.0",
-    mapOf(Field.TEST_FIELD.lower to FormField(Field.TEST_FIELD.lower)),
-  )
 
   @BeforeTest
   fun setUp() {
@@ -33,13 +32,19 @@ class DataMappingServiceTest {
 
   @Nested
   inner class GetOasysEquivalent {
+    private val mockOasysSectionMapping: OasysSectionMapping = mockk()
+    private val testConfig = FormConfig(
+      "1.0",
+      mapOf(Field.TEST_FIELD.lower to FormField(Field.TEST_FIELD.lower)),
+    )
+
     @Test
     fun `returns empty result`() {
-      every { mockSectionMapping.map() } returns emptyMap()
+      every { mockOasysSectionMapping.map() } returns emptyMap()
       every {
         mockMappingProvider.get(match { formVersion -> formVersion == "1.0" }, any<AnswersProvider>())
       } returns setOf(
-        mockSectionMapping,
+        mockOasysSectionMapping,
       )
 
       val sut = DataMappingService(mockMappingProvider)
@@ -50,12 +55,12 @@ class DataMappingServiceTest {
 
     @Test
     fun `returns non-empty result comprising of multiple section mappings`() {
-      val mockSectionMappingTwo: SectionMapping = mockk()
+      val mockOasysSectionMappingTwo: OasysSectionMapping = mockk()
 
       val answersProviderSlot = slot<AnswersProvider>()
 
-      every { mockSectionMapping.map() } returns mapOf("oasys-key-1" to "val-1")
-      every { mockSectionMappingTwo.map() } returns mapOf(
+      every { mockOasysSectionMapping.map() } returns mapOf("oasys-key-1" to "val-1")
+      every { mockOasysSectionMappingTwo.map() } returns mapOf(
         "oasys-key-2" to listOf(
           "val-2",
           "val-3",
@@ -67,8 +72,8 @@ class DataMappingServiceTest {
           capture(answersProviderSlot),
         )
       } returns setOf(
-        mockSectionMapping,
-        mockSectionMappingTwo,
+        mockOasysSectionMapping,
+        mockOasysSectionMappingTwo,
       )
 
       val sut = DataMappingService(mockMappingProvider)
@@ -83,8 +88,8 @@ class DataMappingServiceTest {
       assertEquals("all good", answersProviderSlot.captured.answer(Field.TEST_FIELD).value)
 
       verify(exactly = 1) {
-        mockSectionMapping.map()
-        mockSectionMappingTwo.map()
+        mockOasysSectionMapping.map()
+        mockOasysSectionMappingTwo.map()
       }
 
       assertEquals(
@@ -94,6 +99,71 @@ class DataMappingServiceTest {
         ),
         result,
       )
+    }
+  }
+
+  @Nested
+  inner class GetSanEquivalent {
+    private val assessmentAggregate = AssessmentAggregate().apply { formVersion = "v1.0" }
+    private val oasysData: OasysEquivalent = mapOf("oasys-key-1" to "val-1")
+    private val mockSanSectionMapping: SanSectionMapping = mockk()
+
+    @Test
+    fun `returns empty result`() {
+      every {
+        mockSanSectionMapping.map(oasysData, any())
+      } just Runs
+
+      every {
+        mockMappingProvider.get(match { formVersion -> formVersion == "v1.0" })
+      } returns setOf(
+        mockSanSectionMapping,
+      )
+
+      val sut = DataMappingService(mockMappingProvider)
+      val result = sut.getSanEquivalent(assessmentAggregate, oasysData)
+
+      assertEquals(emptyMap(), result.answers)
+      assertEquals(emptyMap(), result.properties)
+      assertEquals(emptyList(), result.collections)
+      assertEquals(emptyList(), result.flags)
+
+      verify(exactly = 1) { mockSanSectionMapping.map(oasysData, any()) }
+    }
+
+    @Test
+    fun `returns an aggregate mutated by multiple section mappings`() {
+      val mockSanSectionMappingTwo: SanSectionMapping = mockk()
+
+      val mappingsAggregateSlot1 = slot<AssessmentAggregate>()
+      val mappingsAggregateSlot2 = slot<AssessmentAggregate>()
+
+      every {
+        mockSanSectionMapping.map(oasysData, capture(mappingsAggregateSlot1))
+      } just Runs
+
+      every {
+        mockSanSectionMappingTwo.map(oasysData, capture(mappingsAggregateSlot2))
+      } just Runs
+
+      every {
+        mockMappingProvider.get(match { formVersion -> formVersion == "v1.0" })
+      } returns setOf(
+        mockSanSectionMapping,
+        mockSanSectionMappingTwo,
+      )
+
+      val sut = DataMappingService(mockMappingProvider)
+
+      val result = sut.getSanEquivalent(assessmentAggregate, oasysData)
+
+      verify(exactly = 1) {
+        mockSanSectionMapping.map(oasysData, any())
+        mockSanSectionMappingTwo.map(oasysData, any())
+      }
+
+      assertSame(result, mappingsAggregateSlot1.captured)
+      assertSame(mappingsAggregateSlot1.captured, mappingsAggregateSlot2.captured)
     }
   }
 }
