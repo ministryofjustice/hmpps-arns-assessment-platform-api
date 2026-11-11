@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.Retrya
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.Pathway
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.exception.AssessmentNotStrengthsAndNeedsException
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.exception.PathwayNotChangedException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.Value
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.query.AssessmentVersionQuery
@@ -58,6 +59,7 @@ class StrengthsAndNeedsServiceTest {
 
   @Nested
   inner class StartNewPathway {
+
     @Test
     fun `should remove every answer on the assessment in a single command`() {
       val assessment = buildAssessment(
@@ -116,6 +118,15 @@ class StrengthsAndNeedsServiceTest {
         service.startNewPathway(assessmentUuid, userDetails, Pathway.COMMUNITY, Pathway.CUSTODY)
       }
       verify(exactly = 0) { commandDispatcher.dispatch(any()) }
+    }
+
+    @Test
+    fun `should throw and not clear answers when the pathway has not changed`() {
+      assertThrows<PathwayNotChangedException> {
+        service.startNewPathway(assessmentUuid, userDetails, Pathway.COMMUNITY, Pathway.COMMUNITY)
+      }
+      verify(exactly = 0) { commandDispatcher.dispatch(any()) }
+      verify(exactly = 0) { queryBus.dispatch(any<AssessmentVersionQuery>()) }
     }
   }
 }

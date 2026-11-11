@@ -55,15 +55,15 @@ class StrengthsAndNeedsControllerTest : IntegrationTestBase() {
       .queries.single().result,
   )
 
-  private fun startNewPathway(assessmentUuid: UUID, roles: List<String> = listOf("ROLE_AAP__COORDINATOR_RW")) = webTestClient.post().uri("/san/start-new-pathway")
+  private fun startNewPathway(assessmentUuid: UUID, roles: List<String> = listOf("ROLE_AAP__COORDINATOR_RW"), previousPathway: Pathway = Pathway.COMMUNITY, newPathway: Pathway = Pathway.CUSTODY) = webTestClient.post().uri("/san/start-new-pathway")
     .contentType(MediaType.APPLICATION_JSON)
     .headers(setAuthorisation(roles = roles))
     .bodyValue(
       StartNewPathwayRequest(
         user = testUserDetails,
         assessmentUuid = assessmentUuid,
-        previousPathway = Pathway.COMMUNITY,
-        newPathway = Pathway.CUSTODY,
+        previousPathway = previousPathway,
+        newPathway = newPathway,
       ),
     )
     .exchange()
@@ -128,6 +128,17 @@ class StrengthsAndNeedsControllerTest : IntegrationTestBase() {
         .headers(setAuthorisation(roles = listOf("ROLE_AAP__COORDINATOR_RW")))
         .bodyValue(requestBody)
         .exchange().expectStatus().isBadRequest
+
+      assertThat(fetchAssessment(assessmentUuid).answers).hasSize(2)
+    }
+
+    @Test
+    fun `it should return 400 and keep the answers when the pathway has not changed`() {
+      val assessmentUuid = createAssessment()
+      addAnswers(assessmentUuid)
+
+      startNewPathway(assessmentUuid, previousPathway = Pathway.COMMUNITY, newPathway = Pathway.COMMUNITY)
+        .expectStatus().isBadRequest
 
       assertThat(fetchAssessment(assessmentUuid).answers).hasSize(2)
     }

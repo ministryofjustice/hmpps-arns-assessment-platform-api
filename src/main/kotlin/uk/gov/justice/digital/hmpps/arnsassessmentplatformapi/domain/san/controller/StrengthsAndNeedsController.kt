@@ -25,7 +25,7 @@ class StrengthsAndNeedsController(
       ApiResponse(responseCode = "200", description = "Started new pathway"),
       ApiResponse(
         responseCode = "400",
-        description = "The Assessment is not a Strengths and Needs Assessment",
+        description = "The Assessment is not a Strengths and Needs Assessment, or previous and new pathway are the same",
         content = arrayOf(Content(schema = Schema(implementation = ErrorResponse::class))),
       ),
       ApiResponse(
