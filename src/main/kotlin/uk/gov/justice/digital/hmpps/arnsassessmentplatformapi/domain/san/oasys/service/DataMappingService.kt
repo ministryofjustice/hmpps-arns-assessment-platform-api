@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.service
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregate
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.aggregate.assessment.AssessmentAggregateView
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.formconfig.FormConfig
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.MappingProvider
@@ -18,4 +19,7 @@ class DataMappingService(
 
     return mapping.fold(emptyMap()) { acc, sectionMapping -> acc + sectionMapping.map() }
   }
+
+  fun getSanEquivalent(assessmentAggregate: AssessmentAggregateView, oasysData: OasysEquivalent): AssessmentAggregate = mappingProvider.get(assessmentAggregate.formVersion)
+    .fold(AssessmentAggregate()) { acc, sectionMapping -> acc.also { sectionMapping.map(oasysData, acc) } }
 }
