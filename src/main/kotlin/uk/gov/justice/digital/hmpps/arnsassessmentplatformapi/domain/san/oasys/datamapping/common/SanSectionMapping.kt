@@ -6,5 +6,5 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.s
 typealias OasysToSanMappingVersion = Pair<String, Set<SanSectionMapping>>
 
 abstract class SanSectionMapping {
-  abstract fun map(oasysEquivalent: OasysEquivalent, assessmentAggregate: AssessmentAggregate)
+  abstract fun map(oasys: OasysEquivalent, aap: AssessmentAggregate)
 }
