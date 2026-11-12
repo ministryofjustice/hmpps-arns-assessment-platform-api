@@ -8,14 +8,15 @@ import kotlin.test.Test
 
 class AccommodationTest : SectionMappingTest(Accommodation()) {
   @Test
-  fun currentAccommodation() {
+  fun communitySuitableHousing() {
     test(
-      Field.CURRENT_ACCOMMODATION,
+      Field.COMMUNITY_SUITABLE_HOUSING,
       Given().expect(null),
-      Given("o1-test", 0).expect(Value.SETTLED),
-      Given("o1-test", 1).expect(Value.TEMPORARY),
-      Given("o1-test", 2).expect(Value.TEMPORARY),
-      Given("o1-test", null).expect(null),
+      Given("o3-4", "0").expect(Value.YES),
+      Given("o3-4", "1").expect(Value.YES_WITH_CONCERNS),
+      Given("o3-4", "2").expect(Value.NO),
+      Given("o3-4", "M").expect(null),
+      Given("o3-4", null).expect(null),
     )
   }
 }

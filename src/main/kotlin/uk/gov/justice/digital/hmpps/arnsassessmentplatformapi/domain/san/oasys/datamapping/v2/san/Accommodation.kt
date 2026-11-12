@@ -10,14 +10,14 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.model.SingleValue
 
 class Accommodation : SanSectionMapping() {
   override fun map(oasys: OasysEquivalent, aap: AssessmentAggregate) {
-    // TODO: apply mappings to the assessment aggregate
-    when (oasys["o1-test"]) {
-      0 -> Value.SETTLED
-      1, 2 -> Value.TEMPORARY
-      null -> null
-      else -> throw UnexpectedOasysValueException("o1-test")
+    when (oasys["o3-4"]) {
+      "0" -> Value.YES
+      "1" -> Value.YES_WITH_CONCERNS
+      "2" -> Value.NO
+      "M", null -> null
+      else -> throw UnexpectedOasysValueException("o3-4")
     }?.let {
-      aap.answers[Field.CURRENT_ACCOMMODATION.lower] = SingleValue(it.name)
+      aap.answers[Field.COMMUNITY_SUITABLE_HOUSING.lower] = SingleValue(it.name)
     }
   }
 }
