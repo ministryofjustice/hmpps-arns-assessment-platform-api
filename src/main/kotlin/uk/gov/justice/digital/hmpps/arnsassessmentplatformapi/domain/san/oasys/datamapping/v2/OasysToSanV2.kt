@@ -6,6 +6,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.d
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.v2.san.Drugs
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.v2.san.EmploymentEducation
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.v2.san.HealthWellbeing
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.oasys.datamapping.v2.san.PersonalRelationships
 
 val OasysToSanV2: OasysToSanMappingVersion = "v2.0" to setOf(
   Accommodation(),
@@ -13,4 +14,5 @@ val OasysToSanV2: OasysToSanMappingVersion = "v2.0" to setOf(
   Drugs(),
   EmploymentEducation(),
   HealthWellbeing(),
+  PersonalRelationships(),
 )
