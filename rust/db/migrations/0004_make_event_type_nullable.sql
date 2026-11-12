@@ -1,0 +1,1 @@
+ALTER TABLE timeline ALTER COLUMN event_type DROP NOT NULL;

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE timeline SET deleted = TRUE\n            WHERE assessment_uuid = $1 AND created_at >= $2 AND deleted IS FALSE\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0214966dfe06a85f77ef2ea260a419d0884fb79fdc1ef269016bf4fe25f993d3"
+}
