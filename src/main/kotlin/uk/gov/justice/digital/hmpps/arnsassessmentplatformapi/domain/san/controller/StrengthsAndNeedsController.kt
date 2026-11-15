@@ -19,7 +19,7 @@ class StrengthsAndNeedsController(
   private val strengthsAndNeedsService: StrengthsAndNeedsService,
 ) {
   @RequestMapping(path = ["/san/start-new-pathway"], method = [RequestMethod.POST])
-  @Operation(description = "Starts a new pathway for a Strengths and Needs Assessment, removes all existing answers and collection items")
+  @Operation(description = "Starts a new pathway for a Strengths and Needs Assessment, removes all existing answers and collection items, the OASys mapping and section progress properties")
   @ApiResponses(
     value = [
       ApiResponse(responseCode = "200", description = "Started new pathway"),

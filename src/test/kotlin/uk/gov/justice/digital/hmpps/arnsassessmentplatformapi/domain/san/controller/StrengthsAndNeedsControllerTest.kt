@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollect
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateAssessmentCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.result.CreateCollectionCommandResult
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
@@ -47,6 +48,21 @@ class StrengthsAndNeedsControllerTest : IntegrationTestBase() {
       ),
     )
     )
+
+  private fun addProperties(assessmentUuid: UUID) = command(
+    UpdateAssessmentPropertiesCommand(
+      user = testUserDetails,
+      assessmentUuid = assessmentUuid.toReference(),
+      added = mapOf(
+        "oasys_equivalent" to SingleValue("{\"o3-4\":\"0\"}"),
+        "accommodation_section_complete" to SingleValue("YES"),
+        "is_user_submitted_accommodation" to SingleValue("TRUE"),
+        "SAN_ASSESSMENT_TYPE" to SingleValue("COMMUNITY"),
+        "OASYS_LINKED" to SingleValue("2026-11-01T10:00:00Z"),
+      ),
+      removed = emptyList(),
+    ),
+  )
 
   private fun addVictim(assessmentUuid: UUID) {
     val collectionUuid = assertIs<CreateCollectionCommandResult>(
@@ -132,6 +148,30 @@ class StrengthsAndNeedsControllerTest : IntegrationTestBase() {
     }
 
     @Test
+    fun `it should remove the OASys mapping and section progress properties but keep all other properties`() {
+      val assessmentUuid = createAssessment()
+      addProperties(assessmentUuid)
+      assertThat(fetchAssessment(assessmentUuid).properties).containsKeys(
+        "oasys_equivalent",
+        "accommodation_section_complete",
+        "is_user_submitted_accommodation",
+        "SAN_ASSESSMENT_TYPE",
+        "OASYS_LINKED",
+      )
+
+      startNewPathway(assessmentUuid)
+        .expectStatus().isOk
+
+      val propertiesAfter = fetchAssessment(assessmentUuid).properties
+      assertThat(propertiesAfter).doesNotContainKeys(
+        "oasys_equivalent",
+        "accommodation_section_complete",
+        "is_user_submitted_accommodation",
+      )
+      assertThat(propertiesAfter).containsKeys("SAN_ASSESSMENT_TYPE", "OASYS_LINKED")
+    }
+
+    @Test
     fun `it should succeed when the assessment has no answers`() {
       val assessmentUuid = createAssessment()
 
@@ -180,10 +220,11 @@ class StrengthsAndNeedsControllerTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `it should return 400 and keep the answers and collections when the pathway has not changed`() {
+    fun `it should return 400 and keep the answers, collections and properties when the pathway has not changed`() {
       val assessmentUuid = createAssessment()
       addAnswers(assessmentUuid)
       addVictim(assessmentUuid)
+      addProperties(assessmentUuid)
 
       startNewPathway(assessmentUuid, previousPathway = Pathway.COMMUNITY, newPathway = Pathway.COMMUNITY)
         .expectStatus().isBadRequest
@@ -191,6 +232,11 @@ class StrengthsAndNeedsControllerTest : IntegrationTestBase() {
       val assessmentAfter = fetchAssessment(assessmentUuid)
       assertThat(assessmentAfter.answers).hasSize(2)
       assertThat(assessmentAfter.collections.single { it.name == "OFFENCE_ANALYSIS_VICTIM" }.items).hasSize(1)
+      assertThat(assessmentAfter.properties).containsKeys(
+        "oasys_equivalent",
+        "accommodation_section_complete",
+        "is_user_submitted_accommodation",
+      )
     }
   }
 

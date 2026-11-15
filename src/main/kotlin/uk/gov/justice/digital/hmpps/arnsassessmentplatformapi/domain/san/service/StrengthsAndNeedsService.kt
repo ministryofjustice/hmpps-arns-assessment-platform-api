@@ -5,6 +5,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateTime
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Timeline
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.RetryableCommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.toReference
@@ -60,6 +61,21 @@ class StrengthsAndNeedsService(
       }
     }
 
+    val removedProperties = assessment.properties.keys.filter(::isClearedOnPathwayChange)
+
+    val propertyCommands = if (removedProperties.isEmpty()) {
+      emptyList()
+    } else {
+      listOf(
+        UpdateAssessmentPropertiesCommand(
+          user = userDetails,
+          assessmentUuid = assessmentUuid.toReference(),
+          added = emptyMap(),
+          removed = removedProperties,
+        ),
+      )
+    }
+
     val timelineCommands = listOf(
       CreateTimelineItemCommand(
         timestamp = LocalDateTime.now(),
@@ -74,6 +90,21 @@ class StrengthsAndNeedsService(
       ),
     )
 
-    commandDispatcher.dispatch(listOf(answerCommands, collectionItemCommands, timelineCommands).flatten())
+    commandDispatcher.dispatch(listOf(answerCommands, collectionItemCommands, propertyCommands, timelineCommands).flatten())
+  }
+
+  /**
+   * Properties derived from the answers, so they are stale once the answers are cleared:
+   * the OASys mapping, section completion statuses and per-step "user submitted" flags.
+   * All other properties (e.g. SAN_ASSESSMENT_TYPE, OASYS_*) are kept.
+   */
+  private fun isClearedOnPathwayChange(key: String) = key == OASYS_EQUIVALENT ||
+    key.endsWith(SECTION_COMPLETE_SUFFIX) ||
+    key.startsWith(USER_SUBMITTED_PREFIX)
+
+  private companion object {
+    const val OASYS_EQUIVALENT = "oasys_equivalent"
+    const val SECTION_COMPLETE_SUFFIX = "_section_complete"
+    const val USER_SUBMITTED_PREFIX = "is_user_submitted_"
   }
 }

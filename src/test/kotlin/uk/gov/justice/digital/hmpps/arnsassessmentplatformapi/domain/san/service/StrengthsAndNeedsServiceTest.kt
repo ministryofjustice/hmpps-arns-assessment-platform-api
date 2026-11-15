@@ -13,6 +13,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateTime
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RemoveCollectionItemCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.RequestableCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentAnswersCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateAssessmentPropertiesCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.bus.RetryableCommandDispatcher
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.common.UserDetails
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.domain.san.Pathway
@@ -42,6 +43,7 @@ class StrengthsAndNeedsServiceTest {
     type: String = "STRENGTHS_AND_NEEDS",
     answers: Map<String, Value> = emptyMap(),
     collections: CollectionsView = emptyList(),
+    properties: Map<String, Value> = emptyMap(),
   ) = AssessmentVersionQueryResult(
     assessmentUuid = assessmentUuid,
     aggregateUuid = UUID.randomUUID(),
@@ -50,7 +52,7 @@ class StrengthsAndNeedsServiceTest {
     createdAt = now,
     updatedAt = now,
     answers = answers,
-    properties = emptyMap(),
+    properties = properties,
     collections = collections,
     collaborators = emptySet(),
     identifiers = emptyMap(),
@@ -130,6 +132,65 @@ class StrengthsAndNeedsServiceTest {
     }
 
     @Test
+    fun `should remove the OASys mapping and section progress properties but keep all other properties`() {
+      val assessment = buildAssessment(
+        properties = mapOf(
+          "oasys_equivalent" to SingleValue("{\"o3-4\":\"0\"}"),
+          "accommodation_section_complete" to SingleValue("YES"),
+          "personal_relationships_community_section_complete" to SingleValue("NO"),
+          "is_user_submitted_accommodation" to SingleValue("TRUE"),
+          "SAN_ASSESSMENT_TYPE" to SingleValue("COMMUNITY"),
+          "OASYS_LINKED" to SingleValue("2026-11-01T10:00:00Z"),
+          "OASYS_DATA_o3-4" to SingleValue("2"),
+        ),
+      )
+      every { queryBus.dispatch(any<AssessmentVersionQuery>()) } returns assessment
+
+      service.startNewPathway(assessmentUuid, userDetails, Pathway.COMMUNITY, Pathway.CUSTODY)
+
+      val propertyCommands = dispatchedCommands().filterIsInstance<UpdateAssessmentPropertiesCommand>()
+      assertThat(propertyCommands).hasSize(1)
+      assertThat(propertyCommands.single().removed).containsExactlyInAnyOrder(
+        "oasys_equivalent",
+        "accommodation_section_complete",
+        "personal_relationships_community_section_complete",
+        "is_user_submitted_accommodation",
+      )
+      assertThat(propertyCommands.single().added).isEmpty()
+    }
+
+    @Test
+    fun `should not remove any properties when none are derived from the answers`() {
+      val assessment = buildAssessment(
+        properties = mapOf(
+          "SAN_ASSESSMENT_TYPE" to SingleValue("COMMUNITY"),
+          "OASYS_LINKED" to SingleValue("2026-11-01T10:00:00Z"),
+        ),
+      )
+      every { queryBus.dispatch(any<AssessmentVersionQuery>()) } returns assessment
+
+      service.startNewPathway(assessmentUuid, userDetails, Pathway.COMMUNITY, Pathway.CUSTODY)
+
+      assertThat(dispatchedCommands().filterIsInstance<UpdateAssessmentPropertiesCommand>()).isEmpty()
+    }
+
+    @Test
+    fun `should add the timeline entry after all the clearing commands`() {
+      val assessment = buildAssessment(
+        answers = mapOf("accommodation_type" to SingleValue("SETTLED")),
+        collections = listOf(victimsCollection(victimItem())),
+        properties = mapOf("accommodation_section_complete" to SingleValue("YES")),
+      )
+      every { queryBus.dispatch(any<AssessmentVersionQuery>()) } returns assessment
+
+      service.startNewPathway(assessmentUuid, userDetails, Pathway.COMMUNITY, Pathway.CUSTODY)
+
+      val commands = dispatchedCommands()
+      assertThat(commands).hasSize(4)
+      assertThat(commands.last()).isInstanceOf(CreateTimelineItemCommand::class.java)
+    }
+
+    @Test
     fun `should add a timeline entry recording the pathway change`() {
       val assessment = buildAssessment(
         answers = mapOf(
@@ -158,6 +219,7 @@ class StrengthsAndNeedsServiceTest {
 
       assertThat(commands.filterIsInstance<UpdateAssessmentAnswersCommand>()).isEmpty()
       assertThat(commands.filterIsInstance<RemoveCollectionItemCommand>()).isEmpty()
+      assertThat(commands.filterIsInstance<UpdateAssessmentPropertiesCommand>()).isEmpty()
       assertThat(commands.filterIsInstance<CreateTimelineItemCommand>()).hasSize(1)
     }
 
