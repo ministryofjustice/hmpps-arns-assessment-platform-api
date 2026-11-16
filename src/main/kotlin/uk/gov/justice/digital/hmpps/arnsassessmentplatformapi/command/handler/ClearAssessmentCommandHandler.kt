@@ -18,13 +18,16 @@ class ClearAssessmentCommandHandler(
     val state =
       services.persistenceContext.getAggregateState(assessment, AssessmentAggregate::class, null) as AssessmentState
 
+    val data = state.getForRead().data
+
     val patterns = command.properties.map(::toRegex)
-    val properties = state.getForRead().data.properties.keys.filter { key -> patterns.any { it.matches(key) } }
+    val properties = data.properties.keys.filter { key -> patterns.any { it.matches(key) } }
+    val collections = data.collections.map { it.name }.filter { it in command.collections }.distinct()
 
     val event = EventEntity(
       user = services.persistenceContext.findUserDetails(command.user),
       assessment = assessment,
-      data = AssessmentClearedEvent(properties, command.collections),
+      data = AssessmentClearedEvent(properties, collections),
       createdAt = services.clock.requestDateTime(),
       autosaved = command.autosaved,
     )
