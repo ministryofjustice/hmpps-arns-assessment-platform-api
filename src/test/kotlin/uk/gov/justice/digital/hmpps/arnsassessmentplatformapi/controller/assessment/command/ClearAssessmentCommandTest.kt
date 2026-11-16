@@ -153,6 +153,53 @@ class ClearAssessmentCommandTest(
     assertThat(before.collections.single { it.name == "OFFENCE_ANALYSIS_VICTIM" }.items).hasSize(1)
   }
 
+  @Test
+  fun `it accepts the command as raw JSON`() {
+    val assessmentEntity = givenAnAssessmentWithData()
+
+    val request =
+      """                                                                                                                                                                                  
+        {                                                                                                                                                                                                
+          "commands": [                                                                                                                                                                                  
+            {                                                                                                                                                                                            
+              "type": "ClearAssessmentCommand",                                                                                                                                                          
+              "user": {                                                                                                                                                                                  
+                "id": "${testUserDetails.id}",                                                                                                                                                           
+                "name": "${testUserDetails.name}",                                                                                                                                                       
+                "authSource": "${testUserDetails.authSource}"                                                                                                                                            
+              },                                                                                                                                                                                         
+              "assessmentUuid": "${assessmentEntity.uuid}",                                                                                                                                              
+              "properties": ["*_section_complete", "is_user_submitted_*"],                                                                                                                               
+              "collections": ["OFFENCE_ANALYSIS_VICTIM"],                                                                                                                                                
+              "timeline": {                                                                                                                                                                              
+                "type": "PATHWAY_CHANGE",                                                                                                                                                                
+                "data": {}                                                                                                                                                                               
+              }                                                                                                                                                                                          
+            }                                                                                                                                                                                            
+          ]                                                                                                                                                                                              
+        }                                                                                                                                                                                                
+      """.trimIndent()
+
+    val response = webTestClient.post().uri("/command")
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers(setAuthorisation(roles = listOf("ROLE_AAP__FRONTEND_RW")))
+      .bodyValue(request)
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(CommandsResponse::class.java)
+      .returnResult()
+      .responseBody
+
+    val command = assertIs<ClearAssessmentCommand>(response?.commands?.single()?.request)
+    assertThat(command.properties).containsExactly("*_section_complete", "is_user_submitted_*")
+    assertThat(command.collections).containsExactly("OFFENCE_ANALYSIS_VICTIM")
+    assertThat(command.timeline?.type).isEqualTo("PATHWAY_CHANGE")
+    assertIs<CommandSuccessCommandResult>(response?.commands?.single()?.result)
+
+    val events = eventRepository.findAllByAssessmentUuidOrderById(assessmentEntity.uuid)
+    assertIs<AssessmentClearedEvent>(events.last().data)
+  }
+
   private fun givenAnAssessmentWithData(): AssessmentEntity {
     val collectionUuid = UUID.randomUUID()
     val itemUuid = UUID.randomUUID()
