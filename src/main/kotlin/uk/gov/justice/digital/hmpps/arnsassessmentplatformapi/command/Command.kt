@@ -25,6 +25,7 @@ data class Timeline(
   JsonSubTypes.Type(value = UpdateCollectionItemPropertiesCommand::class, name = "UpdateCollectionItemPropertiesCommand"),
   JsonSubTypes.Type(value = UpdateFlagsCommand::class, name = "UpdateFlagsCommand"),
   JsonSubTypes.Type(value = UpdateFormVersionCommand::class, name = "UpdateFormVersionCommand"),
+  JsonSubTypes.Type(value = ClearAssessmentCommand::class, name = "ClearAssessmentCommand"),
 )
 sealed interface Command {
   val timeline: Timeline?
