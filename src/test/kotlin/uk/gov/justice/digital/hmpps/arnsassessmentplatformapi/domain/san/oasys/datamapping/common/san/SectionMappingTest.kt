@@ -32,20 +32,11 @@ class Given {
     this.oasysData = oasysData.plus(field to value)
   }
 
-  constructor(field: String, value: Int) {
-    this.oasysData = oasysData.plus(field to value)
-  }
-
   constructor(field: String, value: Map<String, Any?>) {
     this.oasysData = oasysData.plus(field to value)
   }
 
   fun and(field: String, value: String?): Given {
-    this.oasysData = oasysData.plus(field to value)
-    return this
-  }
-
-  fun and(field: String, value: Int): Given {
     this.oasysData = oasysData.plus(field to value)
     return this
   }
