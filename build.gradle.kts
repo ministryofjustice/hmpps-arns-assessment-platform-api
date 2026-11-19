@@ -28,14 +28,14 @@ configurations {
 ext["netty.version"] = "4.2.18.Final"
 ext["httpclient5.version"] = "5.6.4"
 ext["httpcore5.version"] = "5.4.3"
-ext["tomcat.version"] = "11.0.26"
+ext["tomcat.version"] = "11.0.29"
 
 dependencies {
   implementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter:3.1.0")
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.6.0")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
-  implementation("org.webjars:swagger-ui:5.35.0")
+  implementation("org.webjars:swagger-ui:5.35.1")
   implementation("tools.jackson.module:jackson-module-kotlin:3.3.0")
   implementation("org.springframework.retry:spring-retry")
   runtimeOnly("io.netty:netty-codec-classes-quic")
