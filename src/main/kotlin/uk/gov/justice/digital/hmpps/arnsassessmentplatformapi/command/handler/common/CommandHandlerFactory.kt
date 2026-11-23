@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.c
 
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.AddCollectionItemCommand
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.ClearAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.Command
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateAssessmentCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.CreateCollectionCommand
@@ -19,6 +20,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFlag
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.UpdateFormVersionCommand
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.exception.CommandHandlerNotImplementedException
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.AddCollectionItemCommandHandler
+import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.ClearAssessmentCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.CreateAssessmentCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.CreateCollectionCommandHandler
 import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.CreateTimelineItemCommandHandler
@@ -38,6 +40,7 @@ import uk.gov.justice.digital.hmpps.arnsassessmentplatformapi.command.handler.Up
 class CommandHandlerFactory {
   fun create(command: Command, serviceBundle: CommandHandlerServiceBundle) = when (command) {
     is AddCollectionItemCommand -> AddCollectionItemCommandHandler(serviceBundle)
+    is ClearAssessmentCommand -> ClearAssessmentCommandHandler(serviceBundle)
     is CreateAssessmentCommand -> CreateAssessmentCommandHandler(serviceBundle)
     is CreateCollectionCommand -> CreateCollectionCommandHandler(serviceBundle)
     is CreateTimelineItemCommand -> CreateTimelineItemCommandHandler(serviceBundle)
